@@ -1,0 +1,138 @@
+[project]
+name = "anycastd"
+description = "A daemon to manage anycasted services based on status checks."
+authors = [
+    {name = "Marvin Vogt", email = "m@rvinvogt.com"}
+]
+license = {text = "Apache-2.0"}
+readme = "README.md"
+dynamic = ["version"]
+
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Typing :: Typed",
+]
+keywords = []
+
+requires-python = ">=3.10"
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/gecio/anycastd"
+Issues = "https://github.com/gecio/anycastd/issues"
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm.version]
+source = "scm"
+
+[tool.pdm.dev-dependencies]
+lint = [
+    "black",
+    "ruff",
+]
+typecheck = [
+    "mypy",
+]
+type_stubs = []
+test = [
+    "pytest",
+    "pytest-cov",
+    "pytest-xdist",
+    "pytest-pretty",
+    "pytest-github-actions-annotate-failures",
+]
+jupyter = [
+    "jupyter",
+    "notebook",
+]
+
+[tool.black]
+target-version = ["py310", "py311"]
+include = '\.pyi?$'
+
+[tool.ruff]
+line-length = 88
+select = [
+    "B",
+    "D",
+    "E",
+    "F",
+    "I",
+    "S",
+    "W",
+    "N",
+    "PLC",
+    "PLE",
+    "PLR",
+    "PLW",
+    "C90",
+    "FBT",
+    "C4",
+    "DTZ",
+    "INP",
+    "PIE",
+    "T20",
+    "PYI",
+    "TID",
+    "ERA",
+    "PLE",
+    "RUF",
+]
+ignore = ["D100", "D101", "D102", "D103", "D104", "D105", "D107", "S603"]
+
+[tool.ruff.per-file-ignores]
+"tests/*" = ["S101"]
+"__init__.py" = ["F401"]
+
+[tool.ruff.pydocstyle]
+convention = "google"
+
+[tool.ruff.mccabe]
+max-complexity = 10
+
+[tool.mypy]
+disallow_any_unimported = true
+disallow_untyped_defs = true
+disallow_untyped_calls = true
+no_implicit_optional = true
+strict_equality = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_return_any = true
+check_untyped_defs = true
+show_error_codes = true
+
+[tool.pytest.ini_options]
+testpaths = "tests"
+addopts = [
+    "--strict-markers",
+    "--strict-config"
+]
+xfail_strict = true
+markers = [
+    "integration:integration tests",
+    "e2e:e2e tests"
+]
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 50
+exclude_lines = [
+    "@overload",
+    "if TYPE_CHECKING:",
+    "pragma: no cover"
+]

@@ -1,0 +1,18 @@
+{
+  "name": "Python 3",
+  "image": "mcr.microsoft.com/devcontainers/python:0-3.10",
+  "features": {
+    "ghcr.io/devcontainers-contrib/features/pdm:2": {},
+    "ghcr.io/devcontainers-contrib/features/nox:2": {}
+  },
+  "postCreateCommand": "pdm install",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "charliermarsh.ruff",
+        "EditorConfig.EditorConfig"
+      ]
+    }
+  }
+}
