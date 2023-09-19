@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from anycastd.healtcheck.base import BaseHealthcheck
+from anycastd.healthcheck.base import BaseHealthcheck
 from anycastd.prefix.base import BasePrefix
 
 
