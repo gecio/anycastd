@@ -13,9 +13,9 @@ class BasePrefix(ABC):
         """Whether the prefix is currently announced."""
 
     @abstractmethod
-    def announce(self) -> None:
+    async def announce(self) -> None:
         """Announce the prefix."""
 
     @abstractmethod
-    def denounce(self) -> None:
+    async def denounce(self) -> None:
         """Denounce the prefix."""
