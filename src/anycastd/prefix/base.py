@@ -5,7 +5,12 @@ from ipaddress import IPv4Network, IPv6Network
 class BasePrefix(ABC):
     """An IP prefix that can be announced or denounced."""
 
-    _prefix: IPv4Network | IPv6Network
+    prefix: IPv4Network | IPv6Network
+
+    def __init__(self, prefix: IPv4Network | IPv6Network):
+        if not any((isinstance(prefix, IPv4Network), isinstance(prefix, IPv6Network))):
+            raise TypeError("Prefix must be an IPv4 or IPv6 network.")
+        self.prefix = prefix
 
     @abstractmethod
     @property
