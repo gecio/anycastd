@@ -15,6 +15,9 @@ class BaseHealthcheck(ABC):
             raise TypeError("Interval must be a timedelta.")
         self.interval = interval
 
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(interval={self.interval!r})"
+
     @property
     @abstractmethod
     def is_healthy(self) -> bool:
