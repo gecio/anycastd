@@ -12,8 +12,8 @@ class BasePrefix(ABC):
             raise TypeError("Prefix must be an IPv4 or IPv6 network.")
         self.prefix = prefix
 
-    @abstractmethod
     @property
+    @abstractmethod
     def is_announced(self) -> bool:
         """Whether the prefix is currently announced."""
 
