@@ -18,11 +18,14 @@ class BasePrefix(ABC):
     @abstractmethod
     async def is_announced(self) -> bool:
         """Whether the prefix is currently announced."""
+        raise NotImplementedError
 
     @abstractmethod
     async def announce(self) -> None:
         """Announce the prefix."""
+        raise NotImplementedError
 
     @abstractmethod
     async def denounce(self) -> None:
         """Denounce the prefix."""
+        raise NotImplementedError
