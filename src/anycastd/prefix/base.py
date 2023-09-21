@@ -15,9 +15,8 @@ class BasePrefix(ABC):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.prefix!r})"
 
-    @property
     @abstractmethod
-    def is_announced(self) -> bool:
+    async def is_announced(self) -> bool:
         """Whether the prefix is currently announced."""
 
     @abstractmethod
