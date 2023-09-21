@@ -1,5 +1,5 @@
 import datetime
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import final
 
 
@@ -34,3 +34,12 @@ class BaseHealthcheck(ABC):
             return await self._check()
 
         return self._last_healthy
+
+    @abstractmethod
+    async def _check(self) -> bool:
+        """Run the healthcheck.
+
+        This method must be implemented by subclasses and return a boolean
+        indicating whether the healthcheck passed or failed.
+        """
+        raise NotImplementedError
