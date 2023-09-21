@@ -24,7 +24,15 @@ class Service:
         passing, and denounce them otherwise.
         """
         while True:
-            if all(check.is_healthy for check in self.health_checks):
-                asyncio.gather(prefix.announce() for prefix in self.prefixes)
+            if await self.is_healthy():
+                asyncio.gather(*(prefix.announce() for prefix in self.prefixes))
             else:
-                asyncio.gather(prefix.denounce() for prefix in self.prefixes)
+                asyncio.gather(*(prefix.denounce() for prefix in self.prefixes))
+
+    async def is_healthy(self) -> bool:
+        """Whether the service is healthy.
+
+        True if all health checks are passing, False otherwise.
+        """
+        results = await asyncio.gather(*(_.is_healthy() for _ in self.health_checks))
+        return all(results)
