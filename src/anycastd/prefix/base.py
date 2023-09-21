@@ -17,15 +17,27 @@ class BasePrefix(ABC):
 
     @abstractmethod
     async def is_announced(self) -> bool:
-        """Whether the prefix is currently announced."""
+        """Whether the prefix is currently announced.
+
+        This method must be implemented by subclasses and return a boolean
+        indicating whether the prefix is currently announced.
+        """
         raise NotImplementedError
 
     @abstractmethod
     async def announce(self) -> None:
-        """Announce the prefix."""
+        """Announce the prefix.
+
+        This method must be implemented by subclasses and announce the
+        prefix if it isn't announced already.
+        """
         raise NotImplementedError
 
     @abstractmethod
     async def denounce(self) -> None:
-        """Denounce the prefix."""
+        """Denounce the prefix.
+
+        This method must be implemented by subclasses and denounce the
+        prefix if it is announced.
+        """
         raise NotImplementedError
