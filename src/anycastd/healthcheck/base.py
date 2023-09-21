@@ -1,5 +1,6 @@
 import datetime
-from abc import ABC, abstractmethod
+from abc import ABC
+from typing import final
 
 
 class BaseHealthcheck(ABC):
@@ -18,7 +19,18 @@ class BaseHealthcheck(ABC):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(interval={self.interval!r})"
 
-    @property
-    @abstractmethod
-    def is_healthy(self) -> bool:
-        """Whether the healthcheck is healthy."""
+    @final
+    async def is_healthy(self) -> bool:
+        """Whether the healthcheck is healthy.
+
+        Runs a check and returns it's result if the interval has passed or no
+        previous check has been run. Otherwise, the previous result is returned.
+        """
+        if (
+            self._last_checked is None
+            or datetime.datetime.now(datetime.timezone.utc) - self._last_checked
+            > self.interval
+        ):
+            return await self._check()
+
+        return self._last_healthy
