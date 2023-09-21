@@ -31,7 +31,12 @@ class BaseHealthcheck(ABC):
             or datetime.datetime.now(datetime.timezone.utc) - self._last_checked
             > self.interval
         ):
-            return await self._check()
+            healthy = await self._check()
+
+            self._last_checked = datetime.datetime.now(datetime.timezone.utc)
+            self._last_healthy = healthy
+
+            return healthy
 
         return self._last_healthy
 
