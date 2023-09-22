@@ -6,7 +6,7 @@ groups = ["default", "jupyter", "lint", "test", "type_stubs", "typecheck"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:52f2726a242d9ed2fc28bb5049efad040b0b79244b17a950d25f651def70314d"
+content_hash = "sha256:a807d83ad804fb9722a55e0781013ae65de69d8aa30b37e29ee59dfdcac4ecc7"
 
 [[package]]
 name = "anyio"
@@ -1338,6 +1338,19 @@ dependencies = [
 files = [
     {file = "pytest-github-actions-annotate-failures-0.2.0.tar.gz", hash = "sha256:844ab626d389496e44f960b42f0a72cce29ae06d363426d17ea9ae1b4bef2288"},
     {file = "pytest_github_actions_annotate_failures-0.2.0-py3-none-any.whl", hash = "sha256:8bcef65fed503faaa0524b59cfeccc8995130972dd7b008d64193cc41b9cde85"},
+]
+
+[[package]]
+name = "pytest-mock"
+version = "3.11.1"
+requires_python = ">=3.7"
+summary = "Thin-wrapper around the mock package for easier use with pytest"
+dependencies = [
+    "pytest>=5.0",
+]
+files = [
+    {file = "pytest-mock-3.11.1.tar.gz", hash = "sha256:7f6b125602ac6d743e523ae0bfa71e1a697a2f5534064528c6ff84c2f7c2fc7f"},
+    {file = "pytest_mock-3.11.1-py3-none-any.whl", hash = "sha256:21c279fff83d70763b05f8874cc9cfb3fcacd6d354247a976f9529d19f9acf39"},
 ]
 
 [[package]]

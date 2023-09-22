@@ -50,6 +50,7 @@ test = [
     "pytest-xdist",
     "pytest-pretty",
     "pytest-github-actions-annotate-failures",
+    "pytest-mock>=3.11.1",
 ]
 jupyter = [
     "jupyter",
