@@ -17,7 +17,9 @@ class Service:
     prefixes: tuple[BasePrefix, ...]
     health_checks: tuple[BaseHealthcheck, ...]
 
-    async def run(self) -> None:
+    # The _only_once parameter is only used for testing.
+    # TODO: Look into a better way to do this.
+    async def run(self, *, _only_once: bool = False) -> None:
         """Run the service.
 
         This will announce the prefixes when all health checks are
@@ -28,6 +30,8 @@ class Service:
                 asyncio.gather(*(prefix.announce() for prefix in self.prefixes))
             else:
                 asyncio.gather(*(prefix.denounce() for prefix in self.prefixes))
+            if _only_once:
+                break
 
     async def is_healthy(self) -> bool:
         """Whether the service is healthy.
