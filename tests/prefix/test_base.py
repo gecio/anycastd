@@ -1,24 +1,11 @@
 from ipaddress import IPv4Network, IPv6Network
 
 import pytest
-from anycastd.prefix.base import BasePrefix
+
+from tests.dummy import DummyPrefix
 
 IPV4_EXAMPLE_NETWORK = IPv4Network("192.0.2.0/24")
 IPV6_EXAMPLE_NETWORK = IPv6Network("2001:db8::/32")
-
-
-class DummyPrefix(BasePrefix):
-    """A dummy prefix to test the abstract base class."""
-
-    async def is_announced(self) -> bool:
-        """Never announced."""
-        return True
-
-    async def announce(self) -> None:
-        """Dummy method."""
-
-    async def denounce(self) -> None:
-        """Dummy method."""
 
 
 def test__init___non_network_raises_type_error():

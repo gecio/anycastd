@@ -4,13 +4,7 @@ import pytest
 from anycastd.healthcheck.base import BaseHealthcheck
 from pytest_mock import MockerFixture
 
-
-class DummyHealthcheck(BaseHealthcheck):
-    """A dummy healthcheck to test the abstract base class."""
-
-    async def _check(self) -> bool:
-        """Always healthy."""
-        return True
+from tests.dummy import DummyHealthcheck
 
 
 def test__init___non_timedelta_interval_raises_type_error():
