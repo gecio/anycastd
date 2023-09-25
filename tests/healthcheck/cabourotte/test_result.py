@@ -1,54 +1,51 @@
 import datetime
 import json
+from typing import TypedDict
 
 import pytest
 from anycastd.healthcheck._cabourotte.result import Result
 
-
-@pytest.mark.parametrize(
-    "name,summary,success,timestamp,message,duration,source",
-    [
-        (
-            "example-api",
-            "HTTP healthcheck on ::1:8080",
-            True,
-            1695648161,
-            "success",
-            1,
-            "configuration",
-        )
-    ],
+# The result of a healthcheck as returned by the cabourotte API.
+_ResultData = TypedDict(
+    "_ResultData",
+    {
+        "name": str,
+        "summary": str,
+        "success": bool,
+        "healthcheck-timestamp": int,
+        "message": str,
+        "duration": int,
+        "source": str,
+    },
 )
-def test_result_from_api_json(  # noqa: PLR0913
-    name: str,
-    summary: str,
-    success: bool,  # noqa: FBT001
-    timestamp: int,
-    message: str,
-    duration: int,
-    source: str,
-):
+
+
+def example_result() -> _ResultData:
+    """Return an example result."""
+    return {
+        "name": "example-api",
+        "summary": "HTTP healthcheck on ::1:8080",
+        "success": True,
+        "healthcheck-timestamp": 1695648161,
+        "message": "success",
+        "duration": 1,
+        "source": "configuration",
+    }
+
+
+@pytest.mark.parametrize("data", [example_result()])
+def test_result_from_api_json(data: _ResultData):
     """Results can be created from JSON returned by the cabourotte API."""
-    data = json.dumps(
-        {
-            "name": name,
-            "summary": summary,
-            "success": success,
-            "healthcheck-timestamp": timestamp,
-            "message": message,
-            "duration": duration,
-            "source": source,
-        }
-    )
+    json_ = json.dumps(data)
 
-    result = Result.from_json(data)
+    result = Result.from_json(json_)
 
-    assert result.name == name
-    assert result.summary == summary
-    assert result.success == success
+    assert result.name == data["name"]
+    assert result.summary == data["summary"]
+    assert result.success == data["success"]
     assert result.timestamp == datetime.datetime.fromtimestamp(
-        timestamp, datetime.timezone.utc
+        data["healthcheck-timestamp"], datetime.timezone.utc
     )
-    assert result.message == message
-    assert result.duration == duration
-    assert result.source == source
+    assert result.message == data["message"]
+    assert result.duration == data["duration"]
+    assert result.source == data["source"]
