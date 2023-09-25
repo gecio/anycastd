@@ -6,7 +6,7 @@ groups = ["default", "jupyter", "lint", "test", "type_stubs", "typecheck"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:8d342ca8b1e2c571a1ced2b8a40ac208f5fdc7c9442666607f1a52244868fd09"
+content_hash = "sha256:1c7e15f381241326045562c025b8f24579e4392d0b5fcd3c948975a398227e4c"
 
 [[package]]
 name = "annotated-types"
@@ -1750,6 +1750,19 @@ dependencies = [
 files = [
     {file = "requests-2.31.0-py3-none-any.whl", hash = "sha256:58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f"},
     {file = "requests-2.31.0.tar.gz", hash = "sha256:942c5a758f98d790eaed1a29cb6eefc7ffb0d1cf7af05c3d2791656dbd6ad1e1"},
+]
+
+[[package]]
+name = "respx"
+version = "0.20.2"
+requires_python = ">=3.7"
+summary = "A utility for mocking out the Python HTTPX and HTTP Core libraries."
+dependencies = [
+    "httpx>=0.21.0",
+]
+files = [
+    {file = "respx-0.20.2-py2.py3-none-any.whl", hash = "sha256:ab8e1cf6da28a5b2dd883ea617f8130f77f676736e6e9e4a25817ad116a172c9"},
+    {file = "respx-0.20.2.tar.gz", hash = "sha256:07cf4108b1c88b82010f67d3c831dae33a375c7b436e54d87737c7f9f99be643"},
 ]
 
 [[package]]
