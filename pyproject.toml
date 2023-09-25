@@ -22,7 +22,9 @@ classifiers = [
 keywords = []
 
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "pydantic>=2.3.0",
+]
 
 [project.urls]
 Repository = "https://github.com/gecio/anycastd"
