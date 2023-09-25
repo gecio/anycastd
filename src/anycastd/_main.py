@@ -27,9 +27,9 @@ class Service:
         """
         while True:
             if await self.is_healthy():
-                asyncio.gather(*(prefix.announce() for prefix in self.prefixes))
+                await asyncio.gather(*(prefix.announce() for prefix in self.prefixes))
             else:
-                asyncio.gather(*(prefix.denounce() for prefix in self.prefixes))
+                await asyncio.gather(*(prefix.denounce() for prefix in self.prefixes))
             if _only_once:
                 break
 
