@@ -21,7 +21,7 @@ class Result(BaseModel):
         return cls.model_validate_json(data)
 
 
-def get_result(name: str, *, url: str) -> Result:
+async def get_result(name: str, *, url: str) -> Result:
     """Get the result of a specific healthcheck.
 
     Arguments:
@@ -31,8 +31,8 @@ def get_result(name: str, *, url: str) -> Result:
     Returns:
         The result of the healthcheck.
     """
-    with httpx.Client() as client:
-        response = client.get(f"{url}/result/{name}")
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{url}/result/{name}")
         response.raise_for_status()
 
     return Result.from_json(response.content)
