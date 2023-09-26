@@ -59,11 +59,12 @@ def test_result_from_api_json(data: _ResultData):
 class TestGetResult:
     """Test getting a result from the cabourotte API."""
 
+    @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "name,url",
         [("example-http-check", CABOUROTTE_URL), ("example-dns-check", CABOUROTTE_URL)],
     )
-    def test_get_made_to_correct_url(
+    async def test_get_made_to_correct_url(
         self, name: str, url: str, respx_mock: MockRouter, mocker: MockerFixture
     ):
         """A GET request is made to the correct URL."""
@@ -71,13 +72,14 @@ class TestGetResult:
         mock_endpoint = respx_mock.get(result_url)
         mocker.patch("anycastd.healthcheck._cabourotte.result.Result.from_json")
 
-        get_result(name, url=url)
+        await get_result(name, url=url)
 
         request = mock_endpoint.calls.last.request
         assert request.method == "GET"
         assert request.url == result_url
 
-    def test_correct_result_returned(self, respx_mock):
+    @pytest.mark.asyncio
+    async def test_correct_result_returned(self, respx_mock):
         """The correct result corresponding to API data is returned."""
         json_data = json.dumps(example_result())
         name = "example-api"
@@ -87,6 +89,6 @@ class TestGetResult:
         mock_response = httpx.Response(status_code=200, content=json_data.encode())
         mock_endpoint.return_value = mock_response
 
-        result = get_result(name, url=CABOUROTTE_URL)
+        result = await get_result(name, url=CABOUROTTE_URL)
 
         assert result == Result.from_json(json_data)
