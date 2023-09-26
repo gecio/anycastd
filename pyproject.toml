@@ -22,7 +22,10 @@ classifiers = [
 keywords = []
 
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "pydantic>=2.4.0",
+    "httpx>=0.25.0",
+]
 
 [project.urls]
 Repository = "https://github.com/gecio/anycastd"
@@ -52,6 +55,7 @@ test = [
     "pytest-github-actions-annotate-failures",
     "pytest-mock>=3.11.1",
     "pytest-asyncio>=0.21.1",
+    "respx>=0.20.2",
 ]
 jupyter = [
     "jupyter",
