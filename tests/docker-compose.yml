@@ -9,6 +9,7 @@ services:
     image: quay.io/frrouting/frr:9.0.1
     ports:
       - 2616:2616
+    privileged: true
     configs:
       - source: frr_daemons
         target: /etc/frr/daemons
