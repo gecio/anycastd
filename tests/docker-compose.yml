@@ -1,0 +1,12 @@
+version: "3"
+configs:
+  frr_daemons:
+    file: ./files/frr/daemons
+services:
+  frrouting:
+    image: quay.io/frrouting/frr:9.0.1
+    ports:
+      - 2616:2616
+    configs:
+      - source: frr_daemons
+        target: /etc/frr/daemons
