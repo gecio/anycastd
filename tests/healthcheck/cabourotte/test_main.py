@@ -54,9 +54,7 @@ async def test__check_awaits_get_result(mocker: MockerFixture):
 
 @pytest.mark.parametrize("success", [True, False])
 @pytest.mark.asyncio
-async def test__check_returns_result_success(
-    success: bool, mocker: MockerFixture  # noqa: FBT001
-):
+async def test__check_returns_result_success(success: bool, mocker: MockerFixture):
     """The check method returns True if the result is successful and False otherwise."""
     healthcheck = CabourotteHealthcheck(
         "test", url="https://example.com", interval=datetime.timedelta(seconds=10)

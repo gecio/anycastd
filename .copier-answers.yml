@@ -1,23 +1,19 @@
 # Changes here will be overwritten by Copier
-_commit: v0.7.1
+_commit: v0.9.0
 _src_path: gh:srv6d/python-copier
 author_email: m@rvinvogt.com
 author_name: Marvin Vogt
 author_username: srv6d
 copyright_holder: German Edge Cloud GmbH & Co. KG
 copyright_holder_email: copyright@gec.io
+display_codecov_badge: false
 package_name: anycastd
 project_description: A daemon to manage anycasted services based on status checks.
-project_license:
-    short: Apache-2.0
+project_license: Apache License 2.0
 project_name: anycastd
 project_slug: anycastd
-python_version:
-    black_target_versions:
-    - py310
-    - py311
-    versions:
-    - '3.10'
-    - '3.11'
+python_versions:
+- '3.10'
+- '3.11'
 repository_namespace: gecio
 
