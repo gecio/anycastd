@@ -12,5 +12,11 @@ services:
     configs:
       - source: frr_daemons
         target: /etc/frr/daemons
+        mode: 0644
+        uid: "117"
+        gid: "123"
       - source: vtysh.conf
         target: /etc/frr/vtysh.conf
+        mode: 0640
+        uid: "117"
+        gid: "123"
