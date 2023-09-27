@@ -99,7 +99,7 @@ class TestHealthStatus:
     @pytest.mark.parametrize("last_healthy", [True, False])
     @pytest.mark.asyncio
     async def test_checks_not_run_returns_last_healthy(
-        self, mocker: MockerFixture, *, last_healthy: bool
+        self, mocker: MockerFixture, last_healthy: bool
     ):
         """When no checks are run, the last healthy status is returned."""
         healthcheck = DummyHealthcheck(interval=datetime.timedelta(seconds=1))
