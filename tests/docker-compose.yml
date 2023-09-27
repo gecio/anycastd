@@ -2,6 +2,8 @@ version: "3"
 configs:
   frr_daemons:
     file: ./files/frr/daemons
+  vtysh.conf:
+    file: ./files/frr/vtysh.conf
 services:
   frrouting:
     image: quay.io/frrouting/frr:9.0.1
@@ -10,3 +12,5 @@ services:
     configs:
       - source: frr_daemons
         target: /etc/frr/daemons
+      - source: vtysh.conf
+        target: /etc/frr/vtysh.conf
