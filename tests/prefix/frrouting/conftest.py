@@ -69,6 +69,7 @@ class Vtysh:
 
 
 @pytest.fixture
-def vtysh(docker_services) -> Vtysh:
+def vtysh(docker_services, docker_compose_project_name) -> Vtysh:
     """Return a Vtysh instance."""
-    return Vtysh(container="tests-frrouting-1")
+    container = f"{docker_compose_project_name}-frrouting-1"
+    return Vtysh(container=container)
