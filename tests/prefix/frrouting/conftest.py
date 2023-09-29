@@ -1,5 +1,9 @@
+import json
 import subprocess
+from collections.abc import Callable
+from contextlib import suppress
 from dataclasses import dataclass, field
+from ipaddress import IPv4Network, IPv6Network
 from pathlib import Path
 
 import pytest
@@ -84,3 +88,28 @@ def vtysh(docker_services, docker_compose_project_name) -> Vtysh:
     """Return a Vtysh instance."""
     container = f"{docker_compose_project_name}-frrouting-1"
     return Vtysh(container=container)
+
+
+@pytest.fixture
+def bgp_prefix_configured() -> Callable[[IPv4Network | IPv6Network, Vtysh], bool]:
+    """A callable that can be used to check if a BGP prefix is configured."""
+
+    def _(prefix: IPv4Network | IPv6Network, vtysh: Vtysh) -> bool:
+        family = "ipv6" if not isinstance(prefix, IPv4Network) else "ipv4"
+        show_prefix = vtysh(
+            f"show ip bgp {family} unicast {prefix} json",
+            configure_terminal=False,
+            context=[],
+        )
+        prefix_info = json.loads(show_prefix)
+
+        with suppress(KeyError):
+            paths = prefix_info["paths"]
+            origin = paths[0]["origin"]
+            local = paths[0]["local"]
+            if origin == "IGP" and local is True:
+                return True
+
+        return False
+
+    return _
