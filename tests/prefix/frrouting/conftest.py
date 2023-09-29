@@ -21,19 +21,30 @@ class Vtysh:
     configure_terminal: bool = False
     context: list[str] = field(default_factory=list)
 
-    def __call__(self, command: str) -> str:
+    def __call__(
+        self,
+        command: str,
+        *,
+        configure_terminal: bool | None = None,
+        context: list[str] | None = None,
+    ) -> str:
         """Run a command and return the output.
 
         Arguments:
             command: The command to run.
+            configure_terminal: Run the command in a configure terminal.
+            context: Run the command in a specific context.
 
         Returns:
             The output of the command.
         """
+        configure_terminal = configure_terminal or self.configure_terminal
+        context = context or self.context
+
         vty_cmd = []
-        if self.configure_terminal:
+        if configure_terminal:
             vty_cmd.append("configure terminal")
-        if self.context:
+        if context:
             vty_cmd.extend(self.context)
         vty_cmd.append(command)
 
