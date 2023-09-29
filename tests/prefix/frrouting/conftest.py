@@ -5,8 +5,11 @@ from contextlib import suppress
 from dataclasses import dataclass, field
 from ipaddress import IPv4Network, IPv6Network
 from pathlib import Path
+from typing import TypeAlias
 
 import pytest
+
+_Prefix: TypeAlias = IPv4Network | IPv6Network
 
 
 @dataclass
@@ -91,10 +94,10 @@ def vtysh(docker_services, docker_compose_project_name) -> Vtysh:
 
 
 @pytest.fixture
-def bgp_prefix_configured() -> Callable[[IPv4Network | IPv6Network, Vtysh], bool]:
+def bgp_prefix_configured() -> Callable[[_Prefix, Vtysh], bool]:
     """A callable that can be used to check if a BGP prefix is configured."""
 
-    def _(prefix: IPv4Network | IPv6Network, vtysh: Vtysh) -> bool:
+    def _(prefix: _Prefix, vtysh: Vtysh) -> bool:
         family = "ipv6" if not isinstance(prefix, IPv4Network) else "ipv4"
         show_prefix = vtysh(
             f"show ip bgp {family} unicast {prefix} json",
@@ -116,10 +119,10 @@ def bgp_prefix_configured() -> Callable[[IPv4Network | IPv6Network, Vtysh], bool
 
 
 @pytest.fixture
-def add_bgp_prefix() -> Callable[[IPv4Network | IPv6Network, int, Vtysh], None]:
+def add_bgp_prefix() -> Callable[[_Prefix, int, Vtysh], None]:
     """A callable that can be used to add a BGP prefix."""
 
-    def _(prefix: IPv4Network | IPv6Network, asn: int, vtysh: Vtysh) -> None:
+    def _(prefix: _Prefix, asn: int, vtysh: Vtysh) -> None:
         """Add a network to the BGP configuration using vtysh."""
         family = "ipv6" if not isinstance(prefix, IPv4Network) else "ipv4"
         vtysh(
