@@ -113,3 +113,19 @@ def bgp_prefix_configured() -> Callable[[IPv4Network | IPv6Network, Vtysh], bool
         return False
 
     return _
+
+
+@pytest.fixture
+def add_bgp_prefix() -> Callable[[IPv4Network | IPv6Network, int, Vtysh], None]:
+    """A callable that can be used to add a BGP prefix."""
+
+    def _(prefix: IPv4Network | IPv6Network, asn: int, vtysh: Vtysh) -> None:
+        """Add a network to the BGP configuration using vtysh."""
+        family = "ipv6" if not isinstance(prefix, IPv4Network) else "ipv4"
+        vtysh(
+            f"network {prefix}",
+            configure_terminal=True,
+            context=[f"router bgp {asn}", f"address-family {family} unicast"],
+        )
+
+    return _
