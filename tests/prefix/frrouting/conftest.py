@@ -12,6 +12,11 @@ import pytest
 _Prefix: TypeAlias = IPv4Network | IPv6Network
 
 
+def get_afi(prefix: _Prefix) -> str:
+    """Return the FRR string AFI for the given IP type."""
+    return "ipv6" if not isinstance(prefix, IPv4Network) else "ipv4"
+
+
 @dataclass
 class Vtysh:
     """A wrapper for vtysh.
@@ -98,7 +103,7 @@ def bgp_prefix_configured() -> Callable[[_Prefix, Vtysh], bool]:
     """A callable that can be used to check if a BGP prefix is configured."""
 
     def _(prefix: _Prefix, vtysh: Vtysh) -> bool:
-        family = "ipv6" if not isinstance(prefix, IPv4Network) else "ipv4"
+        family = get_afi(prefix)
         show_prefix = vtysh(
             f"show ip bgp {family} unicast {prefix} json",
             configure_terminal=False,
@@ -124,7 +129,7 @@ def add_bgp_prefix() -> Callable[[_Prefix, int, Vtysh], None]:
 
     def _(prefix: _Prefix, asn: int, vtysh: Vtysh) -> None:
         """Add a network to the BGP configuration using vtysh."""
-        family = "ipv6" if not isinstance(prefix, IPv4Network) else "ipv4"
+        family = get_afi(prefix)
         vtysh(
             f"network {prefix}",
             configure_terminal=True,
