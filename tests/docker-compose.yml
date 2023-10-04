@@ -8,7 +8,7 @@ configs:
     file: ./files/frr/frr.conf
 services:
   frrouting:
-    image: quay.io/frrouting/frr:9.0.1
+    image: quay.io/frrouting/frr:${FRR_VERSION}
     ports:
       - 2616:2616
     privileged: true
