@@ -88,15 +88,18 @@ def pytest(session: nox.Session) -> None:
 def pytest_fast(session: nox.Session) -> None:
     """Run pytest tests that are fast to execute.
 
-    This session excludes e2e tests and is intended to be
-    run multiple times during development.
+    This session excludes e2e and integration tests since they are slow
+    to execute and might require external dependencies.
+    It is intended to be run multiple times during development.
     """
     pdm_sync(session, self=True, default=True, groups=["test", "cli"])
     session.warn(
         "Skipping e2e tests for faster execution. "
         "To include them, run `nox -s pytest_full`."
     )
-    session.run("pytest", "tests", "-m", "not e2e", *session.posargs)
+    session.run(
+        "pytest", "tests", "-m", "not e2e and not integration", *session.posargs
+    )
 
 
 @nox.session(python=PYTHON)
@@ -108,7 +111,45 @@ def pytest_full(session: nox.Session) -> None:
     """
     pdm_sync(session, self=True, default=True, groups=["test", "cli"])
     args = session.posargs if not CI else ["--cov"]
-    session.run("pytest", "tests", *args)
+    session.run(
+        "pytest",
+        "tests",
+        "-m",
+        # FRRouting integration tests have their own session
+        "not (frrouting and integration)",
+        *args,
+    )
+    session.notify(
+        "pytest_frrouting_integration"
+    )  # TODO: Fix that only one session is run
+
+
+@nox.session(python=PYTHON)
+@nox.parametrize(
+    "frrouting",
+    [
+        "7.3.1",
+        "7.4.0",
+        "7.5.1",
+        "8.1.0",
+        "8.2.2",
+        "8.3.1",
+        "8.4.2",
+        "8.5.3",
+        "9.0.1",
+    ],
+)
+def pytest_frrouting_integration(session: nox.Session, frrouting: str) -> None:
+    """Run pytest FRRouting integration tests.
+
+    This session runs the integration tests for all supported FRRouting
+    versions using the FRRouting docker image.
+    """
+    pdm_sync(session, self=True, default=True, groups=["test"])
+    session.env["FRR_VERSION"] = frrouting
+    session.run(
+        "pytest", "tests", "-m", "(frrouting and integration)", *session.posargs
+    )
 
 
 @nox.session(python=PYTHON)

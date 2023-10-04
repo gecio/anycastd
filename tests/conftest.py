@@ -4,6 +4,11 @@ import pytest
 
 
 @pytest.fixture(scope="session")
+def example_asn() -> int:
+    return 65536
+
+
+@pytest.fixture(scope="session")
 def ipv4_example_network() -> IPv4Network:
     return IPv4Network("192.0.2.0/24")
 

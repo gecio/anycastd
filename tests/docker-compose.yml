@@ -1,0 +1,30 @@
+version: "3"
+configs:
+  frr_daemons:
+    file: ./files/frr/daemons
+  vtysh.conf:
+    file: ./files/frr/vtysh.conf
+  frr.conf:
+    file: ./files/frr/frr.conf
+services:
+  frrouting:
+    image: quay.io/frrouting/frr:${FRR_VERSION}
+    ports:
+      - 2616:2616
+    privileged: true
+    configs:
+      - source: frr_daemons
+        target: /etc/frr/daemons
+        mode: 0644
+        uid: "117"
+        gid: "123"
+      - source: vtysh.conf
+        target: /etc/frr/vtysh.conf
+        mode: 0640
+        uid: "117"
+        gid: "123"
+      - source: frr.conf
+        target: /etc/frr/frr.conf
+        mode: 0640
+        uid: "117"
+        gid: "123"
