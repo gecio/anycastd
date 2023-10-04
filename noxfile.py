@@ -119,9 +119,12 @@ def pytest_full(session: nox.Session) -> None:
         "not (frrouting and integration)",
         *args,
     )
-    session.notify("pytest_frrouting_integration")
+    session.notify(
+        "pytest_frrouting_integration"
+    )  # TODO: Fix that only one session is run
 
 
+@nox.session(python=PYTHON)
 @nox.parametrize(
     "frrouting",
     [
@@ -136,7 +139,6 @@ def pytest_full(session: nox.Session) -> None:
         "9.0.1",
     ],
 )
-@nox.session(python=PYTHON)
 def pytest_frrouting_integration(session: nox.Session, frrouting: str) -> None:
     """Run pytest FRRouting integration tests.
 
