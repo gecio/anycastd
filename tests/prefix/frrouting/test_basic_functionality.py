@@ -1,7 +1,7 @@
 import pytest
 from anycastd.prefix.frrouting import FRRoutingPrefix
 
-pytestmark = pytest.mark.integration
+pytestmark = [pytest.mark.integration, pytest.mark.frrouting]
 
 
 @pytest.mark.asyncio

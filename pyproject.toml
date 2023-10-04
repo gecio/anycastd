@@ -131,7 +131,8 @@ addopts = [
 xfail_strict = true
 markers = [
     "integration:integration tests",
-    "e2e:e2e tests"
+    "e2e:e2e tests",
+    "frrouting:frrouting specific tests"
 ]
 
 [tool.coverage.run]
