@@ -88,15 +88,18 @@ def pytest(session: nox.Session) -> None:
 def pytest_fast(session: nox.Session) -> None:
     """Run pytest tests that are fast to execute.
 
-    This session excludes e2e tests and is intended to be
-    run multiple times during development.
+    This session excludes e2e and integration tests since they are slow
+    to execute and might require external dependencies.
+    It is intended to be run multiple times during development.
     """
     pdm_sync(session, self=True, default=True, groups=["test", "cli"])
     session.warn(
         "Skipping e2e tests for faster execution. "
         "To include them, run `nox -s pytest_full`."
     )
-    session.run("pytest", "tests", "-m", "not e2e", *session.posargs)
+    session.run(
+        "pytest", "tests", "-m", "not e2e and not integration", *session.posargs
+    )
 
 
 @nox.session(python=PYTHON)
