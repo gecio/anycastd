@@ -1,15 +1,22 @@
 import asyncio
-import ipaddress
 import json
 import subprocess
 from contextlib import suppress
+from ipaddress import IPv4Network, IPv6Network
+from pathlib import Path
 
 from anycastd.prefix.base import BasePrefix
 
-VTYSH_BIN = "/usr/bin/vtysh"
-
 
 class FRRoutingPrefix(BasePrefix):
+    vtysh: Path
+
+    def __init__(
+        self, prefix: IPv4Network | IPv6Network, *, vtysh: Path = Path("/usr/bin/vtysh")
+    ):
+        super().__init__(prefix)
+        self.vtysh = vtysh
+
     async def is_announced(self) -> bool:
         """Returns True if the prefix is announced.
 
@@ -83,7 +90,7 @@ class FRRoutingPrefix(BasePrefix):
             RuntimeError: The command exited with a non-zero exit code.
         """
         proc = await asyncio.create_subprocess_exec(
-            VTYSH_BIN, "-c", *commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            self.vtysh, "-c", *commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
 
         stdout, stderr = await proc.communicate()
@@ -101,4 +108,4 @@ class FRRoutingPrefix(BasePrefix):
 
 def get_afi(prefix: BasePrefix) -> str:
     """Return the FRR string AFI for the given IP type."""
-    return "ipv6" if not isinstance(prefix.prefix, ipaddress.IPv4Network) else "ipv4"
+    return "ipv6" if not isinstance(prefix.prefix, IPv4Network) else "ipv4"
