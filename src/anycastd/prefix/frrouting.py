@@ -16,7 +16,7 @@ class FRRoutingPrefix(BasePrefix):
         Checks if the respective BGP prefix is configured in the default VRF.
         """
         family = get_afi(self)
-        show_prefix = await _run_vtysh_commands(
+        show_prefix = await self._run_vtysh_commands(
             (f"show bgp {family} unicast {self.prefix} json",)
         )
         prefix_info = json.loads(show_prefix)
@@ -36,9 +36,9 @@ class FRRoutingPrefix(BasePrefix):
         Adds the respective BGP prefix to the default VRF.
         """
         family = get_afi(self)
-        asn = await _get_default_local_asn()
+        asn = await self._get_default_local_asn()
 
-        await _run_vtysh_commands(
+        await self._run_vtysh_commands(
             (
                 "configure terminal",
                 f"router bgp {asn}",
@@ -53,9 +53,9 @@ class FRRoutingPrefix(BasePrefix):
         Removes the respective BGP prefix from the default VRF.
         """
         family = get_afi(self)
-        asn = await _get_default_local_asn()
+        asn = await self._get_default_local_asn()
 
-        await _run_vtysh_commands(
+        await self._run_vtysh_commands(
             (
                 "configure terminal",
                 f"router bgp {asn}",
@@ -64,45 +64,41 @@ class FRRoutingPrefix(BasePrefix):
             )
         )
 
+    async def _get_default_local_asn(self) -> int:
+        """Returns the local ASN in the default VRF.
+
+        Raises:
+            RuntimeError: Failed to get the local ASN.
+        """
+        show_bgp_detail = await self._run_vtysh_commands(("show bgp detail json",))
+        bgp_detail = json.loads(show_bgp_detail)
+        if warning := bgp_detail.get("warning"):
+            raise RuntimeError(f"Failed to get local ASN: {warning}")
+        return int(bgp_detail["localAS"])
+
+    async def _run_vtysh_commands(self, commands: tuple[str, ...]) -> str:
+        """Run commands in the vtysh.
+
+        Raises:
+            RuntimeError: The command exited with a non-zero exit code.
+        """
+        proc = await asyncio.create_subprocess_exec(
+            VTYSH_BIN, "-c", *commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+
+        stdout, stderr = await proc.communicate()
+
+        if proc.returncode != 0:
+            msg = f"Failed to run vtysh commands {', '.join(commands)}:\n"
+            if stdout:
+                msg += "stdout: {}\n".format(stdout.decode("utf-8"))
+            if stderr:
+                msg += "stderr: {}\n".format(stderr.decode("utf-8"))
+            raise RuntimeError(msg)
+
+        return stdout.decode("utf-8")
+
 
 def get_afi(prefix: BasePrefix) -> str:
     """Return the FRR string AFI for the given IP type."""
     return "ipv6" if not isinstance(prefix.prefix, ipaddress.IPv4Network) else "ipv4"
-
-
-async def _get_default_local_asn() -> int:
-    """Returns the local ASN in the default VRF.
-
-    Raises:
-        RuntimeError: Failed to get the local ASN.
-    """
-    show_bgp_detail = await _run_vtysh_commands(("show bgp detail json",))
-    bgp_detail = json.loads(show_bgp_detail)
-
-    if warning := bgp_detail.get("warning"):
-        raise RuntimeError(f"Failed to get local ASN: {warning}")
-
-    return int(bgp_detail["localAS"])
-
-
-async def _run_vtysh_commands(commands: tuple[str, ...]) -> str:
-    """Run commands in the vtysh.
-
-    Raises:
-        RuntimeError: The command exited with a non-zero exit code.
-    """
-    proc = await asyncio.create_subprocess_exec(
-        VTYSH_BIN, "-c", *commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
-
-    stdout, stderr = await proc.communicate()
-
-    if proc.returncode != 0:
-        msg = f"Failed to run vtysh commands {', '.join(commands)}:\n"
-        if stdout:
-            msg += "stdout: {}\n".format(stdout.decode("utf-8"))
-        if stderr:
-            msg += "stderr: {}\n".format(stderr.decode("utf-8"))
-        raise RuntimeError(msg)
-
-    return stdout.decode("utf-8")
