@@ -14,7 +14,7 @@ class DummyPrefix(BasePrefix):
     """A dummy prefix to test the abstract base class."""
 
     async def is_announced(self) -> bool:
-        """Never announced."""
+        """Always announced."""
         return True
 
     async def announce(self) -> None:
