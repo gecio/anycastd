@@ -10,7 +10,7 @@ from tests.dummy import DummyHealthcheck
 def test__init___non_timedelta_interval_raises_type_error():
     """Passing a non-timedelta interval raises a TypeError."""
     with pytest.raises(TypeError):
-        BaseHealthcheck(interval="not a timedelta")
+        BaseHealthcheck(interval="not a timedelta")  # type: ignore
 
 
 def test__repr__():

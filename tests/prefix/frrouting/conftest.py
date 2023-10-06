@@ -74,7 +74,7 @@ class Vtysh:
             if result.stdout:
                 msg += f"stdout: {result.stdout}\n"
             if result.stderr:
-                msg += f"stdout: {result.stdout}\n"
+                msg += f"stderr: {result.stderr}\n"
             raise RuntimeError(msg)
 
         return result.stdout
