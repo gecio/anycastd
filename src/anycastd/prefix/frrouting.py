@@ -89,8 +89,9 @@ class FRRoutingPrefix(BasePrefix):
         Raises:
             RuntimeError: The command exited with a non-zero exit code.
         """
+        vty_cmd = "\n".join(commands)
         proc = await asyncio.create_subprocess_exec(
-            self.vtysh, "-c", *commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            self.vtysh, "-c", vty_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
 
         stdout, stderr = await proc.communicate()
