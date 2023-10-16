@@ -1,0 +1,24 @@
+---
+name: PyPI Publish
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+env:
+  COLUMNS: 120
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pdm-project/setup-pdm@v3
+      - name: Publish to PyPI
+        run: pdm publish
