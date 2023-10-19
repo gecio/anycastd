@@ -1,21 +1,27 @@
-import asyncio
 import json
-import subprocess
+from collections.abc import Sequence
 from contextlib import suppress
 from ipaddress import IPv4Network, IPv6Network
 from pathlib import Path
 
+from anycastd._base import BaseExecutor
 from anycastd.prefix.base import BasePrefix
 
 
 class FRRoutingPrefix(BasePrefix):
     vtysh: Path
+    executor: BaseExecutor
 
     def __init__(
-        self, prefix: IPv4Network | IPv6Network, *, vtysh: Path = Path("/usr/bin/vtysh")
+        self,
+        prefix: IPv4Network | IPv6Network,
+        *,
+        vtysh: Path = Path("/usr/bin/vtysh"),
+        executor: BaseExecutor,
     ):
         super().__init__(prefix)
         self.vtysh = vtysh
+        self.executor = executor
 
     async def is_announced(self) -> bool:
         """Returns True if the prefix is announced.
@@ -83,17 +89,15 @@ class FRRoutingPrefix(BasePrefix):
             raise RuntimeError(f"Failed to get local ASN: {warning}")
         return int(bgp_detail["localAS"])
 
-    async def _run_vtysh_commands(self, commands: tuple[str, ...]) -> str:
+    async def _run_vtysh_commands(self, commands: Sequence[str]) -> str:
         """Run commands in the vtysh.
 
         Raises:
             RuntimeError: The command exited with a non-zero exit code.
         """
-        vty_cmd = "\n".join(commands)
-        proc = await asyncio.create_subprocess_exec(
-            self.vtysh, "-c", vty_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        proc = await self.executor.create_subprocess_exec(
+            self.vtysh, ("-c", "\n".join(commands))
         )
-
         stdout, stderr = await proc.communicate()
 
         if proc.returncode != 0:
