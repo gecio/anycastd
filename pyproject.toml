@@ -41,7 +41,7 @@ source = "scm"
 
 [tool.pdm.dev-dependencies]
 lint = [
-    "ruff",
+    "ruff>=0.1.4",
 ]
 typecheck = [
     "mypy",
