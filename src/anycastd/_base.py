@@ -17,7 +17,7 @@ class BaseExecutor(ABC):
         *,
         stdout: int | IO[Any] | None = subprocess.PIPE,
         stderr: int | IO[Any] | None = subprocess.PIPE,
-        text: bool = True,
+        text: bool = False,
     ) -> asyncio.subprocess.Process:
         """Create an async subprocess.
 
