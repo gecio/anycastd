@@ -7,9 +7,6 @@
   <a href="https://github.com/astral-sh/ruff">
     <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="ruff">
   </a>
-  <a>
-    <img src="https://img.shields.io/badge/black-black?style=flat&color=black&label=Style" alt="style">
-  </a>
   <a href="https://github.com/python/mypy">
     <img src="https://img.shields.io/badge/Types-Mypy-blue.svg" alt="typecheck">
   </a>

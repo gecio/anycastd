@@ -21,10 +21,9 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python_version: ["3.10", "3.11"]
+        python_version: ["3.10", "3.11", "3.12"]
         nox_session:
           - ruff
-          - black
           - mypy
           - lockfile
           - pytest
