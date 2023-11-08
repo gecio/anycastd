@@ -4,8 +4,8 @@ from typing import List, Optional
 import nox
 
 CI = bool(os.getenv("CI"))
-PYTHON = ["3.10", "3.11"] if not CI else None
-SESSIONS = "ruff", "mypy", "black", "lockfile", "pytest"
+PYTHON = ["3.10", "3.11", "3.12"] if not CI else None
+SESSIONS = "ruff", "mypy", "lockfile", "pytest"
 
 nox.options.sessions = SESSIONS
 os.environ.update({"PDM_IGNORE_SAVED_PYTHON": "1"})
@@ -50,16 +50,16 @@ def pdm_check_lockfile(session: nox.Session) -> None:
 
 @nox.session(python=PYTHON)
 def ruff(session: nox.Session) -> None:
-    """Code Style linting using ruff."""
+    """Lint code and ensure formatting using ruff."""
     pdm_sync(session, groups=["lint"])
-    session.run("ruff", "src", "tests")
+    session.run("ruff", "check", "src", "tests")
+    session.run("ruff", "format", "--check", "src", "tests")
 
 
 @nox.session(python=PYTHON)
 def black(session: nox.Session) -> None:
     """Check if style adheres to black."""
-    pdm_sync(session, groups=["lint"])
-    session.run("black", "--check", "src", "tests")
+    ruff(session)
 
 
 @nox.session(python=PYTHON)
@@ -92,7 +92,7 @@ def pytest_fast(session: nox.Session) -> None:
     to execute and might require external dependencies.
     It is intended to be run multiple times during development.
     """
-    pdm_sync(session, self=True, default=True, groups=["test", "cli"])
+    pdm_sync(session, self=True, default=True, groups=["test"])
     session.warn(
         "Skipping e2e tests for faster execution. "
         "To include them, run `nox -s pytest_full`."
@@ -109,7 +109,7 @@ def pytest_full(session: nox.Session) -> None:
     This session includes all tests and is intended to be
     run in CI or before a commit.
     """
-    pdm_sync(session, self=True, default=True, groups=["test", "cli"])
+    pdm_sync(session, self=True, default=True, groups=["test"])
     args = session.posargs if not CI else ["--cov"]
     session.run(
         "pytest",

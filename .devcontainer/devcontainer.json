@@ -10,7 +10,6 @@
     "vscode": {
       "extensions": [
         "ms-python.python",
-        "ms-python.black-formatter",
         "charliermarsh.ruff",
         "EditorConfig.EditorConfig"
       ]
