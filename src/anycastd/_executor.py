@@ -36,3 +36,54 @@ class LocalExecutor(BaseExecutor):
         return await asyncio.create_subprocess_exec(
             exec, *args, stdout=stdout, stderr=stderr, text=text
         )
+
+
+class DockerExecutor(BaseExecutor):
+    """An executor that runs commands in a Docker container.
+
+    Attributes:
+        docker: The path to the Docker executable.
+        container: The name of the container to run commands in.
+    """
+
+    docker: Path
+    container: str
+
+    def __init__(self, docker: Path, container: str) -> None:
+        """Initialize the executor.
+
+        Args:
+            docker: The path to the docker executable.
+            container: The name of the container to run commands in.
+        """
+        self.docker = docker
+        self.container = container
+
+    async def create_subprocess_exec(  # noqa: PLR0913
+        self,
+        exec: str | Path,
+        args: Sequence[str],
+        *,
+        stdout: int | IO[Any] | None = subprocess.PIPE,
+        stderr: int | IO[Any] | None = subprocess.PIPE,
+        text: bool = True,
+    ) -> asyncio.subprocess.Process:
+        """Create an async subprocess inside of a Docker container.
+
+        Wraps the interface of asyncio.create_subprocess_exec while running
+        the command inside of a Docker container.
+
+        Args:
+            exec: The path of the program to execute.
+            args: The arguments to pass to the program.
+            stdout: The stdout file handle as specified in subprocess.Popen.
+            stderr: The stderr file handle as specified in subprocess.Popen.
+            text: Whether to decode the output as text.
+
+        Returns:
+            An asyncio.subprocess.Process object.
+        """
+        docker_args = ("exec", "-i", self.container, exec, *args)
+        return await asyncio.create_subprocess_exec(
+            self.docker, *docker_args, stdout=stdout, stderr=stderr, text=text
+        )
