@@ -2,7 +2,7 @@ import asyncio
 import subprocess
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any
+from typing import IO, Any
 
 from anycastd._base import BaseExecutor
 
@@ -15,8 +15,8 @@ class LocalExecutor(BaseExecutor):
         exec: str | Path,
         args: Sequence[str],
         *,
-        stdout: Any = subprocess.PIPE,
-        stderr: Any = subprocess.PIPE,
+        stdout: int | IO[Any] | None = subprocess.PIPE,
+        stderr: int | IO[Any] | None = subprocess.PIPE,
         text: bool = True,
     ) -> asyncio.subprocess.Process:
         """Create an async subprocess.
