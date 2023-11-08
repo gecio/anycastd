@@ -51,13 +51,12 @@ class Vtysh:
             The output of the command.
         """
         configure_terminal = configure_terminal or self.configure_terminal
-        context = context or self.context
 
         vty_cmd = []
         if configure_terminal:
             vty_cmd.append("configure terminal")
-        if context:
-            vty_cmd.extend(self.context)
+        if context := context or self.context:
+            vty_cmd.extend(context)
         vty_cmd.append(command)
 
         docker_cmd = ["exec", "-i", self.container, "vtysh", "-c", "\n".join(vty_cmd)]
