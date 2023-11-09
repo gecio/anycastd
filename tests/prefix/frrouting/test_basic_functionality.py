@@ -8,9 +8,12 @@ pytestmark = [pytest.mark.integration, pytest.mark.frrouting]
 
 
 @pytest.fixture
-def docker_executor(frr_container_name) -> DockerExecutor:
-    """A docker executor for the FRR container."""
-    return DockerExecutor(docker=Path("/usr/bin/docker"), container=frr_container_name)
+def docker_executor(frr_container) -> DockerExecutor:
+    """A docker executor for the FRR container.
+
+    The FRR container is implicitly started by requesting the frr_container fixture.
+    """
+    return DockerExecutor(docker=Path("/usr/bin/docker"), container=frr_container)
 
 
 @pytest.mark.asyncio

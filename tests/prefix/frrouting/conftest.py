@@ -90,16 +90,39 @@ class Vtysh:
             self.context.pop()
 
 
+def watchfrr_all_daemons_up(vtysh: Vtysh) -> bool:
+    """Return whether all FRR daemons are up."""
+    watchfrr_status = vtysh("show watchfrr")
+    return all("Up" in _ for _ in watchfrr_status.splitlines()[1:])
+
+
 @pytest.fixture
-def frr_container_name(docker_compose_project_name) -> str:
-    """Return the name of the FRR container."""
+def frr_container(docker_services, docker_compose_project_name) -> str:
+    """Create the FRR container and return its name.
+
+    Spins up the FRR container using the docker_services fixture from
+    pytest-docker, waits for all FRR services to be ready, and returns the name
+    of the container.
+    """
+    name = f"{docker_compose_project_name}-frrouting-1"
+
+    vtysh = Vtysh(container=name)
+    docker_services.wait_until_responsive(
+        timeout=60,
+        pause=0.1,
+        check=lambda: watchfrr_all_daemons_up(vtysh),
+    )
+
     return f"{docker_compose_project_name}-frrouting-1"
 
 
 @pytest.fixture
-def vtysh(docker_services, frr_container_name) -> Vtysh:
-    """Return a Vtysh instance."""
-    return Vtysh(container=frr_container_name)
+def vtysh(frr_container) -> Vtysh:
+    """Return a Vtysh instance.
+
+    The FRR container is implicitly started by requesting the frr_container fixture.
+    """
+    return Vtysh(container=frr_container)
 
 
 @pytest.fixture
