@@ -17,8 +17,13 @@ def docker_executor(frr_container) -> DockerExecutor:
 
 
 @pytest.mark.asyncio
-async def test_announce_adds_bgp_network(
-    vtysh, docker_executor, example_networks, bgp_prefix_configured
+async def test_announce_adds_bgp_network(  # noqa: PLR0913
+    vtysh,
+    docker_executor,
+    example_networks,
+    bgp_prefix_configured,
+    remove_bgp_prefix,
+    example_asn,
 ):
     """Announcing adds the corresponding BGP prefix to the configuration."""
     prefix = FRRoutingPrefix(example_networks, executor=docker_executor)
@@ -26,6 +31,9 @@ async def test_announce_adds_bgp_network(
     await prefix.announce()
 
     assert bgp_prefix_configured(prefix.prefix, vtysh)
+
+    # Clean up
+    remove_bgp_prefix(prefix.prefix, example_asn, vtysh)
 
 
 @pytest.mark.asyncio
@@ -54,6 +62,7 @@ async def test_announcement_state_reported_correctly(  # noqa: PLR0913
     example_networks,
     example_asn,
     add_bgp_prefix,
+    remove_bgp_prefix,
     announced: bool,
 ):
     """The announcement state is reported correctly."""
@@ -62,3 +71,7 @@ async def test_announcement_state_reported_correctly(  # noqa: PLR0913
         add_bgp_prefix(prefix.prefix, asn=example_asn, vtysh=vtysh)
 
     assert await prefix.is_announced() == announced
+
+    # Clean up
+    if announced:
+        remove_bgp_prefix(prefix.prefix, example_asn, vtysh)

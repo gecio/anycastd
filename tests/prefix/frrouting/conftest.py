@@ -164,3 +164,19 @@ def add_bgp_prefix() -> Callable[[_Prefix, int, Vtysh], None]:
         )
 
     return _
+
+
+@pytest.fixture
+def remove_bgp_prefix() -> Callable[[_Prefix, int, Vtysh], None]:
+    """A callable that can be used to remove a BGP prefix."""
+
+    def _(prefix: _Prefix, asn: int, vtysh: Vtysh) -> None:
+        """Remove a network from the BGP configuration using vtysh."""
+        family = get_afi(prefix)
+        vtysh(
+            f"no network {prefix}",
+            configure_terminal=True,
+            context=[f"router bgp {asn}", f"address-family {family} unicast"],
+        )
+
+    return _
