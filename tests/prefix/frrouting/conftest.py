@@ -51,13 +51,12 @@ class Vtysh:
             The output of the command.
         """
         configure_terminal = configure_terminal or self.configure_terminal
-        context = context or self.context
 
         vty_cmd = []
         if configure_terminal:
             vty_cmd.append("configure terminal")
-        if context:
-            vty_cmd.extend(self.context)
+        if context := context or self.context:
+            vty_cmd.extend(context)
         vty_cmd.append(command)
 
         docker_cmd = ["exec", "-i", self.container, "vtysh", "-c", "\n".join(vty_cmd)]
@@ -91,11 +90,39 @@ class Vtysh:
             self.context.pop()
 
 
+def watchfrr_all_daemons_up(vtysh: Vtysh) -> bool:
+    """Return whether all FRR daemons are up."""
+    watchfrr_status = vtysh("show watchfrr")
+    return all("Up" in _ for _ in watchfrr_status.splitlines()[1:])
+
+
 @pytest.fixture
-def vtysh(docker_services, docker_compose_project_name) -> Vtysh:
-    """Return a Vtysh instance."""
-    container = f"{docker_compose_project_name}-frrouting-1"
-    return Vtysh(container=container)
+def frr_container(docker_services, docker_compose_project_name) -> str:
+    """Create the FRR container and return its name.
+
+    Spins up the FRR container using the docker_services fixture from
+    pytest-docker, waits for all FRR services to be ready, and returns the name
+    of the container.
+    """
+    name = f"{docker_compose_project_name}-frrouting-1"
+
+    vtysh = Vtysh(container=name)
+    docker_services.wait_until_responsive(
+        timeout=60,
+        pause=0.1,
+        check=lambda: watchfrr_all_daemons_up(vtysh),
+    )
+
+    return f"{docker_compose_project_name}-frrouting-1"
+
+
+@pytest.fixture
+def vtysh(frr_container) -> Vtysh:
+    """Return a Vtysh instance.
+
+    The FRR container is implicitly started by requesting the frr_container fixture.
+    """
+    return Vtysh(container=frr_container)
 
 
 @pytest.fixture
@@ -132,6 +159,22 @@ def add_bgp_prefix() -> Callable[[_Prefix, int, Vtysh], None]:
         family = get_afi(prefix)
         vtysh(
             f"network {prefix}",
+            configure_terminal=True,
+            context=[f"router bgp {asn}", f"address-family {family} unicast"],
+        )
+
+    return _
+
+
+@pytest.fixture
+def remove_bgp_prefix() -> Callable[[_Prefix, int, Vtysh], None]:
+    """A callable that can be used to remove a BGP prefix."""
+
+    def _(prefix: _Prefix, asn: int, vtysh: Vtysh) -> None:
+        """Remove a network from the BGP configuration using vtysh."""
+        family = get_afi(prefix)
+        vtysh(
+            f"no network {prefix}",
             configure_terminal=True,
             context=[f"router bgp {asn}", f"address-family {family} unicast"],
         )
