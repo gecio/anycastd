@@ -100,7 +100,8 @@ class FRRoutingPrefix(BasePrefix):
         )
         stdout, stderr = await proc.communicate()
 
-        if proc.returncode != 0:
+        # Command may have failed even if the returncode is 0.
+        if proc.returncode != 0 or stderr:
             msg = f"Failed to run vtysh commands {', '.join(commands)}:\n"
             if stdout:
                 msg += "stdout: {}\n".format(stdout.decode("utf-8"))
