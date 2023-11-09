@@ -1,12 +1,14 @@
 import asyncio
 import subprocess
 from collections.abc import Sequence
+from dataclasses import dataclass
 from pathlib import Path
 from typing import IO, Any
 
 from anycastd._base import BaseExecutor
 
 
+@dataclass
 class LocalExecutor(BaseExecutor):
     """An executor that runs commands locally."""
 
@@ -38,6 +40,7 @@ class LocalExecutor(BaseExecutor):
         )
 
 
+@dataclass
 class DockerExecutor(BaseExecutor):
     """An executor that runs commands in a Docker container.
 
@@ -48,16 +51,6 @@ class DockerExecutor(BaseExecutor):
 
     docker: Path
     container: str
-
-    def __init__(self, docker: Path, container: str) -> None:
-        """Initialize the executor.
-
-        Args:
-            docker: The path to the docker executable.
-            container: The name of the container to run commands in.
-        """
-        self.docker = docker
-        self.container = container
 
     async def create_subprocess_exec(  # noqa: PLR0913
         self,
