@@ -3,12 +3,16 @@ from collections.abc import Sequence
 from contextlib import suppress
 from ipaddress import IPv4Network, IPv6Network
 from pathlib import Path
+from typing import TypeAlias
 
 from anycastd._base import BaseExecutor
 from anycastd.prefix.base import BasePrefix
 
+VRF: TypeAlias = str | None
+
 
 class FRRoutingPrefix(BasePrefix):
+    vrf: VRF
     vtysh: Path
     executor: BaseExecutor
 
@@ -16,10 +20,12 @@ class FRRoutingPrefix(BasePrefix):
         self,
         prefix: IPv4Network | IPv6Network,
         *,
+        vrf: VRF = None,
         vtysh: Path = Path("/usr/bin/vtysh"),
         executor: BaseExecutor,
     ):
         super().__init__(prefix)
+        self.vrf = vrf
         self.vtysh = vtysh
         self.executor = executor
 
