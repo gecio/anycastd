@@ -9,8 +9,9 @@ from typing import TypeAlias
 
 import pytest
 
+from tests.conftest import _VRF
+
 _Prefix: TypeAlias = IPv4Network | IPv6Network
-_VRF: TypeAlias = str | None
 
 
 def get_afi(prefix: _Prefix) -> str:
@@ -115,12 +116,6 @@ def frr_container(docker_services, docker_compose_project_name) -> str:
     )
 
     return f"{docker_compose_project_name}-frrouting-1"
-
-
-@pytest.fixture(params=[None, "vrf-func-test"])
-def vrf(request) -> _VRF:
-    """Parametrize tests with example VRFs."""
-    return request.param
 
 
 @pytest.fixture

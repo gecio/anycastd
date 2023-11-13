@@ -1,6 +1,9 @@
 from ipaddress import IPv4Network, IPv6Network
+from typing import TypeAlias
 
 import pytest
+
+_VRF: TypeAlias = str | None
 
 
 @pytest.fixture(scope="session")
@@ -22,4 +25,11 @@ def ipv6_example_network() -> IPv6Network:
     scope="session", params=["ipv4_example_network", "ipv6_example_network"]
 )
 def example_networks(request) -> IPv4Network | IPv6Network:
+    """Parametrize tests with example prefixes."""
     return request.getfixturevalue(request.param)
+
+
+@pytest.fixture(params=[None, "vrf-func-test"])
+def example_vrfs(request) -> _VRF:
+    """Parametrize tests with example VRFs."""
+    return request.param
