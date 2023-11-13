@@ -30,6 +30,8 @@ async def test_announce_adds_bgp_network(  # noqa: PLR0913
     prefix = FRRoutingPrefix(
         example_networks, vrf=example_vrfs, executor=docker_executor
     )
+    if example_vrfs:
+        vtysh(f"router bgp {example_asn} vrf {example_vrfs}", configure_terminal=True)
 
     await prefix.announce()
 
@@ -37,6 +39,10 @@ async def test_announce_adds_bgp_network(  # noqa: PLR0913
 
     # Clean up
     remove_bgp_prefix(prefix.prefix, asn=example_asn, vtysh=vtysh, vrf=example_vrfs)
+    if example_vrfs:
+        vtysh(
+            f"no router bgp {example_asn} vrf {example_vrfs}", configure_terminal=True
+        )
 
 
 @pytest.mark.asyncio
