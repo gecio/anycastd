@@ -3,12 +3,16 @@ from collections.abc import Sequence
 from contextlib import suppress
 from ipaddress import IPv4Network, IPv6Network
 from pathlib import Path
+from typing import TypeAlias
 
 from anycastd._base import BaseExecutor
 from anycastd.prefix.base import BasePrefix
 
+VRF: TypeAlias = str | None
+
 
 class FRRoutingPrefix(BasePrefix):
+    vrf: VRF
     vtysh: Path
     executor: BaseExecutor
 
@@ -16,10 +20,12 @@ class FRRoutingPrefix(BasePrefix):
         self,
         prefix: IPv4Network | IPv6Network,
         *,
+        vrf: VRF = None,
         vtysh: Path = Path("/usr/bin/vtysh"),
         executor: BaseExecutor,
     ):
         super().__init__(prefix)
+        self.vrf = vrf
         self.vtysh = vtysh
         self.executor = executor
 
@@ -29,9 +35,12 @@ class FRRoutingPrefix(BasePrefix):
         Checks if the respective BGP prefix is configured in the default VRF.
         """
         family = get_afi(self)
-        show_prefix = await self._run_vtysh_commands(
-            (f"show bgp {family} unicast {self.prefix} json",)
+        cmd = (
+            f"show bgp vrf {self.vrf} {family} unicast {self.prefix} json"
+            if self.vrf
+            else f"show bgp {family} unicast {self.prefix} json"
         )
+        show_prefix = await self._run_vtysh_commands((cmd,))
         prefix_info = json.loads(show_prefix)
 
         with suppress(KeyError):
@@ -49,12 +58,12 @@ class FRRoutingPrefix(BasePrefix):
         Adds the respective BGP prefix to the default VRF.
         """
         family = get_afi(self)
-        asn = await self._get_default_local_asn()
+        asn = await self._get_local_asn()
 
         await self._run_vtysh_commands(
             (
                 "configure terminal",
-                f"router bgp {asn}",
+                f"router bgp {asn} vrf {self.vrf}" if self.vrf else f"router bgp {asn}",
                 f"address-family {family} unicast",
                 f"network {self.prefix}",
             )
@@ -66,24 +75,32 @@ class FRRoutingPrefix(BasePrefix):
         Removes the respective BGP prefix from the default VRF.
         """
         family = get_afi(self)
-        asn = await self._get_default_local_asn()
+        asn = await self._get_local_asn()
 
         await self._run_vtysh_commands(
             (
                 "configure terminal",
-                f"router bgp {asn}",
+                f"router bgp {asn} vrf {self.vrf}" if self.vrf else f"router bgp {asn}",
                 f"address-family {family} unicast",
                 f"no network {self.prefix}",
             )
         )
 
-    async def _get_default_local_asn(self) -> int:
-        """Returns the local ASN in the default VRF.
+    async def _get_local_asn(self) -> int:
+        """Returns the local ASN in the VRF of the prefix.
 
         Raises:
             RuntimeError: Failed to get the local ASN.
         """
-        show_bgp_detail = await self._run_vtysh_commands(("show bgp detail json",))
+        show_bgp_detail = await self._run_vtysh_commands(
+            (
+                (
+                    f"show bgp vrf {self.vrf} detail json"
+                    if self.vrf
+                    else "show bgp detail json"
+                ),
+            )
+        )
         bgp_detail = json.loads(show_bgp_detail)
         if warning := bgp_detail.get("warning"):
             raise RuntimeError(f"Failed to get local ASN: {warning}")
