@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
 from ipaddress import IPv4Network, IPv6Network
+from typing import TypeAlias
+
+VRF: TypeAlias = str | None
 
 
 class BasePrefix(ABC):

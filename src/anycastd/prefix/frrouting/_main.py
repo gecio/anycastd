@@ -3,12 +3,9 @@ from collections.abc import Sequence
 from contextlib import suppress
 from ipaddress import IPv4Network, IPv6Network
 from pathlib import Path
-from typing import TypeAlias
 
 from anycastd._base import BaseExecutor
-from anycastd.prefix.base import BasePrefix
-
-VRF: TypeAlias = str | None
+from anycastd.prefix.base import VRF, BasePrefix
 
 
 class FRRoutingPrefix(BasePrefix):
