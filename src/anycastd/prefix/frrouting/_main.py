@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from contextlib import suppress
 from ipaddress import IPv4Network, IPv6Network
 from pathlib import Path
-from typing import NoReturn, cast
+from typing import cast
 
 from anycastd._base import BaseExecutor
 from anycastd.prefix.base import VRF, BasePrefix
@@ -140,7 +140,7 @@ class FRRoutingPrefix(BasePrefix):
 
         return stdout.decode("utf-8")
 
-    async def validate(self) -> "FRRoutingPrefix" | NoReturn:
+    async def validate(self) -> "FRRoutingPrefix":
         """Validate the prefix, raising an error on invalid configuration.
 
         Checks if the required VRF and BGP configuration exists.
