@@ -3,11 +3,15 @@ from collections.abc import Sequence
 from contextlib import suppress
 from ipaddress import IPv4Network, IPv6Network
 from pathlib import Path
-from typing import cast
+from typing import NoReturn, cast
 
 from anycastd._base import BaseExecutor
 from anycastd.prefix.base import VRF, BasePrefix
-from anycastd.prefix.frrouting.exceptions import FRRCommandError
+from anycastd.prefix.frrouting.exceptions import (
+    FRRCommandError,
+    FRRInvalidVRFError,
+    FRRNoBGPError,
+)
 
 
 class FRRoutingPrefix(BasePrefix):
@@ -22,7 +26,8 @@ class FRRoutingPrefix(BasePrefix):
         vrf: VRF = None,
         vtysh: Path = Path("/usr/bin/vtysh"),
         executor: BaseExecutor,
-    ):
+    ) -> None:
+        """Initialize the FRRouting prefix."""
         super().__init__(prefix)
         self.vrf = vrf
         self.vtysh = vtysh
@@ -129,6 +134,26 @@ class FRRoutingPrefix(BasePrefix):
             )
 
         return stdout.decode("utf-8")
+
+    async def validate(self) -> "FRRoutingPrefix" | NoReturn:
+        """Validate the prefix, raising an error on invalid configuration.
+
+        Checks if the required VRF and BGP configuration exists.
+
+        Raises:
+            FRRInvalidVRFError: The prefixes VRF is invalid and does not exist.
+            FRRNoBGPError: BGP is not configured.
+        """
+        if self.vrf:
+            show_vrf = await self._run_vtysh_commands((f"show bgp vrf {self.vrf}",))
+            if "unknown" in show_vrf.lower():
+                raise FRRInvalidVRFError(self.vrf)
+        else:
+            show_bgp = await self._run_vtysh_commands(("show bgp",))
+            if "not found" in show_bgp.lower():
+                raise FRRNoBGPError(self.vrf)
+
+        return self
 
 
 def get_afi(prefix: BasePrefix) -> str:

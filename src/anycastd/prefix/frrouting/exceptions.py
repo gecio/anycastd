@@ -1,5 +1,7 @@
 from collections.abc import Sequence
 
+from anycastd.prefix.base import VRF
+
 
 class FRRCommandError(Exception):
     """Failed to run a FRRouting VTY command."""
@@ -27,3 +29,21 @@ class FRRCommandError(Exception):
         if self.stderr:
             msg += f"stderr: {self.stderr}\n"
         super().__init__(msg)
+
+
+class FRRConfigurationError(Exception):
+    """The FRR configuration is invalid."""
+
+
+class FRRInvalidVRFError(FRRConfigurationError):
+    """The VRF is not configured within FRR."""
+
+    vrf: VRF
+
+    def __init__(self, vrf: VRF):
+        self.vrf = vrf
+        super().__init__(f"The VRF {self.vrf} does not exist.")
+
+
+class FRRNoBGPError(FRRConfigurationError):
+    """BGP is not configured within FRR."""
