@@ -3,9 +3,11 @@ from collections.abc import Sequence
 from contextlib import suppress
 from ipaddress import IPv4Network, IPv6Network
 from pathlib import Path
+from typing import cast
 
 from anycastd._base import BaseExecutor
 from anycastd.prefix.base import VRF, BasePrefix
+from anycastd.prefix.frrouting.exceptions import FRRCommandError
 
 
 class FRRoutingPrefix(BasePrefix):
@@ -107,7 +109,8 @@ class FRRoutingPrefix(BasePrefix):
         """Run commands in the vtysh.
 
         Raises:
-            RuntimeError: The command exited with a non-zero exit code.
+            FRRCommandFailed: The command failed to run due to a non-zero exit code
+                or existing stderr output.
         """
         proc = await self.executor.create_subprocess_exec(
             self.vtysh, ("-c", "\n".join(commands))
@@ -116,12 +119,14 @@ class FRRoutingPrefix(BasePrefix):
 
         # Command may have failed even if the returncode is 0.
         if proc.returncode != 0 or stderr:
-            msg = f"Failed to run vtysh commands {', '.join(commands)}:\n"
-            if stdout:
-                msg += "stdout: {}\n".format(stdout.decode("utf-8"))
-            if stderr:
-                msg += "stderr: {}\n".format(stderr.decode("utf-8"))
-            raise RuntimeError(msg)
+            raise FRRCommandError(
+                commands,
+                cast(
+                    int, proc.returncode
+                ),  # Since we await the process above, this should never be None.
+                stdout.decode("utf-8") if stdout else None,
+                stderr.decode("utf-8") if stderr else None,
+            )
 
         return stdout.decode("utf-8")
 
