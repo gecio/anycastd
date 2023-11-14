@@ -27,7 +27,12 @@ class FRRoutingPrefix(BasePrefix):
         vtysh: Path = Path("/usr/bin/vtysh"),
         executor: BaseExecutor,
     ) -> None:
-        """Initialize the FRRouting prefix."""
+        """Initialize the FRRouting prefix.
+
+        It is recommended to use the `new` classmethod instead of this constructor
+        to validate the prefix against the FRRouting configuration, avoiding
+        potential errors later in runtime.
+        """
         super().__init__(prefix)
         self.vrf = vrf
         self.vtysh = vtysh
@@ -154,6 +159,28 @@ class FRRoutingPrefix(BasePrefix):
                 raise FRRNoBGPError(self.vrf)
 
         return self
+
+    @classmethod
+    async def new(
+        cls,
+        prefix: IPv4Network | IPv6Network,
+        *,
+        vrf: VRF = None,
+        vtysh: Path = Path("/usr/bin/vtysh"),
+        executor: BaseExecutor,
+    ) -> "FRRoutingPrefix":
+        """Create a new validated FRRoutingPrefix.
+
+        Creates a new FRRoutingPrefix instance while validating it against the
+        FRRouting configuration.
+
+        Raises:
+            A subclass of FRRConfigurationError if there is an issue with the
+            FRRouting configuration.
+        """
+        return await FRRoutingPrefix(
+            prefix=prefix, vrf=vrf, vtysh=vtysh, executor=executor
+        ).validate()
 
 
 def get_afi(prefix: BasePrefix) -> str:
