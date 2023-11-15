@@ -1,6 +1,17 @@
 from collections.abc import Sequence
+from pathlib import Path
 
 from anycastd.prefix.base import VRF
+
+
+class FRRInvalidVTYSHError(Exception):
+    """The FRRouting VTY shell is invalid."""
+
+    vtysh: Path
+
+    def __init__(self, vtysh: Path, reason: str):
+        self.vtysh = vtysh
+        super().__init__(f"The given VTYSH {self.vtysh} is invalid: {reason}.")
 
 
 class FRRCommandError(Exception):

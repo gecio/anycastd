@@ -10,6 +10,7 @@ from anycastd.prefix.base import VRF, BasePrefix
 from anycastd.prefix.frrouting.exceptions import (
     FRRCommandError,
     FRRInvalidVRFError,
+    FRRInvalidVTYSHError,
     FRRNoBGPError,
 )
 
@@ -146,9 +147,12 @@ class FRRoutingPrefix(BasePrefix):
         Checks if the required VRF and BGP configuration exists.
 
         Raises:
+            FRRInvalidVTYSHError: The vtysh is invalid.
             FRRInvalidVRFError: The prefixes VRF is invalid and does not exist.
             FRRNoBGPError: BGP is not configured.
         """
+        if not self.vtysh.is_file():
+            raise FRRInvalidVTYSHError(self.vtysh, "The given VTYSH is not a file.")
         if self.vrf:
             show_vrf = await self._run_vtysh_commands((f"show bgp vrf {self.vrf}",))
             if "unknown" in show_vrf.lower():
