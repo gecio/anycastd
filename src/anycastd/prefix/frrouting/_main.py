@@ -3,12 +3,16 @@ from collections.abc import Sequence
 from contextlib import suppress
 from ipaddress import IPv4Network, IPv6Network
 from pathlib import Path
-from typing import TypeAlias
+from typing import cast
 
 from anycastd._base import BaseExecutor
-from anycastd.prefix.base import BasePrefix
-
-VRF: TypeAlias = str | None
+from anycastd.prefix.base import VRF, BasePrefix
+from anycastd.prefix.frrouting.exceptions import (
+    FRRCommandError,
+    FRRInvalidVRFError,
+    FRRInvalidVTYSHError,
+    FRRNoBGPError,
+)
 
 
 class FRRoutingPrefix(BasePrefix):
@@ -23,7 +27,13 @@ class FRRoutingPrefix(BasePrefix):
         vrf: VRF = None,
         vtysh: Path = Path("/usr/bin/vtysh"),
         executor: BaseExecutor,
-    ):
+    ) -> None:
+        """Initialize the FRRouting prefix.
+
+        It is recommended to use the `new` classmethod instead of this constructor
+        to validate the prefix against the FRRouting configuration, avoiding
+        potential errors later in runtime.
+        """
         super().__init__(prefix)
         self.vrf = vrf
         self.vtysh = vtysh
@@ -110,7 +120,8 @@ class FRRoutingPrefix(BasePrefix):
         """Run commands in the vtysh.
 
         Raises:
-            RuntimeError: The command exited with a non-zero exit code.
+            FRRCommandFailed: The command failed to run due to a non-zero exit code
+                or existing stderr output.
         """
         proc = await self.executor.create_subprocess_exec(
             self.vtysh, ("-c", "\n".join(commands))
@@ -119,14 +130,61 @@ class FRRoutingPrefix(BasePrefix):
 
         # Command may have failed even if the returncode is 0.
         if proc.returncode != 0 or stderr:
-            msg = f"Failed to run vtysh commands {', '.join(commands)}:\n"
-            if stdout:
-                msg += "stdout: {}\n".format(stdout.decode("utf-8"))
-            if stderr:
-                msg += "stderr: {}\n".format(stderr.decode("utf-8"))
-            raise RuntimeError(msg)
+            raise FRRCommandError(
+                commands,
+                cast(
+                    int, proc.returncode
+                ),  # Since we await the process above, this should never be None.
+                stdout.decode("utf-8") if stdout else None,
+                stderr.decode("utf-8") if stderr else None,
+            )
 
         return stdout.decode("utf-8")
+
+    async def validate(self) -> "FRRoutingPrefix":
+        """Validate the prefix, raising an error on invalid configuration.
+
+        Checks if the required VRF and BGP configuration exists.
+
+        Raises:
+            FRRInvalidVTYSHError: The vtysh is invalid.
+            FRRInvalidVRFError: The prefixes VRF is invalid and does not exist.
+            FRRNoBGPError: BGP is not configured.
+        """
+        if not self.vtysh.is_file():
+            raise FRRInvalidVTYSHError(self.vtysh, "The given VTYSH is not a file.")
+        if self.vrf:
+            show_vrf = await self._run_vtysh_commands((f"show bgp vrf {self.vrf}",))
+            if "unknown" in show_vrf.lower():
+                raise FRRInvalidVRFError(self.vrf)
+        else:
+            show_bgp = await self._run_vtysh_commands(("show bgp",))
+            if "not found" in show_bgp.lower():
+                raise FRRNoBGPError(self.vrf)
+
+        return self
+
+    @classmethod
+    async def new(
+        cls,
+        prefix: IPv4Network | IPv6Network,
+        *,
+        vrf: VRF = None,
+        vtysh: Path = Path("/usr/bin/vtysh"),
+        executor: BaseExecutor,
+    ) -> "FRRoutingPrefix":
+        """Create a new validated FRRoutingPrefix.
+
+        Creates a new FRRoutingPrefix instance while validating it against the
+        FRRouting configuration.
+
+        Raises:
+            A subclass of FRRConfigurationError if there is an issue with the
+            FRRouting configuration.
+        """
+        return await FRRoutingPrefix(
+            prefix=prefix, vrf=vrf, vtysh=vtysh, executor=executor
+        ).validate()
 
 
 def get_afi(prefix: BasePrefix) -> str:
