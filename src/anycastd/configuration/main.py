@@ -1,9 +1,11 @@
+import tomllib
 from pathlib import Path
 
 from pydantic_settings import BaseSettings
 
 from anycastd.configuration._cabourotte import CabourotteHealthcheck
 from anycastd.configuration._frr import FRRPrefix
+from anycastd.configuration.exceptions import ConfigurationError
 
 
 class ServiceConfiguration(BaseSettings):
@@ -20,4 +22,8 @@ class MainConfiguration(BaseSettings):
     services: tuple[ServiceConfiguration, ...]
 
     def __init__(self, path: Path):
-        raise NotImplementedError
+        try:
+            with path.open("rb") as f:
+                data = tomllib.load(f)
+        except (OSError, tomllib.TOMLDecodeError) as exc:
+            raise ConfigurationError(path, exc) from exc
