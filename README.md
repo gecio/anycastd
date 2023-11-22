@@ -11,7 +11,7 @@
     <img src="https://img.shields.io/badge/Types-Mypy-blue.svg" alt="typecheck">
   </a>
   <a>
-    <img src="https://img.shields.io/badge/v3.10+-black?style=flat&color=FFFF00&label=Python" alt="python version">
+    <img src="https://img.shields.io/badge/v3.11+-black?style=flat&color=FFFF00&label=Python" alt="python version">
   </a>
   <a href="https://pdm.fming.dev">
     <img src="https://img.shields.io/badge/pdm-managed-blueviolet" alt="pdm">
