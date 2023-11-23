@@ -23,7 +23,7 @@ def test_from_expanded_format():
     """
     name = "example-healthcheck"
     url = "http://healthchecks.local"
-    interval = "5s"
+    interval = 5
     data = {"name": name, "url": url, "interval": interval}
 
     config = CabourotteHealthcheck.from_configuration(data)

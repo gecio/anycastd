@@ -26,8 +26,8 @@ def sample_configuration(fs) -> tuple[Path, dict]:
                 "prefixes": {"frrouting": ["2001:db8::b19:bad:53", "203.0.113.53"]},
                 "checks": {
                     "cabourotte": [
-                        {"name": "dns_v4", "interval": "1s"},
-                        {"name": "dns_v6", "interval": "1s"},
+                        {"name": "dns_v4", "interval": 1},
+                        {"name": "dns_v6", "interval": 1},
                     ]
                 },
             },
