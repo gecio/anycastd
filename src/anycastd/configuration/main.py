@@ -22,6 +22,14 @@ class MainConfiguration(BaseSettings):
     services: tuple[ServiceConfiguration, ...]
 
     def __init__(self, path: Path):
+        """Initialize the configuration using a path to a TOML configuration file.
+
+        Args:
+            path: The path to the configuration file.
+
+        Raises:
+            ConfigurationError: The configuration could not be read or parsed.
+        """
         config = _read_toml_configuration(path)
 
 
