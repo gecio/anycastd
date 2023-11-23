@@ -32,6 +32,10 @@ class CabourotteHealthcheck(BaseSettings):
 
         Returns:
             A new CabourotteHealthcheck instance.
+
+        Raises:
+            ValidationError: Failed to validate the configuration.
+            TypeError: The configuration has an invalid type.
         """
         match config:
             case str():
