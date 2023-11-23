@@ -58,6 +58,7 @@ test = [
     "respx>=0.20.2",
     "pytest-docker>=2.0.1",
     "pyfakefs>=5.3.1",
+    "tomli-w>=1.0.0",
 ]
 jupyter = [
     "jupyter",
