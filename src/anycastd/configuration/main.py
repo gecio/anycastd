@@ -22,8 +22,25 @@ class MainConfiguration(BaseSettings):
     services: tuple[ServiceConfiguration, ...]
 
     def __init__(self, path: Path):
-        try:
-            with path.open("rb") as f:
-                data = tomllib.load(f)
-        except (OSError, tomllib.TOMLDecodeError) as exc:
-            raise ConfigurationError(path, exc) from exc
+        config = _read_toml_configuration(path)
+
+
+def _read_toml_configuration(path: Path) -> dict:
+    """Read a TOML configuration file.
+
+    Args:
+        path: The path to the configuration file.
+
+    Returns:
+        The parsed configuration data.
+
+    Raises:
+        ConfigurationError: The configuration could not be read or parsed.
+    """
+    try:
+        with path.open("rb") as f:
+            data = tomllib.load(f)
+    except (OSError, tomllib.TOMLDecodeError) as exc:
+        raise ConfigurationError(path, exc) from exc
+
+    return data
