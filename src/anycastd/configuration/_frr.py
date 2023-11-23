@@ -6,6 +6,14 @@ from pydantic_settings import BaseSettings
 
 
 class FRRPrefix(BaseSettings):
+    """The configuration for a FRRouting prefix.
+
+    Attributes:
+        prefix: The prefix to advertise.
+        vrf: The VRF to advertise the prefix in.
+        vtysh: The path to the vtysh binary.
+    """
+
     prefix: IPv4Network | IPv6Network
     vrf: int | None = None
     vtysh: Path = Path("/usr/bin/vtysh")
