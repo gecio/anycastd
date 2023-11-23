@@ -6,7 +6,7 @@ groups = ["default", "jupyter", "lint", "test", "type_stubs", "typecheck"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:bb5433c8baa33b3e8a7e444fd0e54d7fd74371cacfd45904b650839a8506a101"
+content_hash = "sha256:82d3e00e0bd3dcfbe911d00d5531b6b7f417e5e41b04ed2f95dc10f2e7f6b10c"
 
 [[package]]
 name = "annotated-types"
@@ -1375,6 +1375,16 @@ dependencies = [
 files = [
     {file = "pydantic_settings-2.1.0-py3-none-any.whl", hash = "sha256:7621c0cb5d90d1140d2f0ef557bdf03573aac7035948109adf2574770b77605a"},
     {file = "pydantic_settings-2.1.0.tar.gz", hash = "sha256:26b1492e0a24755626ac5e6d715e9077ab7ad4fb5f19a8b7ed7011d52f36141c"},
+]
+
+[[package]]
+name = "pyfakefs"
+version = "5.3.1"
+requires_python = ">=3.7"
+summary = "pyfakefs implements a fake file system that mocks the Python file system modules."
+files = [
+    {file = "pyfakefs-5.3.1-py3-none-any.whl", hash = "sha256:dbe268b70da64f1506baf7d7a2a2248b96b56d28d61a68859272b5fdc321c39e"},
+    {file = "pyfakefs-5.3.1.tar.gz", hash = "sha256:dd1fb374039fadccf35d3f3df7aa5d239482e0650dcd240e053d3b9e78740918"},
 ]
 
 [[package]]

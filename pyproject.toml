@@ -57,6 +57,7 @@ test = [
     "pytest-asyncio>=0.21.1",
     "respx>=0.20.2",
     "pytest-docker>=2.0.1",
+    "pyfakefs>=5.3.1",
 ]
 jupyter = [
     "jupyter",
