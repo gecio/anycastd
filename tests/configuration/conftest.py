@@ -1,17 +1,59 @@
+import datetime
+from ipaddress import IPv4Network, IPv6Network
 from pathlib import Path
 
 import pytest
 import tomli_w
+from anycastd.configuration._cabourotte import CabourotteHealthcheck
+from anycastd.configuration._frr import FRRPrefix
+from anycastd.configuration.main import MainConfiguration, ServiceConfiguration
+
+
+@pytest.fixture
+def sample_configuration() -> MainConfiguration:
+    """A valid sample configuration.
+
+    Returns:
+        The configuration instance.
+    """
+    return MainConfiguration(
+        services=(
+            ServiceConfiguration(
+                name="loadbalancer",
+                prefixes=(
+                    FRRPrefix(prefix=IPv6Network("2001:db8::aced:a11:7e57")),
+                    FRRPrefix(prefix=IPv4Network("203.0.113.84")),
+                ),
+                checks=(CabourotteHealthcheck(name="loadbalancer"),),
+            ),
+            ServiceConfiguration(
+                name="dns",
+                prefixes=(
+                    FRRPrefix(prefix=IPv6Network("2001:db8::b19:bad:53")),
+                    FRRPrefix(prefix=IPv4Network("203.0.113.53")),
+                ),
+                checks=(
+                    CabourotteHealthcheck(
+                        name="dns_v4", interval=datetime.timedelta(seconds=1)
+                    ),
+                    CabourotteHealthcheck(
+                        name="dns_v6", interval=datetime.timedelta(seconds=1)
+                    ),
+                ),
+            ),
+        )
+    )
 
 
 @pytest.fixture
 def sample_configuration_file(fs) -> tuple[Path, dict]:
     """A valid sample configuration file.
 
-    Creates a valid sample configuration file within a mocked filesystem.
+    Creates a configuration file within a mocked filesystem based
+    on the above sample configuration.
 
     Returns:
-        The path to the created configuration file as well as expected parsed data.
+        The path to the created configuration file as well as it's configuration data.
     """
     path = Path("/path/to/config.toml")
     data = {
