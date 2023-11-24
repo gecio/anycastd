@@ -2,10 +2,10 @@ from ipaddress import IPv4Network, IPv6Network
 from pathlib import Path
 from typing import Self
 
-from pydantic_settings import BaseSettings
+from pydantic import BaseModel
 
 
-class FRRPrefix(BaseSettings):
+class FRRPrefix(BaseModel):
     """The configuration for a FRRouting prefix.
 
     Attributes:

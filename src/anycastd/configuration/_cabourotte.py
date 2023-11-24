@@ -1,12 +1,12 @@
 import datetime
 from typing import Self
 
-from pydantic_settings import BaseSettings
+from pydantic import BaseModel
 
 DEFAULT_URL = "http://127.0.0.1:9013"
 
 
-class CabourotteHealthcheck(BaseSettings):
+class CabourotteHealthcheck(BaseModel):
     """The configuration for a Cabourotte healthcheck.
 
     Attributes:

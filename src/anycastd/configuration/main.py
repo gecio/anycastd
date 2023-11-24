@@ -1,14 +1,14 @@
 import tomllib
+from dataclasses import dataclass
 from pathlib import Path
-
-from pydantic_settings import BaseSettings
 
 from anycastd.configuration._cabourotte import CabourotteHealthcheck
 from anycastd.configuration._frr import FRRPrefix
 from anycastd.configuration.exceptions import ConfigurationError
 
 
-class ServiceConfiguration(BaseSettings):
+@dataclass
+class ServiceConfiguration:
     """The configuration for a service."""
 
     name: str
@@ -16,13 +16,15 @@ class ServiceConfiguration(BaseSettings):
     checks: tuple[CabourotteHealthcheck, ...]
 
 
-class MainConfiguration(BaseSettings):
+@dataclass
+class MainConfiguration:
     """The top-level configuration object."""
 
     services: tuple[ServiceConfiguration, ...]
 
-    def __init__(self, path: Path):
-        """Initialize the configuration using a path to a TOML configuration file.
+    @classmethod
+    def from_toml_file(cls, path: Path):
+        """Create a configuration instance from a TOML configuration file.
 
         Args:
             path: The path to the configuration file.
