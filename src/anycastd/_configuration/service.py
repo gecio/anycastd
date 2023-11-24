@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Self
 
 from anycastd._configuration import healthcheck, prefix
+from anycastd._configuration.sub import HealthcheckConfiguration, PrefixConfiguration
 
 
 @dataclass
@@ -9,8 +10,8 @@ class ServiceConfiguration:
     """The configuration for a service."""
 
     name: str
-    prefixes: tuple[prefix.FRRPrefix, ...]
-    checks: tuple[healthcheck.CabourotteHealthcheck, ...]
+    prefixes: tuple[PrefixConfiguration, ...]
+    checks: tuple[HealthcheckConfiguration, ...]
 
     @classmethod
     def from_name_and_options(cls, name: str, options: dict) -> Self:

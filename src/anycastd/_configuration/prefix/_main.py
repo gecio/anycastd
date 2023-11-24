@@ -1,16 +1,16 @@
 from typing import Literal, TypeAlias
 
 from anycastd._configuration.prefix._frr import FRRPrefix
+from anycastd._configuration.sub import PrefixConfiguration
 
 Name: TypeAlias = Literal["frrouting"]
-ConfigurationClass: TypeAlias = type[FRRPrefix]
 
-_type_by_name: dict[Name, ConfigurationClass] = {
+_type_by_name: dict[Name, type[PrefixConfiguration]] = {
     "frrouting": FRRPrefix,
 }
 
 
-def get_type_by_name(name: Name) -> ConfigurationClass:
+def get_type_by_name(name: Name) -> type[PrefixConfiguration]:
     """Get a prefix configuration class by it's name as used in the configuration.
 
     Args:

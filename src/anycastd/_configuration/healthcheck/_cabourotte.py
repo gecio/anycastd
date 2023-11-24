@@ -1,12 +1,12 @@
 import datetime
 from typing import Self
 
-from pydantic import BaseModel
+from anycastd._configuration.sub import HealthcheckConfiguration
 
 DEFAULT_URL = "http://127.0.0.1:9013"
 
 
-class CabourotteHealthcheck(BaseModel):
+class CabourotteHealthcheck(HealthcheckConfiguration):
     """The configuration for a Cabourotte healthcheck.
 
     Attributes:

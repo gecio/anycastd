@@ -1,16 +1,16 @@
 from typing import Literal, TypeAlias
 
 from anycastd._configuration.healthcheck._cabourotte import CabourotteHealthcheck
+from anycastd._configuration.sub import HealthcheckConfiguration
 
 Name: TypeAlias = Literal["cabourotte"]
-ConfigurationClass: TypeAlias = type[CabourotteHealthcheck]
 
-_type_by_name: dict[Name, ConfigurationClass] = {
+_type_by_name: dict[Name, type[HealthcheckConfiguration]] = {
     "cabourotte": CabourotteHealthcheck,
 }
 
 
-def get_type_by_name(name: Name) -> ConfigurationClass:
+def get_type_by_name(name: Name) -> type[HealthcheckConfiguration]:
     """Get a healthcheck configuration class by it's name as used in the configuration.
 
     Args:

@@ -1,6 +1,6 @@
 import datetime
 
-from anycastd._configuration.healthcheck import CabourotteHealthcheck
+from anycastd._configuration.healthcheck._cabourotte import CabourotteHealthcheck
 
 
 def test_from_simplified_format():
