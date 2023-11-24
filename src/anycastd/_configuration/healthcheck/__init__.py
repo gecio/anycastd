@@ -1,0 +1,1 @@
+from anycastd._configuration.healthcheck._cabourotte import CabourotteHealthcheck

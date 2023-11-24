@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Self
 
-from anycastd._configuration.cabourotte import CabourotteHealthcheck
-from anycastd._configuration.frr import FRRPrefix
+from anycastd._configuration.healthcheck import CabourotteHealthcheck
+from anycastd._configuration.prefix import FRRPrefix
 
 prefix_classes: dict[str, type] = {
     "frrouting": FRRPrefix,
