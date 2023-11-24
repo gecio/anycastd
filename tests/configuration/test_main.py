@@ -1,50 +1,17 @@
 from pathlib import Path
 
 import pytest
-import tomli_w
 from anycastd.configuration.exceptions import ConfigurationError
 from anycastd.configuration.main import _read_toml_configuration
 
 
-@pytest.fixture
-def sample_configuration(fs) -> tuple[Path, dict]:
-    """A valid sample configuration file.
-
-    Creates a valid sample configuration file within a mocked filesystem.
-
-    Returns:
-        The path to the created configuration file as well as expected parsed data.
-    """
-    path = Path("/path/to/config.toml")
-    data = {
-        "services": {
-            "loadbalancer": {
-                "prefixes": {"frrouting": ["2001:db8::aced:a11:7e57", "203.0.113.84"]},
-                "checks": {"cabourotte": ["loadbalancer"]},
-            },
-            "dns": {
-                "prefixes": {"frrouting": ["2001:db8::b19:bad:53", "203.0.113.53"]},
-                "checks": {
-                    "cabourotte": [
-                        {"name": "dns_v4", "interval": 1},
-                        {"name": "dns_v6", "interval": 1},
-                    ]
-                },
-            },
-        }
-    }
-    fs.create_file(path, contents=tomli_w.dumps(data))
-
-    return path, data
-
-
-def test_valid_configuration_read_successfully(sample_configuration):
+def test_valid_configuration_read_successfully(sample_configuration_file):
     """A valid configuration is read sucessfully.
 
     Given an existing TOML configuration file with valid syntax, the
     content is successfully read and parsed.
     """
-    path, data = sample_configuration
+    path, data = sample_configuration_file
     config = _read_toml_configuration(path)
     assert config == data
 
