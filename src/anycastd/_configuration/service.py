@@ -1,16 +1,7 @@
 from dataclasses import dataclass
 from typing import Self
 
-from anycastd._configuration.healthcheck import CabourotteHealthcheck
-from anycastd._configuration.prefix import FRRPrefix
-
-prefix_classes: dict[str, type] = {
-    "frrouting": FRRPrefix,
-}
-
-check_classes: dict[str, type] = {
-    "cabourotte": CabourotteHealthcheck,
-}
+from anycastd._configuration import healthcheck, prefix
 
 
 @dataclass
@@ -18,8 +9,8 @@ class ServiceConfiguration:
     """The configuration for a service."""
 
     name: str
-    prefixes: tuple[FRRPrefix, ...]
-    checks: tuple[CabourotteHealthcheck, ...]
+    prefixes: tuple[prefix.FRRPrefix, ...]
+    checks: tuple[healthcheck.CabourotteHealthcheck, ...]
 
     @classmethod
     def from_name_and_options(cls, name: str, options: dict) -> Self:
@@ -38,20 +29,14 @@ class ServiceConfiguration:
         """
         prefixes = []
         for prefix_type, prefix_configs in options["prefixes"].items():
-            try:
-                prefix_class = prefix_classes[prefix_type]
-            except KeyError as exc:
-                raise ValueError(f"Unknown prefix type: {prefix_type}") from exc
+            prefix_class = prefix.get_type_by_name(prefix_type)
 
             for config in prefix_configs:
                 prefixes.append(prefix_class.from_configuration(config))
 
         checks = []
         for check_type, check_configs in options["checks"].items():
-            try:
-                check_class = check_classes[check_type]
-            except KeyError as exc:
-                raise ValueError(f"Unknown check type: {check_type}") from exc
+            check_class = healthcheck.get_type_by_name(check_type)
 
             for config in check_configs:
                 checks.append(check_class.from_configuration(config))
