@@ -1,6 +1,7 @@
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Self
 
 from anycastd._configuration.exceptions import ConfigurationError
 from anycastd._configuration.service import ServiceConfiguration
@@ -13,7 +14,7 @@ class MainConfiguration:
     services: tuple[ServiceConfiguration, ...]
 
     @classmethod
-    def from_toml_file(cls, path: Path):
+    def from_toml_file(cls, path: Path) -> Self:
         """Create a configuration instance from a TOML configuration file.
 
         Args:
