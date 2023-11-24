@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 from anycastd.configuration.exceptions import ConfigurationError
-from anycastd.configuration.main import _read_toml_configuration
+from anycastd.configuration.main import MainConfiguration, _read_toml_configuration
 
 
 def test_valid_configuration_read_successfully(sample_configuration_file):
@@ -32,3 +32,16 @@ def test_invalid_syntax_raises_error(fs):
 
     with pytest.raises(ConfigurationError, match="TOML syntax error"):
         _read_toml_configuration(path)
+
+
+class TestMainConfiguration:
+    """Tests for the MainConfiguration class."""
+
+    @pytest.mark.integration
+    def test_initialized_from_valid_toml(
+        self, sample_configuration, sample_configuration_file
+    ):
+        """An instance with correct values can be created from a TOML file."""
+        path, _ = sample_configuration_file
+        config = MainConfiguration.from_toml_file(path)
+        assert config == sample_configuration
