@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pytest
 import tomli_w
-from anycastd.configuration._cabourotte import CabourotteHealthcheck
-from anycastd.configuration._frr import FRRPrefix
-from anycastd.configuration.main import MainConfiguration, ServiceConfiguration
+from anycastd._configuration.cabourotte import CabourotteHealthcheck
+from anycastd._configuration.frr import FRRPrefix
+from anycastd._configuration.main import MainConfiguration, ServiceConfiguration
 
 
 @pytest.fixture

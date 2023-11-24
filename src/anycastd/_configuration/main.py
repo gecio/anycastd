@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Self
 
-from anycastd.configuration._cabourotte import CabourotteHealthcheck
-from anycastd.configuration._frr import FRRPrefix
-from anycastd.configuration.exceptions import ConfigurationError
+from anycastd._configuration.cabourotte import CabourotteHealthcheck
+from anycastd._configuration.exceptions import ConfigurationError
+from anycastd._configuration.frr import FRRPrefix
 
 prefix_classes: dict[str, type] = {
     "frrouting": FRRPrefix,
