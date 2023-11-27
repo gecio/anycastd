@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from typing import Self
 
 from anycastd._configuration import healthcheck, prefix
-from anycastd._configuration.sub import HealthcheckConfiguration, PrefixConfiguration
+from anycastd._configuration.healthcheck import HealthcheckConfiguration
+from anycastd._configuration.prefix import PrefixConfiguration
 
 
 @dataclass

@@ -1,7 +1,27 @@
+from ipaddress import IPv4Network, IPv6Network
+from pathlib import Path
 from typing import Literal, TypeAlias
 
-from anycastd._configuration.prefix._frr import FRRPrefix
-from anycastd._configuration.sub import PrefixConfiguration
+from anycastd._configuration.sub import SubConfiguration
+
+
+class PrefixConfiguration(SubConfiguration):
+    """A generic class to group all prefix configuration classes.."""
+
+
+class FRRPrefix(PrefixConfiguration):
+    """The configuration for a FRRouting prefix.
+
+    Attributes:
+        prefix: The prefix to advertise.
+        vrf: The VRF to advertise the prefix in.
+        vtysh: The path to the vtysh binary.
+    """
+
+    prefix: IPv4Network | IPv6Network
+    vrf: int | None = None
+    vtysh: Path = Path("/usr/bin/vtysh")
+
 
 Name: TypeAlias = Literal["frrouting"]
 

@@ -55,11 +55,3 @@ class SubConfiguration(BaseModel):
         if not multiple_fields_required:
             msg += " or a string containing the {}".format(cls.required_fields()[0])
         raise TypeError(msg)
-
-
-class HealthcheckConfiguration(SubConfiguration):
-    """The configuration for a healthcheck."""
-
-
-class PrefixConfiguration(SubConfiguration):
-    """The configuration for a prefix."""

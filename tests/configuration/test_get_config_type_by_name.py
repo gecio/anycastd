@@ -1,8 +1,8 @@
 """Ensure the get_type_by_name function works as expected."""
 import pytest
 from anycastd._configuration import healthcheck, prefix
-from anycastd._configuration.healthcheck._cabourotte import CabourotteHealthcheck
-from anycastd._configuration.prefix._frr import FRRPrefix
+from anycastd._configuration.healthcheck import CabourotteHealthcheck
+from anycastd._configuration.prefix import FRRPrefix
 
 
 @pytest.mark.parametrize("name, type_", [("frrouting", FRRPrefix)])

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from anycastd._configuration.prefix._frr import FRRPrefix
+from anycastd._configuration.prefix import FRRPrefix
 
 
 def test_from_simplified_format(example_networks):
