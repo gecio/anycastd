@@ -76,3 +76,9 @@ def sample_configuration_file(fs) -> tuple[Path, dict]:
     fs.create_file(path, contents=tomli_w.dumps(data))
 
     return path, data
+
+
+@pytest.fixture
+def dummy_config_path() -> Path:
+    """A dummy configuration path that does not really exist."""
+    return Path("/dummy/test/configuration/path")
