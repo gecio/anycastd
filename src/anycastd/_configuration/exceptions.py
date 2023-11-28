@@ -29,6 +29,6 @@ class ConfigurationError(Exception):
                 msg += f": {exc}"
             case _:
                 msg += f", an unexpected exception occurred: {exc!r}"
-                raise TypeError(msg) from exc  # type: ignore
+                raise TypeError(msg) from exc  # type: ignore[unused-ignore]
 
         super().__init__(msg)
