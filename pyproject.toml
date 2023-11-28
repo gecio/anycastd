@@ -14,7 +14,6 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Topic :: Software Development :: Libraries :: Python Modules",
@@ -22,9 +21,9 @@ classifiers = [
 ]
 keywords = []
 
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
-    "pydantic>=2.4.0",
+    "pydantic>=2.5.2",
     "httpx>=0.25.0",
 ]
 
@@ -57,6 +56,8 @@ test = [
     "pytest-asyncio>=0.21.1",
     "respx>=0.20.2",
     "pytest-docker>=2.0.1",
+    "pyfakefs>=5.3.1",
+    "tomli-w>=1.0.0",
 ]
 jupyter = [
     "jupyter",
@@ -64,7 +65,7 @@ jupyter = [
 ]
 
 [tool.black]
-target-version = ["py310", "py311", "py312"]
+target-version = ["py311", "py312"]
 include = '\.pyi?$'
 
 [tool.ruff]

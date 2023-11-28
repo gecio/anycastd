@@ -13,7 +13,6 @@ project_license: Apache License 2.0
 project_name: anycastd
 project_slug: anycastd
 python_versions:
-- '3.10'
 - '3.11'
 - '3.12'
 repository_namespace: gecio
