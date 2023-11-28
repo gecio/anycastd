@@ -30,5 +30,8 @@ class ConfigurationError(Exception):
             case _:
                 msg += f", an unexpected exception occurred: {exc!r}"
                 raise TypeError(msg) from exc  # type: ignore[unused-ignore]
+                # Pylance sees the above as a type error, while mypy does not.
+                # Unfortunately, Pylance does not implement its own per-line
+                # ignore mechanism, so the generic type ignore is used here.
 
         super().__init__(msg)
