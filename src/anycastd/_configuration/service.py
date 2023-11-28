@@ -28,6 +28,8 @@ class ServiceConfiguration:
         Raises:
             KeyError: The configuration is missing a required key.
             ValueError: The configuration contains an invalid value.
+            TypeError: The configuration has an invalid type.
+            ValidationError: Failed to validate the configuration.
         """
         prefixes = []
         for prefix_type, prefix_configs in options["prefixes"].items():

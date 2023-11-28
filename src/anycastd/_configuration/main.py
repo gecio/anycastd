@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Self
 
+from pydantic import ValidationError
+
 from anycastd._configuration.exceptions import ConfigurationError
 from anycastd._configuration.service import ServiceConfiguration
 
@@ -31,7 +33,7 @@ class MainConfiguration:
                     for name, options in config["services"].items()
                 )
             )
-        except (KeyError, ValueError) as exc:
+        except (KeyError, ValueError, TypeError, ValidationError) as exc:
             raise ConfigurationError(path, exc) from exc
 
 
