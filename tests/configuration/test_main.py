@@ -6,7 +6,7 @@ from anycastd._configuration.main import MainConfiguration, _read_toml_configura
 
 
 def test_valid_configuration_read_successfully(sample_configuration_file):
-    """A valid configuration is read sucessfully.
+    """A valid configuration is read successfully.
 
     Given an existing TOML configuration file with valid syntax, the
     content is successfully read and parsed.
