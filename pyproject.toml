@@ -39,6 +39,9 @@ build-backend = "pdm.backend"
 [tool.pdm.version]
 source = "scm"
 
+[tool.pdm.scripts]
+anycastd = { call = "anycastd._cli:app" }
+
 [tool.pdm.dev-dependencies]
 lint = [
     "ruff>=0.1.4",
