@@ -25,6 +25,7 @@ requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2.5.2",
     "httpx>=0.25.0",
+    "typer[all]>=0.9.0",
 ]
 
 [project.urls]
@@ -37,6 +38,9 @@ build-backend = "pdm.backend"
 
 [tool.pdm.version]
 source = "scm"
+
+[tool.pdm.scripts]
+anycastd = { call = "anycastd._cli:app" }
 
 [tool.pdm.dev-dependencies]
 lint = [
