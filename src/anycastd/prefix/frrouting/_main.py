@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import cast
 
 from anycastd._executor import Executor
-from anycastd.prefix.base import VRF, BasePrefix
+from anycastd.prefix.core import VRF, Prefix
 from anycastd.prefix.frrouting.exceptions import (
     FRRCommandError,
     FRRInvalidVRFError,
@@ -15,7 +15,7 @@ from anycastd.prefix.frrouting.exceptions import (
 )
 
 
-class FRRoutingPrefix(BasePrefix):
+class FRRoutingPrefix(Prefix):
     vrf: VRF
     vtysh: Path
     executor: Executor
@@ -187,6 +187,6 @@ class FRRoutingPrefix(BasePrefix):
         ).validate()
 
 
-def get_afi(prefix: BasePrefix) -> str:
+def get_afi(prefix: Prefix) -> str:
     """Return the FRR string AFI for the given IP type."""
     return "ipv6" if not isinstance(prefix.prefix, IPv4Network) else "ipv4"

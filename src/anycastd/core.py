@@ -2,7 +2,7 @@ import asyncio
 from dataclasses import dataclass
 
 from anycastd.healthcheck.core import Healthcheck
-from anycastd.prefix.base import BasePrefix
+from anycastd.prefix.core import Prefix
 
 
 @dataclass
@@ -14,7 +14,7 @@ class Service:
     """
 
     name: str
-    prefixes: tuple[BasePrefix, ...]
+    prefixes: tuple[Prefix, ...]
     health_checks: tuple[Healthcheck, ...]
 
     # The _only_once parameter is only used for testing.

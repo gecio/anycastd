@@ -5,7 +5,7 @@ from typing import TypeAlias
 VRF: TypeAlias = str | None
 
 
-class BasePrefix(ABC):
+class Prefix(ABC):
     """An IP prefix that can be announced or denounced."""
 
     prefix: IPv4Network | IPv6Network

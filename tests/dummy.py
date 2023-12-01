@@ -1,5 +1,5 @@
 from anycastd.healthcheck.core import Healthcheck
-from anycastd.prefix.base import BasePrefix
+from anycastd.prefix.core import Prefix
 
 
 class DummyHealthcheck(Healthcheck):
@@ -10,7 +10,7 @@ class DummyHealthcheck(Healthcheck):
         return True
 
 
-class DummyPrefix(BasePrefix):
+class DummyPrefix(Prefix):
     """A dummy prefix to test the abstract base class."""
 
     async def is_announced(self) -> bool:

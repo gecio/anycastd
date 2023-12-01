@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from pathlib import Path
 
-from anycastd.prefix.base import VRF
+from anycastd.prefix.core import VRF
 
 
 class FRRInvalidVTYSHError(Exception):
