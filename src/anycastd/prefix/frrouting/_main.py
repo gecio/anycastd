@@ -5,7 +5,7 @@ from ipaddress import IPv4Network, IPv6Network
 from pathlib import Path
 from typing import cast
 
-from anycastd._base import BaseExecutor
+from anycastd._executor import Executor
 from anycastd.prefix.base import VRF, BasePrefix
 from anycastd.prefix.frrouting.exceptions import (
     FRRCommandError,
@@ -18,7 +18,7 @@ from anycastd.prefix.frrouting.exceptions import (
 class FRRoutingPrefix(BasePrefix):
     vrf: VRF
     vtysh: Path
-    executor: BaseExecutor
+    executor: Executor
 
     def __init__(
         self,
@@ -26,7 +26,7 @@ class FRRoutingPrefix(BasePrefix):
         *,
         vrf: VRF = None,
         vtysh: Path = Path("/usr/bin/vtysh"),
-        executor: BaseExecutor,
+        executor: Executor,
     ) -> None:
         """Initialize the FRRouting prefix.
 
@@ -171,7 +171,7 @@ class FRRoutingPrefix(BasePrefix):
         *,
         vrf: VRF = None,
         vtysh: Path = Path("/usr/bin/vtysh"),
-        executor: BaseExecutor,
+        executor: Executor,
     ) -> "FRRoutingPrefix":
         """Create a new validated FRRoutingPrefix.
 
