@@ -6,13 +6,13 @@ from pathlib import Path
 from typing import cast
 
 from anycastd._executor import Executor
-from anycastd.prefix.core import VRF, Prefix
-from anycastd.prefix.frrouting.exceptions import (
+from anycastd.prefix._frrouting.exceptions import (
     FRRCommandError,
     FRRInvalidVRFError,
     FRRInvalidVTYSHError,
     FRRNoBGPError,
 )
+from anycastd.prefix.core import VRF, Prefix
 
 
 class FRRoutingPrefix(Prefix):

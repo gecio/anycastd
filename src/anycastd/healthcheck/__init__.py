@@ -1,1 +1,2 @@
-from anycastd.healthcheck.core import Healthcheck
+from anycastd.healthcheck._cabourotte.main import CabourotteHealthcheck
+from anycastd.healthcheck._core import Healthcheck

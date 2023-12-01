@@ -1,7 +1,7 @@
 import datetime
 
 import pytest
-from anycastd.healthcheck.core import Healthcheck
+from anycastd.healthcheck import Healthcheck
 from pytest_mock import MockerFixture
 
 from tests.dummy import DummyHealthcheck

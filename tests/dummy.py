@@ -1,4 +1,4 @@
-from anycastd.healthcheck.core import Healthcheck
+from anycastd.healthcheck import Healthcheck
 from anycastd.prefix.core import Prefix
 
 
