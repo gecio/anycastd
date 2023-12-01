@@ -9,7 +9,7 @@ class PrefixConfiguration(SubConfiguration):
     """A generic class to group all prefix configuration classes."""
 
 
-class FRRPrefix(PrefixConfiguration):
+class FRRPrefixConfiguration(PrefixConfiguration):
     """The configuration for a FRRouting prefix.
 
     Attributes:
@@ -26,7 +26,7 @@ class FRRPrefix(PrefixConfiguration):
 Name: TypeAlias = Literal["frrouting"]
 
 _type_by_name: dict[Name, type[PrefixConfiguration]] = {
-    "frrouting": FRRPrefix,
+    "frrouting": FRRPrefixConfiguration,
 }
 
 
