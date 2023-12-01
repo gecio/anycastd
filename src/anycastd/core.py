@@ -7,10 +7,13 @@ from anycastd.prefix.core import Prefix
 
 @dataclass
 class Service:
-    """Represents an anycasted service.
+    """An anycasted service.
 
-    A service is made up of a collection of prefixes that are
-    to be advertised when all health checks are passing.
+    Services are the main abstraction used in anycastd.
+    They represent services that are architected to be highly available
+    through the usage of multiple backends whose service prefixes are
+    announced through BGP only when their health checks report the underlying
+    service to be healthy.
     """
 
     name: str
