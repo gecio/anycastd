@@ -1,14 +1,5 @@
 import pytest
 from anycastd._configuration.core import MainConfiguration
-from anycastd._configuration.exceptions import ConfigurationError
-
-
-@pytest.fixture
-def mock_toml_reader(mocker):
-    """A mock for the TOML reader function."""
-    return mocker.patch(
-        "anycastd._configuration.core._read_toml_configuration", autospec=True
-    )
 
 
 @pytest.mark.integration
@@ -19,15 +10,7 @@ def test_initialized_from_valid_toml(sample_configuration, sample_configuration_
     assert config == sample_configuration
 
 
-def test_reads_toml_file(mock_toml_reader, dummy_config_path):
-    """TOML is read from the given configuration path."""
-    MainConfiguration.from_toml_file(dummy_config_path)
-    mock_toml_reader.assert_called_once_with(dummy_config_path)
-
-
-def test_service_configurations_initialized_w_correct_values(
-    mocker, mock_toml_reader, dummy_config_path
-):
+def test_service_configurations_initialized_w_correct_values(mocker):
     """Service configuration instances are initialized correctly."""
     important_api_service = (
         {
@@ -43,7 +26,7 @@ def test_service_configurations_initialized_w_correct_values(
             "pingd": ["flaky-backend"],
         },
     }
-    mock_toml_reader.return_value = {
+    config = {
         "services": {
             "important-API": important_api_service,
             "important-backend": important_backend_service,
@@ -53,7 +36,7 @@ def test_service_configurations_initialized_w_correct_values(
         "anycastd._configuration.service.ServiceConfiguration.from_name_and_options",
         autospec=True,
     )
-    MainConfiguration.from_toml_file(dummy_config_path)
+    MainConfiguration._from_dict(config)
     mock_service_config_ini.assert_has_calls(
         [
             mocker.call("important-API", important_api_service),
@@ -62,8 +45,8 @@ def test_service_configurations_initialized_w_correct_values(
     )
 
 
-def test_missing_key_raises_error(mock_toml_reader, dummy_config_path):
-    """A configuration file with a missing key raises an error."""
-    mock_toml_reader.return_value = {}
-    with pytest.raises(ConfigurationError, match="missing required key"):
-        MainConfiguration.from_toml_file(dummy_config_path)
+def test_missing_key_raises_error():
+    """A configuration with a missing key raises a KeyError."""
+    config = {}
+    with pytest.raises(KeyError):
+        MainConfiguration._from_dict(config)
