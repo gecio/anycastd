@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 import tomli_w
+from anycastd._configuration.core import MainConfiguration, ServiceConfiguration
 from anycastd._configuration.healthcheck import CabourotteHealthcheck
-from anycastd._configuration.main import MainConfiguration, ServiceConfiguration
 from anycastd._configuration.prefix import FRRPrefix
 
 

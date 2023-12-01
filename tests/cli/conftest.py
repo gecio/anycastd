@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 import pytest
-from anycastd._cli.main import app
+from anycastd._cli.core import app
 from click.testing import Result
 from typer.testing import CliRunner
 
