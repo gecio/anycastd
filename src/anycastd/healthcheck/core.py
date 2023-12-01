@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import final
 
 
-class BaseHealthcheck(ABC):
+class Healthcheck(ABC):
     """A healthcheck that represents a status."""
 
     interval: datetime.timedelta

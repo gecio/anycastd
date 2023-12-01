@@ -1,8 +1,8 @@
-from anycastd.healthcheck.base import BaseHealthcheck
+from anycastd.healthcheck.core import Healthcheck
 from anycastd.prefix.base import BasePrefix
 
 
-class DummyHealthcheck(BaseHealthcheck):
+class DummyHealthcheck(Healthcheck):
     """A dummy healthcheck to test the abstract base class."""
 
     async def _check(self) -> bool:

@@ -1,10 +1,10 @@
 import datetime
 
 from anycastd.healthcheck._cabourotte.result import get_result
-from anycastd.healthcheck.base import BaseHealthcheck
+from anycastd.healthcheck.core import Healthcheck
 
 
-class CabourotteHealthcheck(BaseHealthcheck):
+class CabourotteHealthcheck(Healthcheck):
     name: str
     url: str
 
