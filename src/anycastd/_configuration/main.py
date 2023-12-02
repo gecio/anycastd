@@ -26,15 +26,29 @@ class MainConfiguration:
             ConfigurationError: The configuration could not be read or parsed.
         """
         config = _read_toml_configuration(path)
+
         try:
-            return cls(
-                services=tuple(
-                    ServiceConfiguration.from_name_and_options(name, options)
-                    for name, options in config["services"].items()
-                )
-            )
+            return cls._from_dict(config)
         except (KeyError, ValueError, TypeError, ValidationError) as exc:
             raise ConfigurationError(path, exc) from exc
+
+    @classmethod
+    def _from_dict(cls, data: dict) -> Self:
+        """Create a configuration instance from a dictionary.
+
+        Args:
+            data: The configuration data.
+
+        Raises:
+            KeyError | ValueError | TypeError | ValidationError
+        """
+        # TODO: Simplify returned exceptions.
+        return cls(
+            services=tuple(
+                ServiceConfiguration.from_name_and_options(name, options)
+                for name, options in data["services"].items()
+            )
+        )
 
 
 def _read_toml_configuration(path: Path) -> dict:

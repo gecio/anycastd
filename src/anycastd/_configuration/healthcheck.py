@@ -5,10 +5,10 @@ from anycastd._configuration.sub import SubConfiguration
 
 
 class HealthcheckConfiguration(SubConfiguration):
-    """A generic class to group all healtcheck configuration classes."""
+    """A healthcheck configuration."""
 
 
-class CabourotteHealthcheck(HealthcheckConfiguration):
+class CabourotteHealthcheckConfiguration(HealthcheckConfiguration):
     """The configuration for a Cabourotte healthcheck.
 
     Attributes:
@@ -25,7 +25,7 @@ class CabourotteHealthcheck(HealthcheckConfiguration):
 Name: TypeAlias = Literal["cabourotte"]
 
 _type_by_name: dict[Name, type[HealthcheckConfiguration]] = {
-    "cabourotte": CabourotteHealthcheck,
+    "cabourotte": CabourotteHealthcheckConfiguration,
 }
 
 

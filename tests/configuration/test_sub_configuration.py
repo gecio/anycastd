@@ -5,6 +5,8 @@ from types import ModuleType
 
 import pytest
 from anycastd._configuration import healthcheck, prefix
+from anycastd._configuration.healthcheck import CabourotteHealthcheckConfiguration
+from anycastd._configuration.prefix import FRRPrefixConfiguration
 from anycastd._configuration.sub import SubConfiguration
 
 
@@ -13,10 +15,16 @@ from anycastd._configuration.sub import SubConfiguration
     [
         (
             "example-healthcheck",
-            healthcheck.CabourotteHealthcheck(name="example-healthcheck"),
+            CabourotteHealthcheckConfiguration(name="example-healthcheck"),
         ),
-        ("192.0.2.0/24", prefix.FRRPrefix(prefix=IPv4Network("192.0.2.0/24"))),
-        ("2001:db8::/32", prefix.FRRPrefix(prefix=IPv6Network("2001:db8::/32"))),
+        (
+            "192.0.2.0/24",
+            FRRPrefixConfiguration(prefix=IPv4Network("192.0.2.0/24")),
+        ),
+        (
+            "2001:db8::/32",
+            FRRPrefixConfiguration(prefix=IPv6Network("2001:db8::/32")),
+        ),
     ],
 )
 def test_from_simplified_format(config: str, expected: SubConfiguration):
@@ -39,7 +47,7 @@ def test_from_simplified_format(config: str, expected: SubConfiguration):
                 "url": "http://healthchecks.local",
                 "interval": 8,
             },
-            healthcheck.CabourotteHealthcheck(
+            CabourotteHealthcheckConfiguration(
                 name="example-healthcheck",
                 url="http://healthchecks.local",
                 interval=datetime.timedelta(seconds=8),
@@ -51,7 +59,7 @@ def test_from_simplified_format(config: str, expected: SubConfiguration):
                 "vrf": 42,
                 "vtysh": "/vtysh",
             },
-            prefix.FRRPrefix(
+            FRRPrefixConfiguration(
                 prefix=IPv6Network("2001:db8::/32"),
                 vrf=42,
                 vtysh=Path("/vtysh"),
@@ -76,8 +84,8 @@ class TestGetByName:
     @pytest.mark.parametrize(
         "module, name, expected",
         [
-            (prefix, "frrouting", prefix.FRRPrefix),
-            (healthcheck, "cabourotte", healthcheck.CabourotteHealthcheck),
+            (prefix, "frrouting", FRRPrefixConfiguration),
+            (healthcheck, "cabourotte", CabourotteHealthcheckConfiguration),
         ],
     )
     def test_name_returns_correct_type(

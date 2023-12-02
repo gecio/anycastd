@@ -1,7 +1,7 @@
 import datetime
 
 import pytest
-from anycastd._main import Service
+from anycastd.core import Service
 from pytest_mock import MockerFixture
 
 from tests.dummy import DummyHealthcheck, DummyPrefix

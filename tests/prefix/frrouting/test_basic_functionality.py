@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 from anycastd._executor import DockerExecutor
-from anycastd.prefix.frrouting import FRRoutingPrefix
+from anycastd.prefix import FRRoutingPrefix
 
 pytestmark = [pytest.mark.integration, pytest.mark.frrouting]
 

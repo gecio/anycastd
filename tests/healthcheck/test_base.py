@@ -1,7 +1,7 @@
 import datetime
 
 import pytest
-from anycastd.healthcheck.base import BaseHealthcheck
+from anycastd.healthcheck import Healthcheck
 from pytest_mock import MockerFixture
 
 from tests.dummy import DummyHealthcheck
@@ -10,7 +10,7 @@ from tests.dummy import DummyHealthcheck
 def test__init___non_timedelta_interval_raises_type_error():
     """Passing a non-timedelta interval raises a TypeError."""
     with pytest.raises(TypeError):
-        BaseHealthcheck(interval="not a timedelta")  # type: ignore
+        Healthcheck(interval="not a timedelta")  # type: ignore
 
 
 def test__repr__():

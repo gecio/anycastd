@@ -5,20 +5,20 @@ from ipaddress import IPv4Network, IPv6Network
 from pathlib import Path
 from typing import cast
 
-from anycastd._base import BaseExecutor
-from anycastd.prefix.base import VRF, BasePrefix
-from anycastd.prefix.frrouting.exceptions import (
+from anycastd._executor import Executor
+from anycastd.prefix._frrouting.exceptions import (
     FRRCommandError,
     FRRInvalidVRFError,
     FRRInvalidVTYSHError,
     FRRNoBGPError,
 )
+from anycastd.prefix._main import VRF, Prefix
 
 
-class FRRoutingPrefix(BasePrefix):
+class FRRoutingPrefix(Prefix):
     vrf: VRF
     vtysh: Path
-    executor: BaseExecutor
+    executor: Executor
 
     def __init__(
         self,
@@ -26,7 +26,7 @@ class FRRoutingPrefix(BasePrefix):
         *,
         vrf: VRF = None,
         vtysh: Path = Path("/usr/bin/vtysh"),
-        executor: BaseExecutor,
+        executor: Executor,
     ) -> None:
         """Initialize the FRRouting prefix.
 
@@ -171,7 +171,7 @@ class FRRoutingPrefix(BasePrefix):
         *,
         vrf: VRF = None,
         vtysh: Path = Path("/usr/bin/vtysh"),
-        executor: BaseExecutor,
+        executor: Executor,
     ) -> "FRRoutingPrefix":
         """Create a new validated FRRoutingPrefix.
 
@@ -187,6 +187,6 @@ class FRRoutingPrefix(BasePrefix):
         ).validate()
 
 
-def get_afi(prefix: BasePrefix) -> str:
+def get_afi(prefix: Prefix) -> str:
     """Return the FRR string AFI for the given IP type."""
     return "ipv6" if not isinstance(prefix.prefix, IPv4Network) else "ipv4"
