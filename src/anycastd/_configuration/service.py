@@ -8,7 +8,7 @@ from anycastd._configuration.prefix import PrefixConfiguration
 
 @dataclass
 class ServiceConfiguration:
-    """The configuration for a service."""
+    """A service configuration."""
 
     name: str
     prefixes: tuple[PrefixConfiguration, ...]

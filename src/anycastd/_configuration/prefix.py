@@ -6,7 +6,7 @@ from anycastd._configuration.sub import SubConfiguration
 
 
 class PrefixConfiguration(SubConfiguration):
-    """A generic class to group all prefix configuration classes."""
+    """A prefix configuration."""
 
 
 class FRRPrefixConfiguration(PrefixConfiguration):

@@ -5,7 +5,7 @@ from anycastd._configuration.sub import SubConfiguration
 
 
 class HealthcheckConfiguration(SubConfiguration):
-    """A generic class to group all healtcheck configuration classes."""
+    """A healthcheck configuration."""
 
 
 class CabourotteHealthcheckConfiguration(HealthcheckConfiguration):
