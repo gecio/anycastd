@@ -1,1 +1,1 @@
-from anycastd._cli.core import app
+from anycastd._cli.main import app

@@ -1,7 +1,7 @@
 import datetime
 
 from anycastd.healthcheck._cabourotte.result import get_result
-from anycastd.healthcheck._core import Healthcheck
+from anycastd.healthcheck._main import Healthcheck
 
 
 class CabourotteHealthcheck(Healthcheck):

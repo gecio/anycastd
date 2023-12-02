@@ -12,7 +12,7 @@ from anycastd.prefix._frrouting.exceptions import (
     FRRInvalidVTYSHError,
     FRRNoBGPError,
 )
-from anycastd.prefix.core import VRF, Prefix
+from anycastd.prefix._main import VRF, Prefix
 
 
 class FRRoutingPrefix(Prefix):

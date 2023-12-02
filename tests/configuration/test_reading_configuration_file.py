@@ -1,8 +1,8 @@
 from pathlib import Path
 
 import pytest
-from anycastd._configuration.core import _read_toml_configuration
 from anycastd._configuration.exceptions import ConfigurationError
+from anycastd._configuration.main import _read_toml_configuration
 
 
 def test_valid_configuration_read_successfully(sample_configuration_file):

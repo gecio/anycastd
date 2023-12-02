@@ -1,5 +1,5 @@
 import pytest
-from anycastd._configuration.core import MainConfiguration
+from anycastd._configuration.main import MainConfiguration
 
 
 @pytest.mark.integration

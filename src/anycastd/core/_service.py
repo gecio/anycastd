@@ -2,7 +2,7 @@ import asyncio
 from dataclasses import dataclass
 
 from anycastd.healthcheck import Healthcheck
-from anycastd.prefix.core import Prefix
+from anycastd.prefix import Prefix
 
 
 @dataclass
