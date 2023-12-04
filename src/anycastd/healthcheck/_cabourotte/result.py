@@ -1,4 +1,5 @@
 import datetime
+from typing import Self
 
 import httpx
 from pydantic import BaseModel, Field
@@ -16,7 +17,7 @@ class Result(BaseModel):
     source: str
 
     @classmethod
-    def from_json(cls, data: str | bytes | bytearray) -> "Result":
+    def from_json(cls, data: str | bytes | bytearray) -> Self:
         """Create a result from JSON returned by the cabourotte API."""
         return cls.model_validate_json(data)
 

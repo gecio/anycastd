@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from contextlib import suppress
 from ipaddress import IPv4Network, IPv6Network
 from pathlib import Path
-from typing import cast
+from typing import Self, cast
 
 from anycastd._executor import Executor
 from anycastd.prefix._frrouting.exceptions import (
@@ -141,7 +141,7 @@ class FRRoutingPrefix(Prefix):
 
         return stdout.decode("utf-8")
 
-    async def validate(self) -> "FRRoutingPrefix":
+    async def validate(self) -> Self:
         """Validate the prefix, raising an error on invalid configuration.
 
         Checks if the required VRF and BGP configuration exists.
@@ -172,7 +172,7 @@ class FRRoutingPrefix(Prefix):
         vrf: VRF = None,
         vtysh: Path = Path("/usr/bin/vtysh"),
         executor: Executor,
-    ) -> "FRRoutingPrefix":
+    ) -> Self:
         """Create a new validated FRRoutingPrefix.
 
         Creates a new FRRoutingPrefix instance while validating it against the
@@ -182,7 +182,7 @@ class FRRoutingPrefix(Prefix):
             A subclass of FRRConfigurationError if there is an issue with the
             FRRouting configuration.
         """
-        return await FRRoutingPrefix(
+        return await cls(
             prefix=prefix, vrf=vrf, vtysh=vtysh, executor=executor
         ).validate()
 
