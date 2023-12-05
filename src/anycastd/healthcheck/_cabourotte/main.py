@@ -25,6 +25,12 @@ class CabourotteHealthcheck(Healthcheck):
             f"interval={self.interval!r})"
         )
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, CabourotteHealthcheck):
+            return NotImplemented
+
+        return self.__dict__ == other.__dict__
+
     @property
     def interval(self) -> datetime.timedelta:
         return self.__interval

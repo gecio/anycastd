@@ -47,6 +47,12 @@ class FRRoutingPrefix(Prefix):
             f"vtysh={self.vtysh!r}, executor={self.executor!r})"
         )
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, FRRoutingPrefix):
+            return NotImplemented
+
+        return self.__dict__ == other.__dict__
+
     @property
     def prefix(self) -> IPv4Network | IPv6Network:
         return self.__prefix
