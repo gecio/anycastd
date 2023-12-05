@@ -30,7 +30,7 @@ def example_networks(request) -> _IP_Prefix:
     return request.getfixturevalue(request.param)
 
 
-@pytest.fixture(params=[None, "vrf-func-test"])
+@pytest.fixture(params=[None, "vrf-func-test", "47"])
 def example_vrfs(request) -> VRF:
     """Parametrize tests with example VRFs."""
     return request.param
