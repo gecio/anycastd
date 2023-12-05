@@ -7,8 +7,9 @@ from ipaddress import IPv4Network
 from pathlib import Path
 
 import pytest
+from anycastd.prefix import VRF
 
-from tests.conftest import _VRF, _IP_Prefix
+from tests.conftest import _IP_Prefix
 
 
 def get_afi(prefix: _IP_Prefix) -> str:
@@ -125,10 +126,10 @@ def vtysh(frr_container) -> Vtysh:
 
 
 @pytest.fixture
-def bgp_prefix_configured() -> Callable[[_IP_Prefix, Vtysh, _VRF], bool]:
+def bgp_prefix_configured() -> Callable[[_IP_Prefix, Vtysh, VRF], bool]:
     """A callable that can be used to check if a BGP prefix is configured."""
 
-    def _(prefix: _IP_Prefix, vtysh: Vtysh, vrf: _VRF = None) -> bool:
+    def _(prefix: _IP_Prefix, vtysh: Vtysh, vrf: VRF = None) -> bool:
         family = get_afi(prefix)
         cmd = (
             f"show ip bgp vrf {vrf} {family} unicast {prefix} json"
@@ -151,10 +152,10 @@ def bgp_prefix_configured() -> Callable[[_IP_Prefix, Vtysh, _VRF], bool]:
 
 
 @pytest.fixture
-def add_bgp_prefix() -> Callable[[_IP_Prefix, int, Vtysh, _VRF], None]:
+def add_bgp_prefix() -> Callable[[_IP_Prefix, int, Vtysh, VRF], None]:
     """A callable that can be used to add a BGP prefix."""
 
-    def _(prefix: _IP_Prefix, asn: int, vtysh: Vtysh, vrf: _VRF = None) -> None:
+    def _(prefix: _IP_Prefix, asn: int, vtysh: Vtysh, vrf: VRF = None) -> None:
         """Add a network to the BGP configuration using vtysh."""
         family = get_afi(prefix)
         vtysh(
@@ -170,10 +171,10 @@ def add_bgp_prefix() -> Callable[[_IP_Prefix, int, Vtysh, _VRF], None]:
 
 
 @pytest.fixture
-def remove_bgp_prefix() -> Callable[[_IP_Prefix, int, Vtysh, _VRF], None]:
+def remove_bgp_prefix() -> Callable[[_IP_Prefix, int, Vtysh, VRF], None]:
     """A callable that can be used to remove a BGP prefix."""
 
-    def _(prefix: _IP_Prefix, asn: int, vtysh: Vtysh, vrf: _VRF = None) -> None:
+    def _(prefix: _IP_Prefix, asn: int, vtysh: Vtysh, vrf: VRF = None) -> None:
         """Remove a network from the BGP configuration using vtysh."""
         family = get_afi(prefix)
         vtysh(

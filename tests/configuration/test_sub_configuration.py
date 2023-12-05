@@ -56,12 +56,12 @@ def test_from_simplified_format(config: str, expected: SubConfiguration):
         (
             {
                 "prefix": "2001:db8::/32",
-                "vrf": 42,
+                "vrf": "42",
                 "vtysh": "/vtysh",
             },
             FRRPrefixConfiguration(
                 prefix=IPv6Network("2001:db8::/32"),
-                vrf=42,
+                vrf="42",
                 vtysh=Path("/vtysh"),
             ),
         ),
