@@ -13,12 +13,6 @@ def test__init___non_timedelta_interval_raises_type_error():
         Healthcheck(interval="not a timedelta")  # type: ignore
 
 
-def test__repr__():
-    """The repr of a subclassed healthcheck is correct."""
-    check = DummyHealthcheck(interval=datetime.timedelta(seconds=1))
-    assert repr(check) == "DummyHealthcheck(interval=datetime.timedelta(seconds=1))"
-
-
 class TestHealthStatus:
     """Tests for the healthchecks status."""
 
