@@ -16,9 +16,6 @@ class Healthcheck(ABC):
             raise TypeError("Interval must be a timedelta.")
         self.interval = interval
 
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(interval={self.interval!r})"
-
     @final
     async def is_healthy(self) -> bool:
         """Whether the healthcheck is healthy.
