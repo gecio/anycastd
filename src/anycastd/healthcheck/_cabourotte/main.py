@@ -17,6 +17,12 @@ class CabourotteHealthcheck(Healthcheck):
         self.name = name
         self.url = url
 
+    def __repr__(self) -> str:
+        return (
+            f"CabourotteHealthcheck(name={self.name!r}, url={self.url!r}, "
+            f"interval={self.interval!r})"
+        )
+
     async def _check(self) -> bool:
         """Return whether the healthcheck is healthy or not."""
         result = await get_result(self.name, url=self.url)

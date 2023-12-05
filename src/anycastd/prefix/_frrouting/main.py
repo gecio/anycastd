@@ -39,6 +39,12 @@ class FRRoutingPrefix(Prefix):
         self.vtysh = vtysh
         self.executor = executor
 
+    def __repr__(self) -> str:
+        return (
+            f"FRRoutingPrefix(prefix={self.prefix!r}, vrf={self.vrf!r}, "
+            f"vtysh={self.vtysh!r}, executor={self.executor!r})"
+        )
+
     async def is_announced(self) -> bool:
         """Returns True if the prefix is announced.
 
