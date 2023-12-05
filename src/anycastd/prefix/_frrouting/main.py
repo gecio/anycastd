@@ -34,7 +34,9 @@ class FRRoutingPrefix(Prefix):
         to validate the prefix against the FRRouting configuration, avoiding
         potential errors later in runtime.
         """
-        super().__init__(prefix)
+        if not any((isinstance(prefix, IPv4Network), isinstance(prefix, IPv6Network))):
+            raise TypeError("Prefix must be an IPv4 or IPv6 network.")
+        self.__prefix = prefix
         self.vrf = vrf
         self.vtysh = vtysh
         self.executor = executor
@@ -44,6 +46,10 @@ class FRRoutingPrefix(Prefix):
             f"FRRoutingPrefix(prefix={self.prefix!r}, vrf={self.vrf!r}, "
             f"vtysh={self.vtysh!r}, executor={self.executor!r})"
         )
+
+    @property
+    def prefix(self) -> IPv4Network | IPv6Network:
+        return self.__prefix
 
     async def is_announced(self) -> bool:
         """Returns True if the prefix is announced.

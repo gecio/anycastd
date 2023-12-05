@@ -8,12 +8,11 @@ VRF: TypeAlias = str | None
 class Prefix(ABC):
     """An IP prefix that can be announced or denounced."""
 
-    prefix: IPv4Network | IPv6Network
-
-    def __init__(self, prefix: IPv4Network | IPv6Network):
-        if not any((isinstance(prefix, IPv4Network), isinstance(prefix, IPv6Network))):
-            raise TypeError("Prefix must be an IPv4 or IPv6 network.")
-        self.prefix = prefix
+    @property
+    @abstractmethod
+    def prefix(self) -> IPv4Network | IPv6Network:
+        """The IP prefix."""
+        raise NotImplementedError
 
     @abstractmethod
     async def is_announced(self) -> bool:
