@@ -37,6 +37,24 @@ def test__init__non_string_url_raises_type_error():
         )
 
 
+@pytest.mark.parametrize(
+    "attributes",
+    [
+        {
+            "name": "test",
+            "url": "https://example.com",
+            "interval": datetime.timedelta(seconds=30),
+        }
+    ],
+)
+def test_repr(attributes: dict):
+    """The repr of a Cabourotte healthcheck is correct."""
+    healthcheck = CabourotteHealthcheck(**attributes)
+    assert repr(healthcheck) == "CabourotteHealthcheck({})".format(
+        ", ".join(f"{k}={v!r}" for (k, v) in attributes.items())
+    )
+
+
 @pytest.mark.asyncio
 async def test__check_awaits_get_result(mocker: MockerFixture):
     """The check method awaits the result of get_result."""
