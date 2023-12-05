@@ -55,6 +55,28 @@ def test_repr(attributes: dict):
     )
 
 
+def test_equal():
+    """Two healthchecks with the same attributes are equal."""
+    healthcheck1 = CabourotteHealthcheck(
+        "test", url="https://example.com", interval=datetime.timedelta(seconds=10)
+    )
+    healthcheck2 = CabourotteHealthcheck(
+        "test", url="https://example.com", interval=datetime.timedelta(seconds=10)
+    )
+    assert healthcheck1 == healthcheck2
+
+
+def test_non_equal():
+    """Two healthchecks with different attributes are not equal."""
+    healthcheck1 = CabourotteHealthcheck(
+        "test", url="https://example.com", interval=datetime.timedelta(seconds=10)
+    )
+    healthcheck2 = CabourotteHealthcheck(
+        "test", url="https://example.com", interval=datetime.timedelta(seconds=20)
+    )
+    assert healthcheck1 != healthcheck2
+
+
 @pytest.mark.asyncio
 async def test__check_awaits_get_result(mocker: MockerFixture):
     """The check method awaits the result of get_result."""
