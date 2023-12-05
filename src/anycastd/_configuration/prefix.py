@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Literal, TypeAlias
 
 from anycastd._configuration.sub import SubConfiguration
+from anycastd.prefix import VRF
 
 
 class PrefixConfiguration(SubConfiguration):
@@ -19,7 +20,7 @@ class FRRPrefixConfiguration(PrefixConfiguration):
     """
 
     prefix: IPv4Network | IPv6Network
-    vrf: int | None = None
+    vrf: VRF = None
     vtysh: Path = Path("/usr/bin/vtysh")
 
 

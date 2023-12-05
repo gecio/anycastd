@@ -2,9 +2,9 @@ from ipaddress import IPv4Network, IPv6Network
 from typing import TypeAlias
 
 import pytest
+from anycastd.prefix import VRF
 
 _IP_Prefix: TypeAlias = IPv4Network | IPv6Network
-_VRF: TypeAlias = str | None
 
 
 @pytest.fixture(scope="session")
@@ -30,7 +30,7 @@ def example_networks(request) -> _IP_Prefix:
     return request.getfixturevalue(request.param)
 
 
-@pytest.fixture(params=[None, "vrf-func-test"])
-def example_vrfs(request) -> _VRF:
+@pytest.fixture(params=[None, "vrf-func-test", "47"])
+def example_vrfs(request) -> VRF:
     """Parametrize tests with example VRFs."""
     return request.param
