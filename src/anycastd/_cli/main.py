@@ -8,6 +8,7 @@ from pydantic import ValidationError
 from anycastd import __version__
 from anycastd._cli.output import ExitCode, print_error
 from anycastd._configuration import ConfigurationError, MainConfiguration
+from anycastd.core import run_from_configuration
 
 CONFIG_PATH = Path("/etc/anycastd/config.toml")
 
@@ -51,6 +52,8 @@ def run(
     ] = CONFIG_PATH,
 ) -> None:
     """Run anycastd."""
+    main_configuration = _get_main_configuration(config)
+    run_from_configuration(main_configuration)
 
 
 def _get_main_configuration(config: Path) -> MainConfiguration:
