@@ -21,7 +21,7 @@ def config_to_instance(config: HealthcheckConfiguration) -> Healthcheck:
 
 
 def config_to_instance(
-    config: PrefixConfiguration | HealthcheckConfiguration
+    config: PrefixConfiguration | HealthcheckConfiguration,
 ) -> Prefix | Healthcheck:
     """Convert a configuration to an instance of it's respective type."""
     match config:
