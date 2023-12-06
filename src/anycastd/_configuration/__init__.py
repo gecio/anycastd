@@ -1,3 +1,3 @@
-from anycastd._configuration.conversion import _sub_config_to_instance
+from anycastd._configuration.conversion import config_to_service
 from anycastd._configuration.exceptions import ConfigurationError
 from anycastd._configuration.main import MainConfiguration

@@ -7,7 +7,7 @@ from anycastd._configuration.healthcheck import (
 from anycastd._configuration.prefix import FRRPrefixConfiguration, PrefixConfiguration
 from anycastd._configuration.service import ServiceConfiguration
 from anycastd._executor import LocalExecutor
-from anycastd.core import Service
+from anycastd.core._service import Service
 from anycastd.healthcheck import CabourotteHealthcheck, Healthcheck
 from anycastd.prefix import FRRoutingPrefix, Prefix
 
