@@ -3,7 +3,7 @@ from ipaddress import IPv6Network
 from pathlib import Path
 
 import pytest
-from anycastd._configuration.conversion import config_to_instance
+from anycastd._configuration.conversion import _sub_config_to_instance
 from anycastd._configuration.healthcheck import (
     CabourotteHealthcheckConfiguration,
     HealthcheckConfiguration,
@@ -49,5 +49,5 @@ def test_subconfiguration_converted_to_instance(
     expected: Prefix | Healthcheck,
 ):
     """A subconfiguration can be converted to an instance of the type it represents."""
-    converted = config_to_instance(config)
+    converted = _sub_config_to_instance(config)
     assert converted == expected

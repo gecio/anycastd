@@ -22,29 +22,39 @@ def config_to_service(config: ServiceConfiguration) -> Service:
         A service instance with the pararmeters from the configuration.
     """
     prefixes: tuple[Prefix, ...] = tuple(
-        config_to_instance(prefix) for prefix in config.prefixes
+        _sub_config_to_instance(prefix) for prefix in config.prefixes
     )
     health_checks: tuple[Healthcheck, ...] = tuple(
-        config_to_instance(check) for check in config.checks
+        _sub_config_to_instance(check) for check in config.checks
     )
 
     return Service(name=config.name, prefixes=prefixes, health_checks=health_checks)
 
 
 @overload
-def config_to_instance(config: PrefixConfiguration) -> Prefix:
+def _sub_config_to_instance(config: PrefixConfiguration) -> Prefix:
     ...
 
 
 @overload
-def config_to_instance(config: HealthcheckConfiguration) -> Healthcheck:
+def _sub_config_to_instance(config: HealthcheckConfiguration) -> Healthcheck:
     ...
 
 
-def config_to_instance(
+def _sub_config_to_instance(
     config: PrefixConfiguration | HealthcheckConfiguration,
 ) -> Prefix | Healthcheck:
-    """Convert a configuration to an instance of it's respective type."""
+    """Convert a subconfiguration to an instance of it's respective type.
+
+    Convert subconfigurations to instances of the repsctive type
+    they are describing, e.g. a FRRPrefixConfiguration to a FRRoutingPrefix.
+
+    Args:
+        config: The subconfiguration to convert.
+
+    Returns:
+        An instance of the respective type the subconfiguration describes.
+    """
     match config:
         case FRRPrefixConfiguration():
             return FRRoutingPrefix(**config.model_dump(), executor=LocalExecutor())
