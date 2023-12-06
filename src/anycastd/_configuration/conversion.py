@@ -5,9 +5,30 @@ from anycastd._configuration.healthcheck import (
     HealthcheckConfiguration,
 )
 from anycastd._configuration.prefix import FRRPrefixConfiguration, PrefixConfiguration
+from anycastd._configuration.service import ServiceConfiguration
 from anycastd._executor import LocalExecutor
+from anycastd.core import Service
 from anycastd.healthcheck import CabourotteHealthcheck, Healthcheck
 from anycastd.prefix import FRRoutingPrefix, Prefix
+
+
+def config_to_service(config: ServiceConfiguration) -> Service:
+    """Convert a service configuration to an actual service instance.
+
+    Args:
+        config: The configuration to convert.
+
+    Returns:
+        A service instance with the pararmeters from the configuration.
+    """
+    prefixes: tuple[Prefix, ...] = tuple(
+        config_to_instance(prefix) for prefix in config.prefixes
+    )
+    health_checks: tuple[Healthcheck, ...] = tuple(
+        config_to_instance(check) for check in config.checks
+    )
+
+    return Service(name=config.name, prefixes=prefixes, health_checks=health_checks)
 
 
 @overload
