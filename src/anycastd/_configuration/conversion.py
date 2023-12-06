@@ -19,7 +19,7 @@ def config_to_service(config: ServiceConfiguration) -> Service:
         config: The configuration to convert.
 
     Returns:
-        A service instance with the pararmeters from the configuration.
+        A service instance with the parameters from the configuration.
     """
     prefixes: tuple[Prefix, ...] = tuple(
         _sub_config_to_instance(prefix) for prefix in config.prefixes
