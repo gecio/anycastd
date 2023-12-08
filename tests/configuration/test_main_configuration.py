@@ -2,7 +2,6 @@ import pytest
 from anycastd._configuration.main import MainConfiguration
 
 
-@pytest.mark.integration
 def test_initialized_from_valid_toml(sample_configuration, sample_configuration_file):
     """An instance with correct values can be created from a TOML file."""
     path, _ = sample_configuration_file
