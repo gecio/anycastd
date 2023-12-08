@@ -35,3 +35,13 @@ class ConfigurationError(Exception):
                 # ignore mechanism, so the generic type ignore is used here.
 
         super().__init__(msg)
+
+
+class ConfigurationMissingKeyError(Exception):
+    """A required key was missing from the configuration."""
+
+    key: str
+
+    def __init__(self, exc: KeyError):
+        self.key = exc.args[0]
+        super().__init__(f"Missing required key: {self.key}")
