@@ -5,6 +5,7 @@ from types import ModuleType
 
 import pytest
 from anycastd._configuration import healthcheck, prefix
+from anycastd._configuration.exceptions import ConfigurationSyntaxError
 from anycastd._configuration.healthcheck import CabourotteHealthcheckConfiguration
 from anycastd._configuration.prefix import FRRPrefixConfiguration
 from anycastd._configuration.sub import SubConfiguration
@@ -76,6 +77,63 @@ def test_from_expanded_format(config: dict, expected: SubConfiguration):
     type_ = type(expected)
     result = type_.from_configuration(config)
     assert result == expected
+
+
+def test_from_simple_when_multiple_required_fields_raises():
+    """Exception raised when multiple fields are required but only a string is given."""
+
+    class MultipleRequiredFields(SubConfiguration):
+        first_required_field: str
+        second_required_field: str
+
+    value = "value for first field"
+    expected = (
+        rf".*invalid value '{value}', "
+        "expected required fields 'first_required_field', 'second_required_field'"
+    )
+
+    with pytest.raises(ConfigurationSyntaxError, match=expected):
+        MultipleRequiredFields.from_configuration(value)
+
+
+def test_unknown_field_raises():
+    """Exception raised when an unknown field is given."""
+
+    class InvalidField(SubConfiguration):
+        required_field: str
+
+    config = {"required_field": "value", "non_existent_field": "value"}
+    expected = "invalid field 'non_existent_field'"
+
+    with pytest.raises(ConfigurationSyntaxError, match=expected):
+        InvalidField.from_configuration(config)
+
+
+def test_invalid_field_type_raises():
+    """Exception raised when a field has an invalid type."""
+
+    class InvalidFieldType(SubConfiguration):
+        float_field: float
+
+    config = {"float_field": "Not a float"}
+    expected = r".*invalid field type 'str' for 'float_field', expected 'float'"
+
+    with pytest.raises(ConfigurationSyntaxError, match=expected):
+        InvalidFieldType.from_configuration(config)
+
+
+def test_missing_required_field_raises():
+    """Exception raised when a required field is missing."""
+
+    class MultipleRequiredFields(SubConfiguration):
+        first_required_field: str
+        second_required_field: str
+
+    config = {"second_required_field": "foo"}
+    expected = r".*missing required field 'first_required_field'"
+
+    with pytest.raises(ConfigurationSyntaxError, match=expected):
+        MultipleRequiredFields.from_configuration(config)
 
 
 class TestGetByName:
