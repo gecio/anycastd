@@ -90,8 +90,8 @@ checks.cabourotte = ["dns_v6", "dns_v4"]
 
 [services.ntp]
 prefixes.frrouting = [
-    { "prefix" = "2001:db8::123:7e11:713e", "vrf" = 123 },
-    { "prefix" = "203.0.113.123", "vrf" = 123 },
+    { "prefix" = "2001:db8::123:7e11:713e", "vrf" = "123" },
+    { "prefix" = "203.0.113.123", "vrf" = "123" },
 ]
 checks.cabourotte = [
     { "name" = "ntp_v6", "interval" = 1 },
