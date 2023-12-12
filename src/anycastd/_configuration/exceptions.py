@@ -1,5 +1,6 @@
 from pathlib import Path
 from tomllib import TOMLDecodeError
+from typing import assert_never
 
 from pydantic import ValidationError
 
@@ -33,6 +34,8 @@ class ConfigurationSyntaxError(ConfigurationError):
                 spec = f"missing required key {exc}"
             case ValidationError():
                 spec = f"{exc}"
+            case _ as unreachable:
+                assert_never(unreachable)
 
         super().__init__(spec, path)
 
