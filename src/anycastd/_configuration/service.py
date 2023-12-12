@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Self
 
 from anycastd._configuration import healthcheck, prefix
-from anycastd._configuration.exceptions import ConfigurationMissingKeyError
+from anycastd._configuration.exceptions import ConfigurationSyntaxError
 from anycastd._configuration.healthcheck import HealthcheckConfiguration
 from anycastd._configuration.prefix import PrefixConfiguration
 
@@ -32,13 +32,16 @@ class ServiceConfiguration:
             },
         }
         ```
+
+        Raises:
+            ConfigurationSyntaxError: The configuration data has an invalid syntax.
         """
         try:
             name = data["name"]
             keyed_prefixes = data["prefixes"]
             keyed_checks = data["checks"]
         except KeyError as exc:
-            raise ConfigurationMissingKeyError(exc) from exc
+            raise ConfigurationSyntaxError(exc) from exc
 
         prefixes = []
         for prefix_type, prefix_configs in keyed_prefixes.items():

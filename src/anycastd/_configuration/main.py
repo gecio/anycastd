@@ -2,14 +2,14 @@ import tomllib
 from pathlib import Path
 from typing import Self
 
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel
 
 from anycastd._configuration.conversion import (
     dict_w_items_named_by_key_to_flat_w_name_value,
 )
 from anycastd._configuration.exceptions import (
-    ConfigurationError,
-    ConfigurationMissingKeyError,
+    ConfigurationFileUnreadableError,
+    ConfigurationSyntaxError,
 )
 from anycastd._configuration.service import ServiceConfiguration
 
@@ -27,14 +27,13 @@ class MainConfiguration(BaseModel):
             path: The path to the configuration file.
 
         Raises:
-            ConfigurationError: The configuration could not be read or parsed.
+            ConfigurationFileUnreadableError: The configuration file could not be read.
+            ConfigurationSyntaxError: The configuration data has an invalid syntax.
         """
-        config = _read_toml_configuration(path)
+        data = _read_toml_configuration(path)
+        config = cls.from_configuration_dict(data)
 
-        try:
-            return cls.from_configuration_dict(config)
-        except (KeyError, ValueError, TypeError, ValidationError) as exc:
-            raise ConfigurationError(path, exc) from exc
+        return config
 
     @classmethod
     def from_configuration_dict(cls, data: dict) -> Self:
@@ -64,11 +63,14 @@ class MainConfiguration(BaseModel):
             }
         }
         ```
+
+        Raises:
+            ConfigurationSyntaxError: The configuration data has an invalid syntax.
         """
         try:
             keyed_services = data["services"]
         except KeyError as exc:
-            raise ConfigurationMissingKeyError(exc) from exc
+            raise ConfigurationSyntaxError(exc) from exc
 
         services = tuple(
             ServiceConfiguration.from_configuration_dict(service_config)
@@ -90,12 +92,15 @@ def _read_toml_configuration(path: Path) -> dict:
         The parsed configuration data.
 
     Raises:
-        ConfigurationError: The configuration could not be read or parsed.
+        ConfigurationSyntaxError: The configuration data has an invalid syntax.
+        ConfigurationFileUnreadableError: The configuration file could not be read.
     """
     try:
         with path.open("rb") as f:
             data = tomllib.load(f)
-    except (OSError, tomllib.TOMLDecodeError) as exc:
-        raise ConfigurationError(path, exc) from exc
+    except tomllib.TOMLDecodeError as exc:
+        raise ConfigurationSyntaxError(exc, path) from exc
+    except OSError as exc:
+        raise ConfigurationFileUnreadableError(exc, path) from exc
 
     return data
