@@ -115,6 +115,9 @@ convention = "google"
 [tool.ruff.mccabe]
 max-complexity = 10
 
+[tool.ruff.format]
+docstring-code-format = true
+
 [tool.mypy]
 disallow_any_unimported = true
 disallow_untyped_defs = true
