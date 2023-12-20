@@ -46,6 +46,10 @@ class Service:
     prefixes: tuple[Prefix, ...]
     health_checks: tuple[Healthcheck, ...]
 
+    def __post_init__(self) -> None:
+        if not all(isinstance(_, Healthcheck) for _ in self.health_checks):
+            raise TypeError("Health checks must implement the Healthcheck protocol")
+
     # The _only_once parameter is only used for testing.
     # TODO: Look into a better way to do this.
     async def run(self, *, _only_once: bool = False) -> None:
