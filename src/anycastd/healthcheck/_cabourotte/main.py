@@ -1,12 +1,14 @@
 import datetime
 
 from anycastd.healthcheck._cabourotte.result import get_result
-from anycastd.healthcheck._main import Healthcheck
 
 
-class CabourotteHealthcheck(Healthcheck):
+class CabourotteHealthcheck:
     name: str
     url: str
+
+    _last_checked: datetime.datetime | None = None
+    _last_healthy: bool = False
 
     def __init__(self, name: str, *, url: str, interval: datetime.timedelta):
         if not isinstance(interval, datetime.timedelta):
@@ -34,6 +36,22 @@ class CabourotteHealthcheck(Healthcheck):
     @property
     def interval(self) -> datetime.timedelta:
         return self.__interval
+
+    async def is_healthy(self) -> bool:
+        """Return whether the healthcheck is healthy or not."""
+        if (
+            self._last_checked is None
+            or datetime.datetime.now(datetime.timezone.utc) - self._last_checked
+            > self.interval
+        ):
+            healthy = await self._check()
+
+            self._last_checked = datetime.datetime.now(datetime.timezone.utc)
+            self._last_healthy = healthy
+
+            return healthy
+
+        return self._last_healthy
 
     async def _check(self) -> bool:
         """Return whether the healthcheck is healthy or not."""
