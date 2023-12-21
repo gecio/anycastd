@@ -106,6 +106,9 @@ ignore = ["D100", "D101", "D102", "D103", "D104", "D105", "D107", "S603"]
 "tests/*" = [
     "S101",     # Use of assert
     "FBT001",   # Positional boolean function argument
+    "D200",     #
+    "D212",     # Allow longer docstrings without summary.
+    "D205",     #
 ]
 "__init__.py" = ["F401"]
 
