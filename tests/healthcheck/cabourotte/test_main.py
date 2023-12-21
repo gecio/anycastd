@@ -78,8 +78,8 @@ def test_non_equal():
 
 
 @pytest.mark.asyncio
-async def test__check_awaits_get_result(mocker: MockerFixture):
-    """The check method awaits the result of get_result."""
+async def test_get_status_awaits_get_result(mocker: MockerFixture):
+    """The get status method awaits the result of get_result."""
     name = "test"
     url = "https://example.com"
     healthcheck = CabourotteHealthcheck(
@@ -87,14 +87,14 @@ async def test__check_awaits_get_result(mocker: MockerFixture):
     )
     mock_get_result = mocker.patch("anycastd.healthcheck._cabourotte.main.get_result")
 
-    await healthcheck._check()
+    await healthcheck._get_status()
 
     mock_get_result.assert_awaited_once_with(name, url=url)
 
 
 @pytest.mark.parametrize("success", [True, False])
 @pytest.mark.asyncio
-async def test__check_returns_result_success(success: bool, mocker: MockerFixture):
+async def test_get_status_returns_result(success: bool, mocker: MockerFixture):
     """The check method returns True if the result is successful and False otherwise."""
     healthcheck = CabourotteHealthcheck(
         "test", url="https://example.com", interval=datetime.timedelta(seconds=10)
@@ -105,4 +105,4 @@ async def test__check_returns_result_success(success: bool, mocker: MockerFixtur
         "anycastd.healthcheck._cabourotte.main.get_result", return_value=mock_result
     )
 
-    assert await healthcheck._check() == success
+    assert await healthcheck._get_status() == success
