@@ -4,6 +4,8 @@ import pytest
 from anycastd._executor import DockerExecutor
 from anycastd.prefix import FRRoutingPrefix
 
+from tests.conftest import skip_without_docker
+
 pytestmark = [pytest.mark.integration, pytest.mark.frrouting]
 
 
@@ -16,6 +18,7 @@ def docker_executor(frr_container) -> DockerExecutor:
     return DockerExecutor(docker=Path("/usr/bin/docker"), container=frr_container)
 
 
+@skip_without_docker
 @pytest.mark.asyncio
 async def test_announce_adds_bgp_network(  # noqa: PLR0913
     vtysh,
@@ -45,6 +48,7 @@ async def test_announce_adds_bgp_network(  # noqa: PLR0913
         )
 
 
+@skip_without_docker
 @pytest.mark.asyncio
 async def test_denounce_removes_bgp_network(  # noqa: PLR0913
     vtysh,
@@ -66,6 +70,7 @@ async def test_denounce_removes_bgp_network(  # noqa: PLR0913
     assert not bgp_prefix_configured(prefix.prefix, vtysh=vtysh, vrf=example_vrfs)
 
 
+@skip_without_docker
 @pytest.mark.asyncio
 @pytest.mark.parametrize("announced", [True, False])
 async def test_announcement_state_reported_correctly(  # noqa: PLR0913
