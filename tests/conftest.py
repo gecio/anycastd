@@ -1,3 +1,4 @@
+import shutil
 from ipaddress import IPv4Network, IPv6Network
 from typing import TypeAlias
 
@@ -5,6 +6,11 @@ import pytest
 from anycastd.prefix import VRF
 
 _IP_Prefix: TypeAlias = IPv4Network | IPv6Network
+
+
+skip_without_docker = pytest.mark.skipif(
+    shutil.which("docker") is None, reason="Requires Docker."
+)
 
 
 @pytest.fixture(scope="session")
