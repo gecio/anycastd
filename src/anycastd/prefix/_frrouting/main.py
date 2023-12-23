@@ -15,7 +15,7 @@ from anycastd.prefix._frrouting.exceptions import (
 from anycastd.prefix._main import VRF, Prefix
 
 
-class FRRoutingPrefix(Prefix):
+class FRRoutingPrefix:
     vrf: VRF
     vtysh: Path
     executor: Executor

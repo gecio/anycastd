@@ -1,5 +1,3 @@
-import datetime
-
 import pytest
 from anycastd.core import Service
 from pytest_mock import MockerFixture
@@ -17,8 +15,8 @@ class TestService:
                 DummyPrefix(ipv6_example_network),
             ),
             health_checks=(
-                DummyHealthcheck(interval=datetime.timedelta(seconds=1)),
-                DummyHealthcheck(interval=datetime.timedelta(seconds=5)),
+                DummyHealthcheck(),
+                DummyHealthcheck(),
             ),
         )
 
