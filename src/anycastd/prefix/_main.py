@@ -1,42 +1,39 @@
-from abc import ABC, abstractmethod
+from enum import StrEnum
 from ipaddress import IPv4Network, IPv6Network
-from typing import TypeAlias
+from typing import Protocol, TypeAlias, runtime_checkable
 
 VRF: TypeAlias = str | None
 
 
-class Prefix(ABC):
+class AFI(StrEnum):
+    """The IP address family."""
+
+    IPv4 = "ipv4"
+    IPv6 = "ipv6"
+
+
+@runtime_checkable
+class Prefix(Protocol):
     """An IP prefix that can be announced or denounced."""
 
     @property
-    @abstractmethod
     def prefix(self) -> IPv4Network | IPv6Network:
         """The IP prefix."""
-        raise NotImplementedError
+        ...
 
-    @abstractmethod
+    @property
+    def afi(self) -> AFI:
+        """The address family of the prefix."""
+        ...
+
     async def is_announced(self) -> bool:
-        """Whether the prefix is currently announced.
+        """Whether the prefix is currently announced."""
+        ...
 
-        This method must be implemented by subclasses and return a boolean
-        indicating whether the prefix is currently announced.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
     async def announce(self) -> None:
-        """Announce the prefix.
+        """Announce the prefix."""
+        ...
 
-        This method must be implemented by subclasses and announce the
-        prefix if it isn't announced already.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
     async def denounce(self) -> None:
-        """Denounce the prefix.
-
-        This method must be implemented by subclasses and denounce the
-        prefix if it is announced.
-        """
-        raise NotImplementedError
+        """Denounce the prefix."""
+        ...

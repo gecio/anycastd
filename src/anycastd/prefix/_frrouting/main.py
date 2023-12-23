@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from contextlib import suppress
 from ipaddress import IPv4Network, IPv6Network
 from pathlib import Path
-from typing import Self, cast
+from typing import Self, assert_never, cast
 
 from anycastd._executor import Executor
 from anycastd.prefix._frrouting.exceptions import (
@@ -12,10 +12,10 @@ from anycastd.prefix._frrouting.exceptions import (
     FRRInvalidVTYSHError,
     FRRNoBGPError,
 )
-from anycastd.prefix._main import VRF, Prefix
+from anycastd.prefix._main import AFI, VRF
 
 
-class FRRoutingPrefix(Prefix):
+class FRRoutingPrefix:
     vrf: VRF
     vtysh: Path
     executor: Executor
@@ -57,16 +57,26 @@ class FRRoutingPrefix(Prefix):
     def prefix(self) -> IPv4Network | IPv6Network:
         return self.__prefix
 
+    @property
+    def afi(self) -> AFI:
+        """The address family of the prefix."""
+        match self.prefix:
+            case IPv4Network():
+                return AFI.IPv4
+            case IPv6Network():
+                return AFI.IPv6
+            case _ as unreachable:
+                assert_never(unreachable)
+
     async def is_announced(self) -> bool:
         """Returns True if the prefix is announced.
 
         Checks if the respective BGP prefix is configured in the default VRF.
         """
-        family = get_afi(self)
         cmd = (
-            f"show bgp vrf {self.vrf} {family} unicast {self.prefix} json"
+            f"show bgp vrf {self.vrf} {self.afi} unicast {self.prefix} json"
             if self.vrf
-            else f"show bgp {family} unicast {self.prefix} json"
+            else f"show bgp {self.afi} unicast {self.prefix} json"
         )
         show_prefix = await self._run_vtysh_commands((cmd,))
         prefix_info = json.loads(show_prefix)
@@ -85,14 +95,13 @@ class FRRoutingPrefix(Prefix):
 
         Adds the respective BGP prefix to the default VRF.
         """
-        family = get_afi(self)
         asn = await self._get_local_asn()
 
         await self._run_vtysh_commands(
             (
                 "configure terminal",
                 f"router bgp {asn} vrf {self.vrf}" if self.vrf else f"router bgp {asn}",
-                f"address-family {family} unicast",
+                f"address-family {self.afi} unicast",
                 f"network {self.prefix}",
             )
         )
@@ -102,14 +111,13 @@ class FRRoutingPrefix(Prefix):
 
         Removes the respective BGP prefix from the default VRF.
         """
-        family = get_afi(self)
         asn = await self._get_local_asn()
 
         await self._run_vtysh_commands(
             (
                 "configure terminal",
                 f"router bgp {asn} vrf {self.vrf}" if self.vrf else f"router bgp {asn}",
-                f"address-family {family} unicast",
+                f"address-family {self.afi} unicast",
                 f"no network {self.prefix}",
             )
         )
@@ -203,8 +211,3 @@ class FRRoutingPrefix(Prefix):
         return await cls(
             prefix=prefix, vrf=vrf, vtysh=vtysh, executor=executor
         ).validate()
-
-
-def get_afi(prefix: Prefix) -> str:
-    """Return the FRR string AFI for the given IP type."""
-    return "ipv6" if not isinstance(prefix.prefix, IPv4Network) else "ipv4"

@@ -1,41 +1,32 @@
 import datetime
+from dataclasses import dataclass, field
 
 from anycastd.healthcheck._cabourotte.result import get_result
-from anycastd.healthcheck._main import Healthcheck
+from anycastd.healthcheck._common import CheckCoroutine, interval_check
 
 
-class CabourotteHealthcheck(Healthcheck):
+@dataclass
+class CabourotteHealthcheck:
     name: str
-    url: str
+    url: str = field(kw_only=True)
+    interval: datetime.timedelta = field(kw_only=True)
 
-    def __init__(self, name: str, *, url: str, interval: datetime.timedelta):
-        if not isinstance(interval, datetime.timedelta):
+    _check: CheckCoroutine = field(init=False, repr=False, compare=False)
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.interval, datetime.timedelta):
             raise TypeError("Interval must be a timedelta.")
-        if not isinstance(name, str):
+        if not isinstance(self.name, str):
             raise TypeError("Name must be a string.")
-        if not isinstance(url, str):
+        if not isinstance(self.url, str):
             raise TypeError("URL must be a string.")
-        self.name = name
-        self.url = url
-        self.__interval = interval
+        self._check = interval_check(self.interval, self._get_status)
 
-    def __repr__(self) -> str:
-        return (
-            f"CabourotteHealthcheck(name={self.name!r}, url={self.url!r}, "
-            f"interval={self.interval!r})"
-        )
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, CabourotteHealthcheck):
-            return NotImplemented
-
-        return self.__dict__ == other.__dict__
-
-    @property
-    def interval(self) -> datetime.timedelta:
-        return self.__interval
-
-    async def _check(self) -> bool:
-        """Return whether the healthcheck is healthy or not."""
+    async def _get_status(self) -> bool:
+        """Get the current status of the check as reported by cabourotte."""
         result = await get_result(self.name, url=self.url)
         return result.success
+
+    async def is_healthy(self) -> bool:
+        """Return whether the healthcheck is healthy or not."""
+        return await self._check()
