@@ -47,6 +47,8 @@ class Service:
     health_checks: tuple[Healthcheck, ...]
 
     def __post_init__(self) -> None:
+        if not all(isinstance(_, Prefix) for _ in self.prefixes):
+            raise TypeError("Prefixes must implement the Prefix protocol")
         if not all(isinstance(_, Healthcheck) for _ in self.health_checks):
             raise TypeError("Health checks must implement the Healthcheck protocol")
 
