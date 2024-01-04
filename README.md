@@ -82,8 +82,6 @@ healthy status.
 A configuration for two dual-stacked services commonly run on the same host, both using [FRRouting] for BGP announcements and running health checks through [Cabourotte] could look like the following:
 
 ```toml
-[services]
-
 [services.dns]
 prefixes.frrouting = ["2001:db8::b19:bad:53", "203.0.113.53"]
 checks.cabourotte = ["dns_v6", "dns_v4"]
