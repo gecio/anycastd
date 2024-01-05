@@ -19,10 +19,10 @@
 </div>
 <br>
 
-`anycastd` is a daemon that manages services using multiple backends, each announcing the same
-service prefixes to the network as a form of load balancing, commonly know as [Anycast].
-It can be used to ensure that service prefixes are only announced when the underlying service is actually healthy, avoiding attracting traffic to service instances
-that aren't functioning correctly.
+`anycastd` functions as a daemon managing the announcement of network prefixes employed by redundant services using multiple backends that share a common set of service prefixes.
+Each prefix is announced individually to the network, forming a load-balancing strategy with redundancy, commonly referred to as Anycast.
+This tool ensures that service prefixes are exclusively announced when all underlying service components are confirmed to be in a healthy state.
+By doing so, `anycastd` prevents the attraction of traffic to service instances that may be malfunctioning, avoiding service diruption.
 
 ## Table of Contents
 
