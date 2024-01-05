@@ -28,13 +28,11 @@ By doing so, `anycastd` prevents the attraction of traffic to service instances 
 
 - [Services](#services)
   - [Prefixes](#prefixes)
+    - [FRRouting](#frrouting)
   - [Health Checks](#health-checks)
+    - [Cabourotte](#cabourotte)
 - [Configuration](#configuration)
   - [Example](#example)
-  - [Prefixes](#prefixes-1)
-    - [FRRouting](#frrouting)
-  - [Health Checks](#health-checks-1)
-    - [Cabourotte](#cabourotte)
   - [Schema](#schema)
 
 ## Services
@@ -71,12 +69,54 @@ Represents a BGP network prefix that can be announced or denounced as part of th
 Typically, these are networks containing "service IPs", meaning the IP addresses exposed by a particular service, serving as the points of contact for clients to make requests while being completely agnostic to the specifics of anycast.
 
 **`anycastd` does not come with its own BGP implementation, but rather aims to provide abstractions
-that interface with commonly used BGP daemons.**
+that interface with commonly used BGP daemons.** Supported BGP daemons along with their configuration options are described below.
+
+---
+
+#### FRRouting
+
+Free Range Routing, [FRRouting], or simply FRR is a free and open source Internet routing protocol suite for Linux and Unix platforms.
+Amongst others, it provides a BGP implementation that can be used to announce BGP service prefixes dynamically.
+
+**prefix**
+
+The BGP network prefix to be created if the service is healthy. If no netmask / prefix length is given, a host route is created.\
+`2001:db8:4:387b::/64`, `192.0.2.240/28` and `2001:db8::b19:bad:53` would all be valid values, while `2001:db8::b19:bad:53` is equivalent to `2001:db8::b19:bad:53/128`.
+
+_**vrf** (optional)_
+
+A VRF to create the prefix in. If omitted, the default VRF is used.
+
+_**vtysh** (optional)_
+
+The path to the vtysh binary used to configure FRRouting. The default is `/usr/bin/vtysh`.
+
+---
 
 ### Health Checks
 
 Assessments on individual components constituting the service to ascertain the overall operational status of the service.
-A service is considered healthy as a whole if all of its health checks report a healthy status.
+A service is considered healthy as a whole if all of its health checks report a healthy status. Possible health check types along with their configuration options are described below.
+
+---
+
+#### Cabourotte
+
+[Cabourotte] is a general purpose healthchecking tool written in Golang that can be configured to execute checks, exposing their results via API.
+
+**name**
+
+The name of the health check, as defined in [Cabourotte].
+
+_**url** (optional)_
+
+The base URL of the [Cabourotte] API. `http://127.0.0.1:9013` is used by default.
+
+_**interval** (optional)_
+
+The interval in seconds at which the health check should be executed. The default is `5` seconds.
+
+---
 
 ## Configuration
 
@@ -105,44 +145,6 @@ checks.cabourotte = [
 The first service, aptly named "dns", simply configures a DNS resolver service that announces the prefixes `2001:db8::b19:bad:53/128` & `203.0.113.53/32` through [FRRouting] as long as both [Cabourotte] health checks, `dns_v6` & `dns_v4` are reported as healthy.
 
 The second service, "ntp" is similar in functionality, although it's configuration is a bit more verbose. Rather than omitting values that have a preconfigured default, a [VRF] as well as a health check interval are explicitly specified.
-
-### Prefixes
-
-#### FRRouting
-
-Free Range Routing, [FRRouting], or simply FRR is a free and open source Internet routing protocol suite for Linux and Unix platforms.
-Amongst others, it provides a BGP implementation that can be used to announce BGP service prefixes dynamically.
-
-**prefix**
-
-The BGP network prefix to be created if the service is healthy. If no netmask / prefix length is given, a host route is created.\
-`2001:db8:4:387b::/64`, `192.0.2.240/28` and `2001:db8::b19:bad:53` would all be valid values, while `2001:db8::b19:bad:53` is equivalent to `2001:db8::b19:bad:53/128`.
-
-_**vrf** (optional)_
-
-A VRF to create the prefix in. If omitted, the default VRF is used.
-
-_**vtysh** (optional)_
-
-The path to the vtysh binary used to configure FRRouting. The default is `/usr/bin/vtysh`.
-
-### Health Checks
-
-#### Cabourotte
-
-[Cabourotte] is a general purpose healthchecking tool written in Golang that can be configured to execute checks, exposing their results via API.
-
-**name**
-
-The name of the health check, as defined in [Cabourotte].
-
-_**url** (optional)_
-
-The base URL of the [Cabourotte] API. `http://127.0.0.1:9013` is used by default.
-
-_**interval** (optional)_
-
-The interval in seconds at which the health check should be executed. The default is `5` seconds.
 
 ### Schema
 
