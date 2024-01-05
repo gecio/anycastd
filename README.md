@@ -26,10 +26,9 @@ that aren't functioning correctly.
 
 ## Table of Contents
 
-- [Architecture](#architecture)
-  - [Services](#services)
-    - [Prefixes](#prefixes)
-    - [Health Checks](#health-checks)
+- [Services](#services)
+  - [Prefixes](#prefixes)
+  - [Health Checks](#health-checks)
 - [Configuration](#configuration)
   - [Example](#example)
   - [Prefixes](#prefixes-1)
@@ -38,14 +37,10 @@ that aren't functioning correctly.
     - [Cabourotte](#cabourotte)
   - [Schema](#schema)
 
-## Architecture
+## Services
 
-### Services
-
-The main unit of abstraction used within `anycastd`. They combine [prefixes](#prefixes) and [health
-checks](#health-checks) to form a logical service unit that executes health checks and manages announcements.
-
-#### High Level Service Logic
+Services are the main unit of abstraction within `anycastd` and are used to form a logical relationship between health checks and network prefixes containing IP addresses related to the underlying application represented by the service. They work by continuously monitoring defined health checks and announcing/denouncing their prefixes based on
+the combination of check results using the logic described below.
 
 ```
 ┌─[Service]─────────────┐                        ┌──────────┐
@@ -70,16 +65,18 @@ checks](#health-checks) to form a logical service unit that executes health chec
 └─────────────────────────────────┘
 ```
 
-#### Prefixes
+### Prefixes
 
-Represents a BGP network prefix that can be announced or denounced as part of a [Service]. \
-`anycastd` does not come with its own BGP implementation, but rather aims to provide abstractions
-that interface with commonly used BGP daemons.
+Represents a BGP network prefix that can be announced or denounced as part of the service.
+Typically, these are networks containing "service IPs", meaning the IP addresses exposed by a particular service, serving as the points of contact for clients to make requests while being completely agnostic to the specifics of anycast.
 
-#### Health Checks
+**`anycastd` does not come with its own BGP implementation, but rather aims to provide abstractions
+that interface with commonly used BGP daemons.**
 
-Tests the components that make up a [Service] and reports whether they are healthy or not. A [Service] is considered healthy as a whole if all of it's health checks report a
-healthy status.
+### Health Checks
+
+Assessments on individual components constituting the service to ascertain the overall operational status of the service.
+A service is considered healthy as a whole if all of its health checks report a healthy status.
 
 ## Configuration
 
