@@ -110,6 +110,20 @@ A service is considered healthy as a whole if all of its health checks report a 
 ## Configuration
 
 `anycastd` can be configured using a TOML configuration file located at `/etc/anycastd/config.toml`, or a path specified through the `--configuration` parameter.
+For a quick primer on TOML, see [A Quick Tour of TOML](https://toml.io).
+
+### Schema
+
+```toml
+[services] # A definition of services to be managed by `anycastd`.
+
+  [services.<service-name>] # A service with a unique and recognizable name.
+    [[prefixes.<prefix-type>]] # A prefix of the specified type.
+      # Options related to the specified prefix type.
+
+    [[checks.<check-type>]] # A check of the specified type.
+      # Options related to the specified check type.
+```
 
 ### Example
 
@@ -134,32 +148,6 @@ checks.cabourotte = [
 The first service, aptly named "dns", simply configures a DNS resolver service that announces the prefixes `2001:db8::b19:bad:53/128` & `203.0.113.53/32` through [FRRouting] as long as both [Cabourotte] health checks, `dns_v6` & `dns_v4` are reported as healthy.
 
 The second service, "ntp" is similar in functionality, although it's configuration is a bit more verbose. Rather than omitting values that have a preconfigured default, a [VRF] as well as a health check interval are explicitly specified.
-
-### Schema
-
-`[services]`
-
-A definition of services to be managed by `anycastd`.
-
-`[services.<service-name>]`
-
-A unique and recognizable name for the service.
-
-`[services.<service-name>.prefixes]`
-
-Prefixes that belong to the service and should be announced when all checks are healthy.
-
-`[services.<service-name>.prefixes.<prefix-type>]`
-
-The type of prefix. See [Prefixes](#prefixes-1) for supported prefix types and their specific options.
-
-`[services.<service-name>.checks]`
-
-Checks that belong to the service and determine whether it is healthy.
-
-`[services.<service-name>.checks.<check-type>]`
-
-The type of health check. See [Health Checks](#health-checks-1) for supported prefix types and their specific options.
 
 [Anycast]: https://en.wikipedia.org/wiki/Anycast
 [Service]: #services
