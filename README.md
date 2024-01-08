@@ -78,20 +78,13 @@ that interface with commonly used BGP daemons.** Supported BGP daemons along wit
 Free Range Routing, [FRRouting], or simply FRR is a free and open source Internet routing protocol suite for Linux and Unix platforms.
 Amongst others, it provides a BGP implementation that can be used to announce BGP service prefixes dynamically.
 
-**prefix**
+##### Options
 
-The BGP network prefix to be created if the service is healthy. If no netmask / prefix length is given, a host route is created.\
-`2001:db8:4:387b::/64`, `192.0.2.240/28` and `2001:db8::b19:bad:53` would all be valid values, while `2001:db8::b19:bad:53` is equivalent to `2001:db8::b19:bad:53/128`.
-
-_**vrf** (optional)_
-
-A VRF to create the prefix in. If omitted, the default VRF is used.
-
-_**vtysh** (optional)_
-
-The path to the vtysh binary used to configure FRRouting. The default is `/usr/bin/vtysh`.
-
----
+| Option                     | Description                                                         | Default          | Examples                                                                 |
+| -------------------------- | ------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------ |
+| **prefix** <br> (required) | The network prefix to create when healthy.                          | `null`           | `2001:db8:4:387b::/64` <br> `192.0.2.240/28` <br> `2001:db8::b19:bad:53` |
+| _vrf_                      | A VRF to create the prefix in. If omitted, the default VRF is used. | `None`           | `EDGE`                                                                   |
+| _vtysh_                    | The path to the vtysh binary used to configure FRRouting.           | `/usr/bin/vtysh` | `/usr/local/bin/vtysh`                                                   |
 
 ### Health Checks
 
@@ -104,17 +97,13 @@ A service is considered healthy as a whole if all of its health checks report a 
 
 [Cabourotte] is a general purpose healthchecking tool written in Golang that can be configured to execute checks, exposing their results via API.
 
-**name**
+##### Options
 
-The name of the health check, as defined in [Cabourotte].
-
-_**url** (optional)_
-
-The base URL of the [Cabourotte] API. `http://127.0.0.1:9013` is used by default.
-
-_**interval** (optional)_
-
-The interval in seconds at which the health check should be executed. The default is `5` seconds.
+| Option                   | Description                                                           | Default                 | Examples                 |
+| ------------------------ | --------------------------------------------------------------------- | ----------------------- | ------------------------ |
+| **name** <br> (required) | The name of the health check, as defined in [Cabourotte].             | `null`                  | `anycast-dns`            |
+| _url_                    | The base URL of the Cabourotte API.                                   | `http://127.0.0.1:9013` | `https:://healthz.local` |
+| _interval_               | The interval in seconds at which the health check should be executed. | `5`                     | `2`                      |
 
 ---
 
