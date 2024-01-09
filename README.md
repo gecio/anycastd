@@ -86,7 +86,7 @@ router bgp 65536
 !
 ```
 
-This creates a single unnumbered BGP session over wich we can route the service prefixes.
+This creates a single unnumbered BGP session over which we can route the service prefixes.
 The most important statement here is `redistribute static` for both IPv4 and IPv6, instructing [FRRouting] to redistribute the static routes containing the service prefixes that will later be created by `anycastd`.
 
 ### Cabourotte configuration
