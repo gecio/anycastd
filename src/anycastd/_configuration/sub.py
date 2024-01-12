@@ -38,14 +38,15 @@ class SubConfiguration(BaseModel, extra="forbid"):
         Raises:
             ConfigurationSyntaxError: The configuration data has an invalid syntax.
         """
-        multiple_fields_required = len(cls.required_fields()) > 1
+        required_fields = cls.required_fields()
 
-        if isinstance(config, str) and not multiple_fields_required:
-            config = {cls.required_fields()[0]: config}
-        elif isinstance(config, str):
-            raise ConfigurationSyntaxError.from_invalid_simple_format(
-                cls.__name__, cls.required_fields()
-            )
+        match config:
+            case str() if len(required_fields) <= 1:
+                config = {required_fields[0]: config}
+            case str():
+                raise ConfigurationSyntaxError.from_invalid_simple_format(
+                    cls.__name__, required_fields
+                )
 
         try:
             return cls.model_validate(config)
