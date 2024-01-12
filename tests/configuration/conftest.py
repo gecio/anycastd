@@ -48,17 +48,9 @@ def sample_configuration() -> MainConfiguration:
 
 
 @pytest.fixture
-def sample_configuration_file(fs) -> tuple[Path, dict]:
-    """A valid sample configuration file.
-
-    Creates a configuration file within a mocked filesystem based
-    on the above sample configuration.
-
-    Returns:
-        The path to the created configuration file as well as it's configuration data.
-    """
-    path = Path("/path/to/config.toml")
-    data = {
+def sample_configuration_dict() -> dict:
+    """A valid sample configuration in form of a dictionary."""
+    return {
         "services": {
             "loadbalancer": {
                 "prefixes": {"frrouting": ["2001:db8::aced:a11:7e57", "203.0.113.84"]},
@@ -75,9 +67,22 @@ def sample_configuration_file(fs) -> tuple[Path, dict]:
             },
         }
     }
-    fs.create_file(path, contents=tomli_w.dumps(data))
 
-    return path, data
+
+@pytest.fixture
+def sample_configuration_file(fs, sample_configuration_dict) -> tuple[Path, dict]:
+    """A valid sample configuration file.
+
+    Creates a configuration file within a mocked filesystem based
+    on the above sample configuration.
+
+    Returns:
+        The path to the created configuration file as well as it's configuration data.
+    """
+    path = Path("/path/to/config.toml")
+    fs.create_file(path, contents=tomli_w.dumps(sample_configuration_dict))
+
+    return path, sample_configuration_dict
 
 
 @pytest.fixture

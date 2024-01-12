@@ -1,9 +1,11 @@
 from typing import Self, final
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
+
+from anycastd._configuration.exceptions import ConfigurationSyntaxError
 
 
-class SubConfiguration(BaseModel):
+class SubConfiguration(BaseModel, extra="forbid"):
     """The base class from which all sub-configuration classes must inherit."""
 
     @final
@@ -34,24 +36,19 @@ class SubConfiguration(BaseModel):
             A new SubConfiguration instance.
 
         Raises:
-            ValidationError: Failed to validate the configuration.
-            TypeError: The configuration has an invalid type.
+            ConfigurationSyntaxError: The configuration data has an invalid syntax.
         """
-        multiple_fields_required = len(cls.required_fields()) > 1
+        required_fields = cls.required_fields()
 
         match config:
-            case str() if not multiple_fields_required:
-                return cls.model_validate({cls.required_fields()[0]: config})
-            case dict():
-                return cls.model_validate(config)
+            case str() if len(required_fields) <= 1:
+                config = {required_fields[0]: config}
+            case str():
+                raise ConfigurationSyntaxError.from_invalid_simple_format(
+                    cls.__name__, required_fields
+                )
 
-        msg = (
-            f"Invalid configuration type {type(config)} for {cls.__name__}: "
-            "Expecting a dictionary containing the {} {}".format(
-                "fields" if multiple_fields_required else "field",
-                ", ".join(cls.required_fields()),
-            )
-        )
-        if not multiple_fields_required:
-            msg += " or a string containing the {}".format(cls.required_fields()[0])
-        raise TypeError(msg)
+        try:
+            return cls.model_validate(config)
+        except ValidationError as exc:
+            raise ConfigurationSyntaxError.from_validation_error(exc) from exc

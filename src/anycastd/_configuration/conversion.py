@@ -1,4 +1,4 @@
-from typing import overload
+from typing import Any, overload
 
 from anycastd._configuration.healthcheck import (
     CabourotteHealthcheckConfiguration,
@@ -64,3 +64,23 @@ def _sub_config_to_instance(
             raise NotImplementedError(
                 f"Configuration type {type(config)} is not supported."
             )
+
+
+def dict_w_items_named_by_key_to_flat_w_name_value(
+    named_items_dict: dict[str, dict[str, Any]],
+) -> tuple[dict[str, Any], ...]:
+    """Convert a dictionary containing items named by their key into a flat dictionary.
+
+    Takes a dictionary containing items named by their key and turns it into a
+    tuple of flat dictionaries containing the name as a value.
+
+    Example:
+    ```python
+    >>> named = {"foo": {"bar": "baz"}, "qux": {"quux": "corge"}}
+    >>> dict_w_items_named_by_key_to_flat_w_name_value(named)
+    ({'name': 'foo', 'bar': 'baz'}, {'name': 'qux', 'quux': 'corge'})
+    ```
+    """
+    # TODO: Handle potential errors.
+    items = named_items_dict.items()
+    return tuple({"name": name, **content} for name, content in items)

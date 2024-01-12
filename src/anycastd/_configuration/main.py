@@ -1,16 +1,20 @@
 import tomllib
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Self
 
-from pydantic import ValidationError
+from pydantic import BaseModel
 
-from anycastd._configuration.exceptions import ConfigurationError
+from anycastd._configuration.conversion import (
+    dict_w_items_named_by_key_to_flat_w_name_value,
+)
+from anycastd._configuration.exceptions import (
+    ConfigurationFileUnreadableError,
+    ConfigurationSyntaxError,
+)
 from anycastd._configuration.service import ServiceConfiguration
 
 
-@dataclass
-class MainConfiguration:
+class MainConfiguration(BaseModel, extra="forbid"):
     """The top-level configuration object."""
 
     services: tuple[ServiceConfiguration, ...]
@@ -23,32 +27,59 @@ class MainConfiguration:
             path: The path to the configuration file.
 
         Raises:
-            ConfigurationError: The configuration could not be read or parsed.
+            ConfigurationFileUnreadableError: The configuration file could not be read.
+            ConfigurationSyntaxError: The configuration data has an invalid syntax.
         """
-        config = _read_toml_configuration(path)
+        data = _read_toml_configuration(path)
+        config = cls.from_configuration_dict(data)
 
-        try:
-            return cls._from_dict(config)
-        except (KeyError, ValueError, TypeError, ValidationError) as exc:
-            raise ConfigurationError(path, exc) from exc
+        return config
 
     @classmethod
-    def _from_dict(cls, data: dict) -> Self:
-        """Create a configuration instance from a dictionary.
+    def from_configuration_dict(cls, data: dict) -> Self:
+        """Create an instance from a dictionary containing configuration data.
 
         Args:
             data: The configuration data.
 
+        Example:
+        ```python
+        {
+            "services": {
+                "important-API": (
+                    {
+                        "prefixes": {"routingd": ["2001:db8::aced:a11:7e57"]},
+                        "checks": {
+                            "healthd": [
+                                {"interval": "1s", "name": "important-API-healthy"}
+                            ]
+                        },
+                    },
+                ),
+                "important-backend": {
+                    "prefixes": {"bgpd": ["2001:db8::bad:1dea"]},
+                    "checks": {"pingd": ["flaky-backend"]},
+                },
+            }
+        }
+        ```
+
         Raises:
-            KeyError | ValueError | TypeError | ValidationError
+            ConfigurationSyntaxError: The configuration data has an invalid syntax.
         """
-        # TODO: Simplify returned exceptions.
-        return cls(
-            services=tuple(
-                ServiceConfiguration.from_name_and_options(name, options)
-                for name, options in data["services"].items()
+        try:
+            keyed_services = data["services"]
+        except KeyError as exc:
+            raise ConfigurationSyntaxError.from_key_error(exc) from exc
+
+        services = tuple(
+            ServiceConfiguration.from_configuration_dict(service_config)
+            for service_config in dict_w_items_named_by_key_to_flat_w_name_value(
+                keyed_services
             )
         )
+
+        return cls(services=services)
 
 
 def _read_toml_configuration(path: Path) -> dict:
@@ -61,12 +92,15 @@ def _read_toml_configuration(path: Path) -> dict:
         The parsed configuration data.
 
     Raises:
-        ConfigurationError: The configuration could not be read or parsed.
+        ConfigurationSyntaxError: The configuration data has an invalid syntax.
+        ConfigurationFileUnreadableError: The configuration file could not be read.
     """
     try:
         with path.open("rb") as f:
             data = tomllib.load(f)
-    except (OSError, tomllib.TOMLDecodeError) as exc:
-        raise ConfigurationError(path, exc) from exc
+    except tomllib.TOMLDecodeError as exc:
+        raise ConfigurationSyntaxError.from_decode_error(exc, path) from exc
+    except OSError as exc:
+        raise ConfigurationFileUnreadableError(exc, path) from exc
 
     return data
