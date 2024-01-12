@@ -44,21 +44,26 @@ class ConfigurationSyntaxError(ConfigurationError):
         This will currently only report the first error that occurred while validating
         the configuration, while ideally we would report all of them at once.
         """
+        first_error = exc.errors()[0]
+        spec: str | None = None
+
         match exc.title:
             case "InvalidField":
-                error_type: str = exc.errors()[0]["type"]
-                match error_type:
+                match first_error["type"]:
                     case "extra_forbidden":
-                        field_name = exc.errors()[0]["loc"][0]
+                        field_name = first_error["loc"][0]
                         spec = f"invalid field '{field_name}'"
             case "InvalidFieldType":
-                field_name = exc.errors()[0]["loc"][0]
-                input = exc.errors()[0]["input"]
-                msg = exc.errors()[0]["msg"]
+                field_name = first_error["loc"][0]
+                input = first_error["input"]
+                msg = first_error["msg"]
                 spec = f"invalid input '{input}' for field '{field_name}': {msg}"
             case "MultipleRequiredFields":
-                field_name = exc.errors()[0]["loc"][0]
+                field_name = first_error["loc"][0]
                 spec = f"missing required field '{field_name}'"
+
+        if spec is None:
+            spec = str(exc)
 
         return cls(spec, path)
 
