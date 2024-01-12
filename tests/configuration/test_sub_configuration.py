@@ -88,8 +88,9 @@ def test_from_simple_when_multiple_required_fields_raises():
 
     value = "value for first field"
     expected = (
-        rf".*invalid value '{value}', "
-        "expected required fields 'first_required_field', 'second_required_field'"
+        r".*invalid configuration value type for MultipleRequiredFields: "
+        "expecting a dictionary containing the fields "
+        r"first_required_field, second_required_field.*"
     )
 
     with pytest.raises(ConfigurationSyntaxError, match=expected):

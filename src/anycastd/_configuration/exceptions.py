@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from pathlib import Path
 from tomllib import TOMLDecodeError
 
@@ -59,6 +60,19 @@ class ConfigurationSyntaxError(ConfigurationError):
                 field_name = exc.errors()[0]["loc"][0]
                 spec = f"missing required field '{field_name}'"
 
+        return cls(spec, path)
+
+    @classmethod
+    def from_invalid_simple_format(
+        cls, name: str, required_fields: Iterable[str], path: Path | None = None
+    ):
+        """Create an instance on an invalid simplified configuration."""
+        spec = (
+            f"invalid configuration value type for {name}: "
+            "expecting a dictionary containing the fields {}".format(
+                ", ".join(required_fields),
+            )
+        )
         return cls(spec, path)
 
 

@@ -42,18 +42,10 @@ class SubConfiguration(BaseModel, extra="forbid"):
 
         if isinstance(config, str) and not multiple_fields_required:
             config = {cls.required_fields()[0]: config}
-        elif not isinstance(config, dict):
-            # TODO: Should also raise ConfigurationSyntaxError
-            msg = (
-                f"Invalid configuration type {type(config)} for {cls.__name__}: "
-                "Expecting a dictionary containing the {} {}".format(
-                    "fields" if multiple_fields_required else "field",
-                    ", ".join(cls.required_fields()),
-                )
+        elif isinstance(config, str):
+            raise ConfigurationSyntaxError.from_invalid_simple_format(
+                cls.__name__, cls.required_fields()
             )
-            if not multiple_fields_required:
-                msg += " or a string containing the {}".format(cls.required_fields()[0])
-            raise TypeError(msg)
 
         try:
             return cls.model_validate(config)
