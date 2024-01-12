@@ -1,6 +1,7 @@
 from collections.abc import Iterable
 from pathlib import Path
 from tomllib import TOMLDecodeError
+from typing import Self
 
 from pydantic import ValidationError
 
@@ -26,19 +27,21 @@ class ConfigurationSyntaxError(ConfigurationError):
         super().__init__(spec, path)
 
     @classmethod
-    def from_decode_error(cls, exc: TOMLDecodeError, path: Path | None = None):
+    def from_decode_error(cls, exc: TOMLDecodeError, path: Path | None = None) -> Self:
         """Create an instance from a decoding error."""
         spec = f"TOML syntax error: {exc}"
         return cls(spec, path)
 
     @classmethod
-    def from_key_error(cls, exc: KeyError, path: Path | None = None):
+    def from_key_error(cls, exc: KeyError, path: Path | None = None) -> Self:
         """Create an instance from a key error."""
         spec = f"missing required key {exc}"
         return cls(spec, path)
 
     @classmethod
-    def from_validation_error(cls, exc: ValidationError, path: Path | None = None):
+    def from_validation_error(
+        cls, exc: ValidationError, path: Path | None = None
+    ) -> Self:
         """Create an instance from a pydantic validation error.
 
         This will currently only report the first error that occurred while validating
@@ -70,7 +73,7 @@ class ConfigurationSyntaxError(ConfigurationError):
     @classmethod
     def from_invalid_simple_format(
         cls, name: str, required_fields: Iterable[str], path: Path | None = None
-    ):
+    ) -> Self:
         """Create an instance on an invalid simplified configuration."""
         spec = (
             f"invalid configuration value type for {name}: "
