@@ -33,7 +33,25 @@ class ConfigurationSyntaxError(ConfigurationError):
             case KeyError():
                 spec = f"missing required key {exc}"
             case ValidationError():
-                spec = f"{exc}"
+                # Will only report the first error that occurred while ideally
+                # we would report all of them at once.
+                match exc.title:
+                    case "InvalidField":
+                        error_type: str = exc.errors()[0]["type"]
+                        match error_type:
+                            case "extra_forbidden":
+                                field_name = exc.errors()[0]["loc"][0]
+                                spec = f"invalid field '{field_name}'"
+                    case "InvalidFieldType":
+                        field_name = exc.errors()[0]["loc"][0]
+                        input = exc.errors()[0]["input"]
+                        msg = exc.errors()[0]["msg"]
+                        spec = (
+                            f"invalid input '{input}' for field '{field_name}': {msg}"
+                        )
+                    case "MultipleRequiredFields":
+                        field_name = exc.errors()[0]["loc"][0]
+                        spec = f"missing required field '{field_name}'"
             case _ as unreachable:
                 assert_never(unreachable)
 

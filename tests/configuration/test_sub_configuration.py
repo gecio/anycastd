@@ -113,10 +113,14 @@ def test_invalid_field_type_raises():
     """Exception raised when a field has an invalid type."""
 
     class InvalidFieldType(SubConfiguration):
-        float_field: float
+        must_be_float: float
 
-    config = {"float_field": "Not a float"}
-    expected = r".*invalid field type 'str' for 'float_field', expected 'float'"
+    name = "must_be_float"
+    input = "but is str"
+    config = {name: input}
+    expected = (
+        rf".*invalid input '{input}' for field '{name}': .*should be a valid number.*"
+    )
 
     with pytest.raises(ConfigurationSyntaxError, match=expected):
         InvalidFieldType.from_configuration(config)
