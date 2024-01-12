@@ -5,7 +5,7 @@ from pydantic import BaseModel, ValidationError
 from anycastd._configuration.exceptions import ConfigurationSyntaxError
 
 
-class SubConfiguration(BaseModel):
+class SubConfiguration(BaseModel, extra="forbid"):
     """The base class from which all sub-configuration classes must inherit."""
 
     @final

@@ -14,7 +14,7 @@ from anycastd._configuration.exceptions import (
 from anycastd._configuration.service import ServiceConfiguration
 
 
-class MainConfiguration(BaseModel):
+class MainConfiguration(BaseModel, extra="forbid"):
     """The top-level configuration object."""
 
     services: tuple[ServiceConfiguration, ...]
