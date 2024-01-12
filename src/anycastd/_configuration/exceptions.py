@@ -1,6 +1,5 @@
 from pathlib import Path
 from tomllib import TOMLDecodeError
-from typing import assert_never
 
 from pydantic import ValidationError
 
@@ -22,40 +21,45 @@ class ConfigurationError(Exception):
 class ConfigurationSyntaxError(ConfigurationError):
     """There was a syntax error within the configuration."""
 
-    def __init__(
-        self,
-        exc: TOMLDecodeError | KeyError | ValidationError,
-        path: Path | None = None,
-    ):
-        match exc:
-            case TOMLDecodeError():
-                spec = f"TOML syntax error: {exc}"
-            case KeyError():
-                spec = f"missing required key {exc}"
-            case ValidationError():
-                # Will only report the first error that occurred while ideally
-                # we would report all of them at once.
-                match exc.title:
-                    case "InvalidField":
-                        error_type: str = exc.errors()[0]["type"]
-                        match error_type:
-                            case "extra_forbidden":
-                                field_name = exc.errors()[0]["loc"][0]
-                                spec = f"invalid field '{field_name}'"
-                    case "InvalidFieldType":
-                        field_name = exc.errors()[0]["loc"][0]
-                        input = exc.errors()[0]["input"]
-                        msg = exc.errors()[0]["msg"]
-                        spec = (
-                            f"invalid input '{input}' for field '{field_name}': {msg}"
-                        )
-                    case "MultipleRequiredFields":
-                        field_name = exc.errors()[0]["loc"][0]
-                        spec = f"missing required field '{field_name}'"
-            case _ as unreachable:
-                assert_never(unreachable)
-
+    def __init__(self, spec: str, path: Path | None = None):
         super().__init__(spec, path)
+
+    @classmethod
+    def from_decode_error(cls, exc: TOMLDecodeError, path: Path | None = None):
+        """Create an instance from a decoding error."""
+        spec = f"TOML syntax error: {exc}"
+        return cls(spec, path)
+
+    @classmethod
+    def from_key_error(cls, exc: KeyError, path: Path | None = None):
+        """Create an instance from a key error."""
+        spec = f"missing required key {exc}"
+        return cls(spec, path)
+
+    @classmethod
+    def from_validation_error(cls, exc: ValidationError, path: Path | None = None):
+        """Create an instance from a pydantic validation error.
+
+        This will currently only report the first error that occurred while validating
+        the configuration, while ideally we would report all of them at once.
+        """
+        match exc.title:
+            case "InvalidField":
+                error_type: str = exc.errors()[0]["type"]
+                match error_type:
+                    case "extra_forbidden":
+                        field_name = exc.errors()[0]["loc"][0]
+                        spec = f"invalid field '{field_name}'"
+            case "InvalidFieldType":
+                field_name = exc.errors()[0]["loc"][0]
+                input = exc.errors()[0]["input"]
+                msg = exc.errors()[0]["msg"]
+                spec = f"invalid input '{input}' for field '{field_name}': {msg}"
+            case "MultipleRequiredFields":
+                field_name = exc.errors()[0]["loc"][0]
+                spec = f"missing required field '{field_name}'"
+
+        return cls(spec, path)
 
 
 class ConfigurationFileUnreadableError(ConfigurationError):

@@ -58,4 +58,4 @@ class SubConfiguration(BaseModel, extra="forbid"):
         try:
             return cls.model_validate(config)
         except ValidationError as exc:
-            raise ConfigurationSyntaxError(exc) from exc
+            raise ConfigurationSyntaxError.from_validation_error(exc) from exc

@@ -41,7 +41,7 @@ class ServiceConfiguration:
             keyed_prefixes = data["prefixes"]
             keyed_checks = data["checks"]
         except KeyError as exc:
-            raise ConfigurationSyntaxError(exc) from exc
+            raise ConfigurationSyntaxError.from_key_error(exc) from exc
 
         prefixes = []
         for prefix_type, prefix_configs in keyed_prefixes.items():

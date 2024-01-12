@@ -70,7 +70,7 @@ class MainConfiguration(BaseModel, extra="forbid"):
         try:
             keyed_services = data["services"]
         except KeyError as exc:
-            raise ConfigurationSyntaxError(exc) from exc
+            raise ConfigurationSyntaxError.from_key_error(exc) from exc
 
         services = tuple(
             ServiceConfiguration.from_configuration_dict(service_config)
@@ -99,7 +99,7 @@ def _read_toml_configuration(path: Path) -> dict:
         with path.open("rb") as f:
             data = tomllib.load(f)
     except tomllib.TOMLDecodeError as exc:
-        raise ConfigurationSyntaxError(exc, path) from exc
+        raise ConfigurationSyntaxError.from_decode_error(exc, path) from exc
     except OSError as exc:
         raise ConfigurationFileUnreadableError(exc, path) from exc
 
