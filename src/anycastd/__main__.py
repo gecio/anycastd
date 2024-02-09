@@ -13,8 +13,12 @@ def _check_python_version() -> None:
         )
 
 
-if __name__ == "__main__":
+def run() -> None:
     _check_python_version()
     from anycastd._cli import app
 
     app()
+
+
+if __name__ == "__main__":
+    run()
