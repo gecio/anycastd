@@ -49,6 +49,9 @@ dependencies = [
 Repository = "https://github.com/gecio/anycastd"
 Issues = "https://github.com/gecio/anycastd/issues"
 
+[project.scripts]
+anycastd = "anycastd.__main__:run"
+
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
