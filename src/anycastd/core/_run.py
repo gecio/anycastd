@@ -17,4 +17,4 @@ async def run_services(services: Iterable[Service]) -> None:
     Args:
         services: The services to run.
     """
-    asyncio.gather(*(service.run() for service in services))
+    await asyncio.gather(*(service.run() for service in services))
