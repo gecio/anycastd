@@ -8,7 +8,14 @@ from typer.testing import CliRunner
 
 @pytest.fixture(scope="session")
 def anycastd_cli() -> Callable[..., Result]:
-    """A callable that runs anycastd CLI commands."""
+    """A callable that runs anycastd CLI commands.
+
+    Example:
+    ```python
+    >>> result = anycastd_cli("run", "--help")
+    >>> assert result.exit_code == 0
+    ```
+    """
     runner = CliRunner(mix_stderr=False)
 
     def run_cli_command(
