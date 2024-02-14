@@ -1,5 +1,6 @@
 # ruff: noqa: FBT001
 import logging
+import sys
 from enum import StrEnum, auto
 from pathlib import Path
 from typing import Annotated, Optional, assert_never
@@ -15,6 +16,7 @@ from anycastd._configuration import ConfigurationError, MainConfiguration
 from anycastd.core import run_from_configuration
 
 CONFIG_PATH = Path("/etc/anycastd/config.toml")
+IS_TTY = sys.stdout.isatty()
 
 logger = structlog.get_logger()
 app = typer.Typer(no_args_is_help=True, add_completion=False)
@@ -128,7 +130,7 @@ def run(
             case_sensitive=False,
             callback=log_format_callback,
         ),
-    ] = LogFormat.Human,
+    ] = LogFormat.Human if IS_TTY else LogFormat.Json,
 ) -> None:
     """Run anycastd."""
     main_configuration = _get_main_configuration(config)
