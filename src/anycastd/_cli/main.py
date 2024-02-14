@@ -16,7 +16,7 @@ from anycastd.core import run_from_configuration
 
 CONFIG_PATH = Path("/etc/anycastd/config.toml")
 
-log = structlog.get_logger()
+logger = structlog.get_logger()
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 
 
@@ -141,10 +141,10 @@ def _get_main_configuration(config: Path) -> MainConfiguration:
     Try to read the configuration file while exiting with an appropriate exit
     code if an error occurs.
     """
-    log.info(f"Reading configuration from {config}.")
+    logger.info(f"Reading configuration from {config}.")
     try:
         parsed = MainConfiguration.from_toml_file(config)
-        log.debug("Successfully read configuration.", path=config, config=parsed)
+        logger.debug("Successfully read configuration.", path=config, config=parsed)
         return parsed
     except ConfigurationError as exc:
         match exc.__cause__:
