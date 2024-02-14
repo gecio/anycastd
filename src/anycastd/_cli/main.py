@@ -82,7 +82,7 @@ def log_format_callback(format: LogFormat) -> LogFormat:
 
 
 @app.callback()
-def callback(
+def main(
     version: Annotated[
         Optional[bool],
         typer.Option(
