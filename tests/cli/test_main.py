@@ -1,8 +1,10 @@
+import logging
 from pathlib import Path
 from unittest.mock import MagicMock
 
 import anycastd
 import pytest
+import structlog
 
 
 def test_version_displayed_correctly(anycastd_cli):
@@ -62,3 +64,36 @@ class TestRunCMD:
         anycastd_cli("run")
 
         mock_run_from_configuration.assert_called_once_with(mock_configuration)
+
+    @pytest.mark.parametrize(
+        "arg, level",
+        [
+            ("debug", logging.DEBUG),
+            ("info", logging.INFO),
+            ("warning", logging.WARNING),
+            ("error", logging.ERROR),
+        ],
+    )
+    def test_log_level_configures_structlog(self, anycastd_cli, arg: str, level: int):
+        """Structlog is configured with the correct log level filter."""
+        anycastd_cli("run", "--log-level", arg)
+        wrapper_class = structlog.get_config()["wrapper_class"]
+        assert wrapper_class == structlog.make_filtering_bound_logger(level)
+
+    @pytest.mark.parametrize(
+        "arg, processor",
+        [
+            ("human", structlog.dev.ConsoleRenderer),
+            ("json", structlog.processors.JSONRenderer),
+            ("logfmt", structlog.processors.LogfmtRenderer),
+        ],
+    )
+    def test_log_format_configures_structlog(self, anycastd_cli, arg: str, processor):
+        """Structlog is configured with the correct rendering processor.
+
+        Structlog is configured with a rendering processor matching the specified
+        log format as the last processor.
+        """
+        anycastd_cli("run", "--log-format", arg)
+        last_processor = structlog.get_config()["processors"][-1]
+        assert isinstance(last_processor, processor)

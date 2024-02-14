@@ -5,6 +5,8 @@ from ipaddress import IPv4Network, IPv6Network
 from pathlib import Path
 from typing import Self, assert_never, cast
 
+import structlog
+
 from anycastd._executor import Executor
 from anycastd.prefix._frrouting.exceptions import (
     FRRCommandError,
@@ -13,6 +15,8 @@ from anycastd.prefix._frrouting.exceptions import (
     FRRNoBGPError,
 )
 from anycastd.prefix._main import AFI, VRF
+
+logger = structlog.get_logger()
 
 
 class FRRoutingPrefix:
@@ -152,6 +156,7 @@ class FRRoutingPrefix:
         proc = await self.executor.create_subprocess_exec(
             self.vtysh, ("-c", "\n".join(commands))
         )
+        logger.debug("Awaiting vtysh commands.", vtysh=self.vtysh, commands=commands)
         stdout, stderr = await proc.communicate()
 
         # Command may have failed even if the returncode is 0.

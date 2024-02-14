@@ -1,7 +1,12 @@
 # ruff: noqa: FBT001
+import logging
+import sys
+from enum import StrEnum, auto
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated, Optional, assert_never
 
+import orjson
+import structlog
 import typer
 from pydantic import ValidationError
 
@@ -11,8 +16,23 @@ from anycastd._configuration import ConfigurationError, MainConfiguration
 from anycastd.core import run_from_configuration
 
 CONFIG_PATH = Path("/etc/anycastd/config.toml")
+IS_TTY = sys.stdout.isatty()
 
+logger = structlog.get_logger()
 app = typer.Typer(no_args_is_help=True, add_completion=False)
+
+
+class LogLevel(StrEnum):
+    Debug = auto()
+    Info = auto()
+    Warning = auto()
+    Error = auto()
+
+
+class LogFormat(StrEnum):
+    Human = auto()
+    Json = auto()
+    Logfmt = auto()
 
 
 def version_callback(value: bool) -> None:
@@ -22,8 +42,49 @@ def version_callback(value: bool) -> None:
         raise typer.Exit()
 
 
+def log_level_callback(level: LogLevel) -> LogLevel:
+    """Configure structlog filtering based on the given level."""
+    match level:
+        case LogLevel.Debug:
+            std_level = logging.DEBUG
+        case LogLevel.Info:
+            std_level = logging.INFO
+        case LogLevel.Warning:
+            std_level = logging.WARNING
+        case LogLevel.Error:
+            std_level = logging.ERROR
+        case _ as unreachable:
+            assert_never(unreachable)
+    structlog.configure(wrapper_class=structlog.make_filtering_bound_logger(std_level))
+
+    return level
+
+
+def log_format_callback(format: LogFormat) -> LogFormat:
+    """Configure structlog rendering based on the given format."""
+    processors: list[structlog.typing.Processor] = [
+        structlog.contextvars.merge_contextvars,
+        structlog.processors.add_log_level,
+        structlog.processors.TimeStamper(),
+    ]
+    match format:
+        case LogFormat.Human:
+            processors.append(structlog.dev.ConsoleRenderer())
+        case LogFormat.Json:
+            processors.append(
+                structlog.processors.JSONRenderer(serializer=orjson.dumps)
+            )
+        case LogFormat.Logfmt:
+            processors.append(structlog.processors.LogfmtRenderer())
+        case _ as unreachable:
+            assert_never(unreachable)
+    structlog.configure(processors=processors)
+
+    return format
+
+
 @app.callback()
-def callback(
+def main(
     version: Annotated[
         Optional[bool],
         typer.Option(
@@ -50,6 +111,26 @@ def run(
             resolve_path=True,
         ),
     ] = CONFIG_PATH,
+    log_level: Annotated[
+        LogLevel,
+        typer.Option(
+            "--log-level",
+            help="Log level.",
+            envvar="LOG_LEVEL",
+            case_sensitive=False,
+            callback=log_level_callback,
+        ),
+    ] = LogLevel.Info,
+    log_format: Annotated[
+        LogFormat,
+        typer.Option(
+            "--log-format",
+            help="Log format.",
+            envvar="LOG_FORMAT",
+            case_sensitive=False,
+            callback=log_format_callback,
+        ),
+    ] = LogFormat.Human if IS_TTY else LogFormat.Json,
 ) -> None:
     """Run anycastd."""
     main_configuration = _get_main_configuration(config)
@@ -62,8 +143,11 @@ def _get_main_configuration(config: Path) -> MainConfiguration:
     Try to read the configuration file while exiting with an appropriate exit
     code if an error occurs.
     """
+    logger.info(f"Reading configuration from {config}.")
     try:
-        return MainConfiguration.from_toml_file(config)
+        parsed = MainConfiguration.from_toml_file(config)
+        logger.debug("Successfully read configuration.", path=config, config=parsed)
+        return parsed
     except ConfigurationError as exc:
         match exc.__cause__:
             case FileNotFoundError() | PermissionError():

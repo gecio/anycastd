@@ -1,8 +1,12 @@
 import asyncio
 from dataclasses import dataclass
 
+import structlog
+
 from anycastd.healthcheck import Healthcheck
 from anycastd.prefix import Prefix
+
+logger = structlog.get_logger()
 
 
 @dataclass
@@ -60,6 +64,7 @@ class Service:
         This will announce the prefixes when all health checks are
         passing, and denounce them otherwise.
         """
+        logger.info(f"Starting service {self.name}.", service=self.name)
         while True:
             if await self.is_healthy():
                 await asyncio.gather(*(prefix.announce() for prefix in self.prefixes))
