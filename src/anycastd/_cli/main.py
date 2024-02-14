@@ -60,7 +60,7 @@ def log_level_callback(level: LogLevel) -> LogLevel:
 
 def log_format_callback(format: LogFormat) -> LogFormat:
     """Configure structlog rendering based on the given format."""
-    processors = [
+    processors: list[structlog.typing.Processor] = [
         structlog.contextvars.merge_contextvars,
         structlog.processors.add_log_level,
         structlog.processors.TimeStamper(),
