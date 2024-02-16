@@ -40,6 +40,8 @@ class FRRoutingPrefix:
         """
         if not any((isinstance(prefix, IPv4Network), isinstance(prefix, IPv6Network))):
             raise TypeError("Prefix must be an IPv4 or IPv6 network.")
+        if not isinstance(executor, Executor):
+            raise TypeError("Executor must implement the Executor protocol.")
         self.__prefix = prefix
         self.vrf = vrf
         self.vtysh = vtysh

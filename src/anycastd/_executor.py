@@ -1,13 +1,13 @@
 import asyncio
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Protocol, runtime_checkable
 
 
-class Executor(ABC):
+@runtime_checkable
+class Executor(Protocol):
     """An interface to execute programs."""
 
-    @abstractmethod
     async def create_subprocess_exec(
         self, program: str | Path, *args: str
     ) -> asyncio.subprocess.Process:
@@ -24,7 +24,7 @@ class Executor(ABC):
 
 
 @dataclass
-class LocalExecutor(Executor):
+class LocalExecutor:
     """An executor that runs commands locally."""
 
     async def create_subprocess_exec(
@@ -50,7 +50,7 @@ class LocalExecutor(Executor):
 
 
 @dataclass
-class DockerExecutor(Executor):
+class DockerExecutor:
     """An executor that runs commands in a Docker container.
 
     Attributes:
