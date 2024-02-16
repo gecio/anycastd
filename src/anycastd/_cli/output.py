@@ -56,7 +56,7 @@ def print_error(msg: str | Exception, *, exit_code: ExitCode) -> NoReturn:
 
 def print_error(
     msg: str | Exception, *, exit_code: ExitCode | None = None
-) -> None | NoReturn:
+) -> None | NoReturn:  # noqa: RUF020
     """Print an error message to stderr and optionally exit.
 
     Args:
