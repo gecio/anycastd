@@ -1,10 +1,11 @@
 import pytest
 from anycastd._executor import LocalExecutor
 
-pytestmark = pytest.mark.integration
+# TODO: github.com/pytest-dev/pytest-asyncio/issues/706 - Breaking change in 0.23.*
+# Module scoped event loop required due to above issue.
+pytestmark = [pytest.mark.integration, pytest.mark.asyncio(scope="module")]
 
 
-@pytest.mark.asyncio
 async def test_await_create_subprocess_exec_executes(tmp_path):
     """The subprocess is executed when the function is awaited."""
     executor = LocalExecutor()
@@ -15,7 +16,6 @@ async def test_await_create_subprocess_exec_executes(tmp_path):
     assert touch_file.exists()
 
 
-@pytest.mark.asyncio
 async def test_await_process_communicate_returns_stdout():
     """The communicate method of the returned process returns stdout."""
     executor = LocalExecutor()
@@ -30,7 +30,6 @@ async def test_await_process_communicate_returns_stdout():
     assert stderr == b""
 
 
-@pytest.mark.asyncio
 async def test_await_process_communicate_returns_stderr():
     """The communicate method of the returned process returns stderr."""
     executor = LocalExecutor()
