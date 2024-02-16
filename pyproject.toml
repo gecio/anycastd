@@ -97,6 +97,8 @@ include = '\.pyi?$'
 
 [tool.ruff]
 line-length = 88
+
+[tool.ruff.lint]
 select = [
     "B",
     "D",
@@ -125,21 +127,18 @@ select = [
 ]
 ignore = ["D100", "D101", "D102", "D103", "D104", "D105", "D107", "S603"]
 
-[tool.ruff.per-file-ignores]
+mccabe.max-complexity = 10
+pydocstyle.convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
 "tests/*" = [
-    "S101",     # Use of assert
-    "FBT001",   # Positional boolean function argument
-    "D200",     #
-    "D212",     # Allow longer docstrings without summary.
-    "D205",     #
+    "S101",   # Use of assert
+    "FBT001", # Positional boolean function argument
+    "D200",   #
+    "D212",   # Allow longer docstrings without summary.
+    "D205",   #
 ]
 "__init__.py" = ["F401"]
-
-[tool.ruff.pydocstyle]
-convention = "google"
-
-[tool.ruff.mccabe]
-max-complexity = 10
 
 [tool.ruff.format]
 docstring-code-format = true
