@@ -11,7 +11,12 @@ async def test_await_create_subprocess_exec_executes(tmp_path):
     executor = LocalExecutor()
     touch_file = tmp_path / "touch_file"
 
-    await executor.create_subprocess_exec("touch", touch_file.as_posix())
+    process = await executor.create_subprocess_exec(
+        "python3",
+        "-c",
+        f"from pathlib import Path; Path('{touch_file.as_posix()}').touch()",
+    )
+    await process.wait()
 
     assert touch_file.exists()
 
