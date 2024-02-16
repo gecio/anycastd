@@ -77,7 +77,6 @@ def test_non_equal():
     assert healthcheck1 != healthcheck2
 
 
-@pytest.mark.asyncio
 async def test_get_status_awaits_get_result(mocker: MockerFixture):
     """The get status method awaits the result of get_result."""
     name = "test"
@@ -93,7 +92,6 @@ async def test_get_status_awaits_get_result(mocker: MockerFixture):
 
 
 @pytest.mark.parametrize("success", [True, False])
-@pytest.mark.asyncio
 async def test_get_status_returns_result(success: bool, mocker: MockerFixture):
     """The check method returns True if the result is successful and False otherwise."""
     healthcheck = CabourotteHealthcheck(

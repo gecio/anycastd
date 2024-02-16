@@ -9,7 +9,6 @@ def mock_services(mocker):
     return [mocker.AsyncMock(Service) for _ in range(3)]
 
 
-@pytest.mark.asyncio
 async def test_future_created_for_each_service(mock_services):
     """A future is created for each service."""
     await run_services(mock_services)
