@@ -19,7 +19,6 @@ def docker_executor(frr_container) -> DockerExecutor:
 
 
 @skip_without_docker
-@pytest.mark.asyncio
 async def test_announce_adds_bgp_network(  # noqa: PLR0913
     vtysh,
     docker_executor,
@@ -49,7 +48,6 @@ async def test_announce_adds_bgp_network(  # noqa: PLR0913
 
 
 @skip_without_docker
-@pytest.mark.asyncio
 async def test_denounce_removes_bgp_network(  # noqa: PLR0913
     vtysh,
     docker_executor,
@@ -71,7 +69,6 @@ async def test_denounce_removes_bgp_network(  # noqa: PLR0913
 
 
 @skip_without_docker
-@pytest.mark.asyncio
 @pytest.mark.parametrize("announced", [True, False])
 async def test_announcement_state_reported_correctly(  # noqa: PLR0913
     vtysh,

@@ -14,7 +14,6 @@ class TestIntervalCheck:
         check_result = request.param
         return mocker.AsyncMock(return_value=check_result), check_result
 
-    @pytest.mark.asyncio
     async def test_check_awaited_on_first_call(self, mock_internal_check):
         """
         The check is awaited and its result returned on the first await of the checker.
@@ -30,7 +29,6 @@ class TestIntervalCheck:
         internal_check.assert_awaited_once()
         assert result == check_result
 
-    @pytest.mark.asyncio
     async def test_check_awaited_when_interval_passed(
         self, mocker, mock_internal_check
     ):
@@ -70,7 +68,6 @@ class TestIntervalCheck:
         assert internal_check.await_count == expected_await_count
         assert second_await_result == check_result
 
-    @pytest.mark.asyncio
     async def test_check_not_awaited_when_interval_not_passed_and_run_before(
         self, mock_internal_check
     ):

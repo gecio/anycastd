@@ -168,6 +168,7 @@ markers = [
     "e2e:e2e tests",
     "frrouting:frrouting specific tests"
 ]
+asyncio_mode = "auto"
 
 [tool.coverage.run]
 branch = true

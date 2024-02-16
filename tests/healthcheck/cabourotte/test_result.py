@@ -59,7 +59,6 @@ def test_result_from_api_json(data: _ResultData):
 class TestGetResult:
     """Test getting a result from the cabourotte API."""
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "name,url",
         [("example-http-check", CABOUROTTE_URL), ("example-dns-check", CABOUROTTE_URL)],
@@ -78,7 +77,6 @@ class TestGetResult:
         assert request.method == "GET"
         assert request.url == result_url
 
-    @pytest.mark.asyncio
     async def test_correct_result_returned(self, respx_mock):
         """The correct result corresponding to API data is returned."""
         json_data = json.dumps(example_result())

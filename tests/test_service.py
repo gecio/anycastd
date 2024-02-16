@@ -14,7 +14,6 @@ def example_service(ipv4_example_network, ipv6_example_network):
     )
 
 
-@pytest.mark.asyncio
 async def test_run_awaits_status(mocker: MockerFixture, example_service):
     """When run, the service awaits the status of the health checks."""
     mock_is_healthy = mocker.patch.object(example_service, "is_healthy")
@@ -22,7 +21,6 @@ async def test_run_awaits_status(mocker: MockerFixture, example_service):
     mock_is_healthy.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_run_announces_when_healthy(mocker: MockerFixture, example_service):
     """When run, all prefixes are announced when the service is healthy."""
     mocker.patch.object(example_service, "is_healthy", return_value=True)
@@ -35,7 +33,6 @@ async def test_run_announces_when_healthy(mocker: MockerFixture, example_service
         mock_prefix.announce.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_run_denounces_when_unhealthy(mocker: MockerFixture, example_service):
     """When run, all prefixes are denounced when the service is unhealthy."""
     mocker.patch.object(example_service, "is_healthy", return_value=False)
@@ -48,7 +45,6 @@ async def test_run_denounces_when_unhealthy(mocker: MockerFixture, example_servi
         mock_prefix.denounce.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_healthy_when_all_checks_healthy(mocker: MockerFixture, example_service):
     """The service is healthy if all healthchecks are healthy."""
     mock_health_checks = tuple(
@@ -61,7 +57,6 @@ async def test_healthy_when_all_checks_healthy(mocker: MockerFixture, example_se
     assert result is True
 
 
-@pytest.mark.asyncio
 async def test_unhealthy_when_one_check_unhealthy(
     mocker: MockerFixture, example_service
 ):
@@ -77,7 +72,6 @@ async def test_unhealthy_when_one_check_unhealthy(
     assert result is False
 
 
-@pytest.mark.asyncio
 async def test_unhealthy_when_all_checks_unhealthy(
     mocker: MockerFixture, example_service
 ):
