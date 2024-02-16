@@ -154,7 +154,7 @@ class FRRoutingPrefix:
                 or existing stderr output.
         """
         proc = await self.executor.create_subprocess_exec(
-            self.vtysh, ("-c", "\n".join(commands))
+            self.vtysh, "-c", "\n".join(commands)
         )
         logger.debug("Awaiting vtysh commands.", vtysh=self.vtysh, commands=commands)
         stdout, stderr = await proc.communicate()
