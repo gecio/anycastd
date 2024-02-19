@@ -6,7 +6,7 @@ import nox
 
 CI = bool(os.getenv("CI"))
 PYTHON = ["3.11", "3.12"] if not CI else None
-SESSIONS = "ruff", "mypy", "lockfile", "pytest"
+SESSIONS = ["ruff", "mypy", "lockfile", "pytest"]
 EXTERNAL_DEPENDENCY_MARKERS = ["frrouting_daemon_required"]
 
 nox.options.sessions = SESSIONS
