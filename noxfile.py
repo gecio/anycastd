@@ -1,4 +1,5 @@
 import os
+import shutil
 from typing import List, Optional
 
 import nox
@@ -6,6 +7,7 @@ import nox
 CI = bool(os.getenv("CI"))
 PYTHON = ["3.11", "3.12"] if not CI else None
 SESSIONS = "ruff", "mypy", "lockfile", "pytest"
+EXTERNAL_DEPENDENCY_MARKERS = ["frrouting_daemon_required"]
 
 nox.options.sessions = SESSIONS
 os.environ.update({"PDM_IGNORE_SAVED_PYTHON": "1"})
@@ -77,29 +79,42 @@ def lockfile(session: nox.Session) -> None:
 
 @nox.session(python=PYTHON)
 def pytest(session: nox.Session) -> None:
-    """Run fast pytest tests if not running in CI, otherwise run all."""
+    """Run tests without external dependencies if not running in CI.
+
+    This session will only run tests that do not require external dependencies
+    if it is not called from within CI.
+    """
     if not CI:
-        pytest_fast(session)
+        pytest_no_external_dependencies(session)
     else:
         pytest_full(session)
 
 
 @nox.session(python=PYTHON)
-def pytest_fast(session: nox.Session) -> None:
-    """Run pytest tests that are fast to execute.
+def pytest_no_external_dependencies(session: nox.Session) -> None:
+    """Run pytest tests that have no external dependencies.
 
-    This session excludes e2e and integration tests since they are slow
-    to execute and might require external dependencies.
-    It is intended to be run multiple times during development.
+    This session only runs tests that do not require external dependencies
+    such as real databases, Docker, etc. and thus should be able to run
+    on any developer machine.
     """
     pdm_sync(session, self=True, default=True, groups=["test"])
     session.warn(
-        "Skipping e2e tests for faster execution. "
-        "To include them, run `nox -s pytest_full`."
+        "Skipping the following test marker(s) "
+        "since they require external dependencies: {}.\n"
+        "To run all tests, use `nox -s pytest_full`.".format(
+            ", ".join(EXTERNAL_DEPENDENCY_MARKERS)
+        )
     )
-    session.run(
-        "pytest", "tests", "-m", "not e2e and not integration", *session.posargs
-    )
+
+    markexpr = ""
+    for index, marker in enumerate(EXTERNAL_DEPENDENCY_MARKERS):
+        if index == 0:
+            markexpr += f"not {marker}"
+        else:
+            markexpr += f" and not {marker}"
+
+    session.run("pytest", "tests", "-m", markexpr, *session.posargs)
 
 
 @nox.session(python=PYTHON)
@@ -115,12 +130,12 @@ def pytest_full(session: nox.Session) -> None:
         "pytest",
         "tests",
         "-m",
-        # FRRouting integration tests have their own session
-        "not (frrouting_daemon_required and integration)",
+        # FRRouting tests that run against a FRRouting daemon have their own session
+        "not frrouting_daemon_required",
         *args,
     )
     session.notify(
-        "pytest_frrouting_integration"
+        "pytest_frrouting_daemon_required"
     )  # TODO: Fix that only one session is run
 
 
@@ -139,19 +154,21 @@ def pytest_full(session: nox.Session) -> None:
         "9.0.1",
     ],
 )
-def pytest_frrouting_integration(session: nox.Session, frrouting: str) -> None:
-    """Run pytest FRRouting integration tests.
+def pytest_frrouting_daemon_required(session: nox.Session, frrouting: str) -> None:
+    """Run pytest FRRouting integration tests against a FRRouting daemon.
 
-    This session runs the integration tests for all supported FRRouting
-    versions using the FRRouting docker image.
+    This session runs the integration tests that run against a local FRRouting instance
+    for all supported FRRouting versions using the FRRouting docker image.
     """
     pdm_sync(session, self=True, default=True, groups=["test"])
+    if shutil.which("docker") is None:
+        session.error("This session requires Docker to be installed")
     session.env["FRR_VERSION"] = frrouting
     session.run(
         "pytest",
         "tests",
         "-m",
-        "(frrouting_daemon_required and integration)",
+        "frrouting_daemon_required",
         *session.posargs,
     )
 
