@@ -116,7 +116,7 @@ def pytest_full(session: nox.Session) -> None:
         "tests",
         "-m",
         # FRRouting integration tests have their own session
-        "not (frrouting and integration)",
+        "not (frrouting_daemon_required and integration)",
         *args,
     )
     session.notify(
@@ -148,7 +148,11 @@ def pytest_frrouting_integration(session: nox.Session, frrouting: str) -> None:
     pdm_sync(session, self=True, default=True, groups=["test"])
     session.env["FRR_VERSION"] = frrouting
     session.run(
-        "pytest", "tests", "-m", "(frrouting and integration)", *session.posargs
+        "pytest",
+        "tests",
+        "-m",
+        "(frrouting_daemon_required and integration)",
+        *session.posargs,
     )
 
 
