@@ -165,7 +165,7 @@ xfail_strict = true
 markers = [
     "integration:integration tests",
     "e2e:e2e tests",
-    "frrouting:frrouting specific tests"
+    "frrouting_daemon_required:tests that run against a real FRRouting instance",
 ]
 asyncio_mode = "auto"
 
