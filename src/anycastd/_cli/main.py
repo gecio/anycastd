@@ -1,4 +1,5 @@
 # ruff: noqa: FBT001
+import asyncio
 import logging
 import sys
 from enum import StrEnum, auto
@@ -134,7 +135,10 @@ def run(
 ) -> None:
     """Run anycastd."""
     main_configuration = _get_main_configuration(config)
-    run_from_configuration(main_configuration)
+    asyncio.run(
+        run_from_configuration(main_configuration),
+        debug=True if log_level == LogLevel.Debug else False,
+    )
 
 
 def _get_main_configuration(config: Path) -> MainConfiguration:
