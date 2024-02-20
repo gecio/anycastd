@@ -117,18 +117,33 @@ class FRRoutingPrefix:
     async def denounce(self) -> None:
         """Denounce the prefix in the default VRF.
 
-        Removes the respective BGP prefix from the default VRF.
+        Removes the respective BGP prefix from the default VRF. If the prefix is not
+        announced, the error raised by FRRouting is caught and a warning is logged.
         """
         asn = await self._get_local_asn()
 
-        await self._run_vtysh_commands(
-            (
-                "configure terminal",
-                f"router bgp {asn} vrf {self.vrf}" if self.vrf else f"router bgp {asn}",
-                f"address-family {self.afi} unicast",
-                f"no network {self.prefix}",
+        try:
+            await self._run_vtysh_commands(
+                (
+                    "configure terminal",
+                    f"router bgp {asn} vrf {self.vrf}"
+                    if self.vrf
+                    else f"router bgp {asn}",
+                    f"address-family {self.afi} unicast",
+                    f"no network {self.prefix}",
+                )
             )
-        )
+        except FRRCommandError as exc:
+            if exc.stderr is not None:
+                if "Can't find static route specified" in exc.stderr:
+                    logger.warning(
+                        "Attempted to denounce prefix that was not announced.",
+                        prefix=self.prefix,
+                        vrf=self.vrf,
+                    )
+                    return None
+
+            raise
 
     async def _get_local_asn(self) -> int:
         """Returns the local ASN in the VRF of the prefix.
