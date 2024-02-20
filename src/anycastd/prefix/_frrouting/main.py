@@ -1,3 +1,4 @@
+import asyncio
 import json
 from collections.abc import Sequence
 from contextlib import suppress
@@ -10,6 +11,7 @@ import structlog
 from anycastd._executor import Executor
 from anycastd.prefix._frrouting.exceptions import (
     FRRCommandError,
+    FRRCommandTimeoutError,
     FRRInvalidVRFError,
     FRRInvalidVTYSHError,
     FRRNoBGPError,
@@ -148,22 +150,29 @@ class FRRoutingPrefix:
             raise RuntimeError(f"Failed to get local ASN: {warning}")
         return int(bgp_detail["localAS"])
 
-    async def _run_vtysh_commands(self, commands: Sequence[str]) -> str:
+    async def _run_vtysh_commands(
+        self, commands: Sequence[str], *, timeout: float = 1.5
+    ) -> str:
         """Run commands in the vtysh.
 
         Raises:
             FRRCommandFailed: The command failed to run due to a non-zero exit code
                 or existing stderr output.
+            FRRCommandTimeoutError: The command timed out.
         """
         logger.debug(
             "Awaiting subprocess running vtysh commands.",
             vtysh=self.vtysh,
             commands=commands,
         )
-        proc = await self.executor.create_subprocess_exec(
-            self.vtysh, "-c", "\n".join(commands)
-        )
-        stdout, stderr = await proc.communicate()
+        try:
+            async with asyncio.timeout(timeout):
+                proc = await self.executor.create_subprocess_exec(
+                    self.vtysh, "-c", "\n".join(commands)
+                )
+                stdout, stderr = await proc.communicate()
+        except TimeoutError as exc:
+            raise FRRCommandTimeoutError(commands) from exc
 
         # Command may have failed even if the returncode is 0.
         if proc.returncode != 0 or stderr:

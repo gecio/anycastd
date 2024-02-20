@@ -18,14 +18,14 @@ class FRRCommandError(Exception):
     """Failed to run a FRRouting VTY command."""
 
     commands: Sequence[str]
-    exit_code: int
+    exit_code: int | None
     stdout: str | None
     stderr: str | None
 
     def __init__(
         self,
         commands: Sequence[str],
-        exit_code: int,
+        exit_code: int | None,
         stdout: str | None,
         stderr: str | None,
     ):
@@ -40,6 +40,13 @@ class FRRCommandError(Exception):
         if self.stderr:
             msg += f"stderr: {self.stderr}\n"
         super().__init__(msg)
+
+
+class FRRCommandTimeoutError(FRRCommandError):
+    """The FRRouting VTY command timed out."""
+
+    def __init__(self, commands: Sequence[str]):
+        super().__init__(commands, None, None, None)
 
 
 class FRRConfigurationError(Exception):
