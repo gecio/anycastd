@@ -175,11 +175,6 @@ class FRRoutingPrefix:
                 or existing stderr output.
             FRRCommandTimeoutError: The command timed out.
         """
-        logger.debug(
-            "Awaiting subprocess running vtysh commands.",
-            vtysh=self.vtysh,
-            commands=commands,
-        )
         try:
             async with asyncio.timeout(timeout):
                 proc = await self.executor.create_subprocess_exec(
@@ -188,6 +183,18 @@ class FRRoutingPrefix:
                 stdout, stderr = await proc.communicate()
         except TimeoutError as exc:
             raise FRRCommandTimeoutError(commands) from exc
+        finally:
+            logger.debug(
+                "Ran vtysh commands.",
+                prefix=self.prefix,
+                vrf=self.vrf,
+                vtysh=self.vtysh,
+                commands=commands,
+                pid=proc.pid,
+                returncode=proc.returncode,
+                stdout=stdout.decode("utf-8") if stdout else None,
+                stderr=stderr.decode("utf-8") if stderr else None,
+            )
 
         # Command may have failed even if the returncode is 0.
         if proc.returncode != 0 or stderr:
