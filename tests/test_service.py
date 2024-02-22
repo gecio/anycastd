@@ -1,6 +1,7 @@
 import pytest
 from anycastd.core import Service
 from pytest_mock import MockerFixture
+from structlog.testing import capture_logs
 
 from tests.dummy import DummyHealthcheck, DummyPrefix
 
@@ -84,3 +85,41 @@ async def test_unhealthy_when_all_checks_unhealthy(
         mock_health_check.is_healthy.return_value = False
     result = await example_service.is_healthy()
     assert result is False
+
+
+async def test_unhealthy_when_check_raises(mocker: MockerFixture, example_service):
+    """The service is unhealthy if a healthcheck raises an exception."""
+    mock_health_checks = tuple(
+        mocker.create_autospec(_, spec_set=True) for _ in example_service.health_checks
+    )
+    mocker.patch.object(example_service, "health_checks", mock_health_checks)
+    mock_health_checks[1].is_healthy.side_effect = Exception
+    result = await example_service.is_healthy()
+    assert result is False
+
+
+async def test_exception_raised_by_check_logged(mocker: MockerFixture, example_service):
+    """When a healthcheck raises an exception, it is logged."""
+    mock_health_checks = tuple(
+        mocker.create_autospec(_, spec_set=True) for _ in example_service.health_checks
+    )
+    mocker.patch.object(example_service, "health_checks", mock_health_checks)
+    check_exc = Exception("An error occurred while executing the health check.")
+    mock_health_checks[1].is_healthy.side_effect = check_exc
+
+    with capture_logs() as logs:
+        await example_service.is_healthy()
+
+    assert (
+        logs[0]["event"]
+        == "An unhandled exception occurred while running a health check."
+    )
+    assert logs[0]["log_level"] == "error"
+    assert logs[0]["service"] == example_service.name
+    assert logs[0]["exc_info"] == check_exc
+    assert (
+        logs[1]["event"]
+        == "Aborting additional checks and treating the service as unhealthy."
+    )
+    assert logs[1]["log_level"] == "error"
+    assert logs[1]["service"] == example_service.name
