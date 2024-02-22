@@ -83,7 +83,7 @@ class Service:
         True if all health checks are passing, False otherwise.
         """
         async with asyncio.TaskGroup() as tg:
-            tasks = (tg.create_task(_.is_healthy()) for _ in self.health_checks)
+            tasks = tuple(tg.create_task(_.is_healthy()) for _ in self.health_checks)
 
         results = (_.result() for _ in tasks)
         return all(results)
