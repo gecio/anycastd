@@ -66,12 +66,11 @@ class Service:
         """
         logger.info(f"Starting service {self.name}.", service=self.name)
         while True:
-            if await self.is_healthy():
-                async with asyncio.TaskGroup() as tg:
+            async with asyncio.TaskGroup() as tg:
+                if await self.is_healthy():
                     for prefix in self.prefixes:
                         tg.create_task(prefix.announce())
-            else:
-                async with asyncio.TaskGroup() as tg:
+                else:
                     for prefix in self.prefixes:
                         tg.create_task(prefix.denounce())
             if _only_once:
@@ -81,9 +80,26 @@ class Service:
         """Whether the service is healthy.
 
         True if all health checks are passing, False otherwise.
+        If any health check raises an exception, the remaining checks are aborted,
+        the exception(s) are logged, and False is returned.
         """
-        async with asyncio.TaskGroup() as tg:
-            tasks = tuple(tg.create_task(_.is_healthy()) for _ in self.health_checks)
+        try:
+            async with asyncio.TaskGroup() as tg:
+                tasks = tuple(
+                    tg.create_task(_.is_healthy()) for _ in self.health_checks
+                )
+        except ExceptionGroup as exc_group:
+            for exc in exc_group.exceptions:
+                logger.error(
+                    "An unhandled exception occurred while running a health check.",
+                    service=self.name,
+                    exc_info=exc,
+                )
+            logger.error(
+                "Aborting additional checks and treating the service as unhealthy.",
+                service=self.name,
+            )
+            return False
 
         results = (_.result() for _ in tasks)
         return all(results)
