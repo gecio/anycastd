@@ -79,7 +79,7 @@ class FRRoutingPrefix:
     async def is_announced(self) -> bool:
         """Returns True if the prefix is announced.
 
-        Checks if the respective BGP prefix is configured in the default VRF.
+        Checks if the respective BGP prefix is configured in its VRF.
         """
         cmd = (
             f"show bgp vrf {self.vrf} {self.afi} unicast {self.prefix} json"
@@ -99,9 +99,9 @@ class FRRoutingPrefix:
         return False
 
     async def announce(self) -> None:
-        """Announce the prefix in the default VRF.
+        """Announce the prefix in its VRF.
 
-        Adds the respective BGP prefix to the default VRF.
+        Adds the respective BGP prefix to its VRF.
         """
         asn = await self._get_local_asn()
 
@@ -115,9 +115,9 @@ class FRRoutingPrefix:
         )
 
     async def denounce(self) -> None:
-        """Denounce the prefix in the default VRF.
+        """Denounce the prefix in its VRF.
 
-        Removes the respective BGP prefix from the default VRF. If the prefix is not
+        Removes the respective BGP prefix from its VRF. If the prefix is not
         announced, the error raised by FRRouting is caught and a warning is logged.
         """
         asn = await self._get_local_asn()
