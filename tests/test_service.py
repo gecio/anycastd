@@ -16,6 +16,16 @@ def example_service(ipv4_example_network, ipv6_example_network):
 
 
 @pytest.fixture
+def example_service_w_mock_prefixes(mocker: MockerFixture, example_service) -> Service:
+    """The example service with prefixes replaced by autospecced mocks."""
+    mock_prefixes = tuple(
+        mocker.create_autospec(_, spec_set=True) for _ in example_service.prefixes
+    )
+    mocker.patch.object(example_service, "prefixes", mock_prefixes)
+    return example_service
+
+
+@pytest.fixture
 def example_service_w_mock_checks(mocker: MockerFixture, example_service) -> Service:
     """The example service with health checks replaced by autospecced mocks."""
     mock_health_checks = tuple(
@@ -32,27 +42,27 @@ async def test_run_awaits_status(mocker: MockerFixture, example_service):
     mock_is_healthy.assert_awaited_once()
 
 
-async def test_run_announces_when_healthy(mocker: MockerFixture, example_service):
+async def test_run_announces_when_healthy(
+    mocker: MockerFixture, example_service_w_mock_prefixes
+):
     """When run, all prefixes are announced when the service is healthy."""
-    mocker.patch.object(example_service, "is_healthy", return_value=True)
-    mock_prefixes = tuple(
-        mocker.create_autospec(_, spec_set=True) for _ in example_service.prefixes
+    mocker.patch.object(
+        example_service_w_mock_prefixes, "is_healthy", return_value=True
     )
-    mocker.patch.object(example_service, "prefixes", mock_prefixes)
-    await example_service.run(_only_once=True)
-    for mock_prefix in mock_prefixes:
+    await example_service_w_mock_prefixes.run(_only_once=True)
+    for mock_prefix in example_service_w_mock_prefixes.prefixes:
         mock_prefix.announce.assert_awaited_once()
 
 
-async def test_run_denounces_when_unhealthy(mocker: MockerFixture, example_service):
+async def test_run_denounces_when_unhealthy(
+    mocker: MockerFixture, example_service_w_mock_prefixes
+):
     """When run, all prefixes are denounced when the service is unhealthy."""
-    mocker.patch.object(example_service, "is_healthy", return_value=False)
-    mock_prefixes = tuple(
-        mocker.create_autospec(_, spec_set=True) for _ in example_service.prefixes
+    mocker.patch.object(
+        example_service_w_mock_prefixes, "is_healthy", return_value=False
     )
-    mocker.patch.object(example_service, "prefixes", mock_prefixes)
-    await example_service.run(_only_once=True)
-    for mock_prefix in mock_prefixes:
+    await example_service_w_mock_prefixes.run(_only_once=True)
+    for mock_prefix in example_service_w_mock_prefixes.prefixes:
         mock_prefix.denounce.assert_awaited_once()
 
 
