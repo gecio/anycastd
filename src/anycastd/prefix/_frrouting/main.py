@@ -1,3 +1,4 @@
+import asyncio
 import json
 from collections.abc import Sequence
 from contextlib import suppress
@@ -10,6 +11,7 @@ import structlog
 from anycastd._executor import Executor
 from anycastd.prefix._frrouting.exceptions import (
     FRRCommandError,
+    FRRCommandTimeoutError,
     FRRInvalidVRFError,
     FRRInvalidVTYSHError,
     FRRNoBGPError,
@@ -77,7 +79,7 @@ class FRRoutingPrefix:
     async def is_announced(self) -> bool:
         """Returns True if the prefix is announced.
 
-        Checks if the respective BGP prefix is configured in the default VRF.
+        Checks if the respective BGP prefix is configured in its VRF.
         """
         cmd = (
             f"show bgp vrf {self.vrf} {self.afi} unicast {self.prefix} json"
@@ -97,9 +99,9 @@ class FRRoutingPrefix:
         return False
 
     async def announce(self) -> None:
-        """Announce the prefix in the default VRF.
+        """Announce the prefix in its VRF.
 
-        Adds the respective BGP prefix to the default VRF.
+        Adds the respective BGP prefix to its VRF.
         """
         asn = await self._get_local_asn()
 
@@ -113,20 +115,35 @@ class FRRoutingPrefix:
         )
 
     async def denounce(self) -> None:
-        """Denounce the prefix in the default VRF.
+        """Denounce the prefix in its VRF.
 
-        Removes the respective BGP prefix from the default VRF.
+        Removes the respective BGP prefix from its VRF. If the prefix is not
+        announced, the error raised by FRRouting is caught and a warning is logged.
         """
         asn = await self._get_local_asn()
 
-        await self._run_vtysh_commands(
-            (
-                "configure terminal",
-                f"router bgp {asn} vrf {self.vrf}" if self.vrf else f"router bgp {asn}",
-                f"address-family {self.afi} unicast",
-                f"no network {self.prefix}",
+        try:
+            await self._run_vtysh_commands(
+                (
+                    "configure terminal",
+                    f"router bgp {asn} vrf {self.vrf}"
+                    if self.vrf
+                    else f"router bgp {asn}",
+                    f"address-family {self.afi} unicast",
+                    f"no network {self.prefix}",
+                )
             )
-        )
+        except FRRCommandError as exc:
+            if exc.stderr is not None:
+                if "Can't find static route specified" in exc.stderr:
+                    logger.warning(
+                        "Attempted to denounce prefix that was not announced.",
+                        prefix=self.prefix,
+                        vrf=self.vrf,
+                    )
+                    return None
+
+            raise
 
     async def _get_local_asn(self) -> int:
         """Returns the local ASN in the VRF of the prefix.
@@ -148,18 +165,36 @@ class FRRoutingPrefix:
             raise RuntimeError(f"Failed to get local ASN: {warning}")
         return int(bgp_detail["localAS"])
 
-    async def _run_vtysh_commands(self, commands: Sequence[str]) -> str:
+    async def _run_vtysh_commands(
+        self, commands: Sequence[str], *, timeout: float = 1.5
+    ) -> str:
         """Run commands in the vtysh.
 
         Raises:
             FRRCommandFailed: The command failed to run due to a non-zero exit code
                 or existing stderr output.
+            FRRCommandTimeoutError: The command timed out.
         """
-        proc = await self.executor.create_subprocess_exec(
-            self.vtysh, "-c", "\n".join(commands)
-        )
-        logger.debug("Awaiting vtysh commands.", vtysh=self.vtysh, commands=commands)
-        stdout, stderr = await proc.communicate()
+        try:
+            async with asyncio.timeout(timeout):
+                proc = await self.executor.create_subprocess_exec(
+                    self.vtysh, "-c", "\n".join(commands)
+                )
+                stdout, stderr = await proc.communicate()
+        except TimeoutError as exc:
+            raise FRRCommandTimeoutError(commands) from exc
+        finally:
+            logger.debug(
+                "Ran vtysh commands.",
+                prefix=self.prefix,
+                vrf=self.vrf,
+                vtysh=self.vtysh,
+                commands=commands,
+                pid=proc.pid,
+                returncode=proc.returncode,
+                stdout=stdout.decode("utf-8") if stdout else None,
+                stderr=stderr.decode("utf-8") if stderr else None,
+            )
 
         # Command may have failed even if the returncode is 0.
         if proc.returncode != 0 or stderr:

@@ -67,9 +67,13 @@ class Service:
         logger.info(f"Starting service {self.name}.", service=self.name)
         while True:
             if await self.is_healthy():
-                await asyncio.gather(*(prefix.announce() for prefix in self.prefixes))
+                async with asyncio.TaskGroup() as tg:
+                    for prefix in self.prefixes:
+                        tg.create_task(prefix.announce())
             else:
-                await asyncio.gather(*(prefix.denounce() for prefix in self.prefixes))
+                async with asyncio.TaskGroup() as tg:
+                    for prefix in self.prefixes:
+                        tg.create_task(prefix.denounce())
             if _only_once:
                 break
 
@@ -78,5 +82,8 @@ class Service:
 
         True if all health checks are passing, False otherwise.
         """
-        results = await asyncio.gather(*(_.is_healthy() for _ in self.health_checks))
+        async with asyncio.TaskGroup() as tg:
+            tasks = tuple(tg.create_task(_.is_healthy()) for _ in self.health_checks)
+
+        results = (_.result() for _ in tasks)
         return all(results)

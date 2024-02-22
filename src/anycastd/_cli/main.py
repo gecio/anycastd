@@ -1,4 +1,5 @@
 # ruff: noqa: FBT001
+import asyncio
 import logging
 import sys
 from enum import StrEnum, auto
@@ -19,7 +20,9 @@ CONFIG_PATH = Path("/etc/anycastd/config.toml")
 IS_TTY = sys.stdout.isatty()
 
 logger = structlog.get_logger()
-app = typer.Typer(no_args_is_help=True, add_completion=False)
+app = typer.Typer(
+    no_args_is_help=True, add_completion=False, pretty_exceptions_show_locals=False
+)
 
 
 class LogLevel(StrEnum):
@@ -43,10 +46,15 @@ def version_callback(value: bool) -> None:
 
 
 def log_level_callback(level: LogLevel) -> LogLevel:
-    """Configure structlog filtering based on the given level."""
+    """Configure structlog and typer based on the given log level.
+
+    Configures structlog to filter logs and typer to show locals in
+    tracebacks based on the given log level.
+    """
     match level:
         case LogLevel.Debug:
             std_level = logging.DEBUG
+            app.pretty_exceptions_show_locals = True
         case LogLevel.Info:
             std_level = logging.INFO
         case LogLevel.Warning:
@@ -134,7 +142,10 @@ def run(
 ) -> None:
     """Run anycastd."""
     main_configuration = _get_main_configuration(config)
-    run_from_configuration(main_configuration)
+    asyncio.run(
+        run_from_configuration(main_configuration),
+        debug=True if log_level == LogLevel.Debug else False,
+    )
 
 
 def _get_main_configuration(config: Path) -> MainConfiguration:
