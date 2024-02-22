@@ -1,6 +1,5 @@
 import asyncio
 import json
-from collections.abc import Sequence
 from contextlib import suppress
 from ipaddress import IPv4Network, IPv6Network
 from pathlib import Path
@@ -86,7 +85,7 @@ class FRRoutingPrefix:
             if self.vrf
             else f"show bgp {self.afi} unicast {self.prefix} json"
         )
-        show_prefix = await self._run_vtysh_commands((cmd,))
+        show_prefix = await self._run_vtysh_commands(cmd)
         prefix_info = json.loads(show_prefix)
 
         with suppress(KeyError):
@@ -106,12 +105,10 @@ class FRRoutingPrefix:
         asn = await self._get_local_asn()
 
         await self._run_vtysh_commands(
-            (
-                "configure terminal",
-                f"router bgp {asn} vrf {self.vrf}" if self.vrf else f"router bgp {asn}",
-                f"address-family {self.afi} unicast",
-                f"network {self.prefix}",
-            )
+            "configure terminal",
+            f"router bgp {asn} vrf {self.vrf}" if self.vrf else f"router bgp {asn}",
+            f"address-family {self.afi} unicast",
+            f"network {self.prefix}",
         )
 
     async def denounce(self) -> None:
@@ -124,14 +121,10 @@ class FRRoutingPrefix:
 
         try:
             await self._run_vtysh_commands(
-                (
-                    "configure terminal",
-                    f"router bgp {asn} vrf {self.vrf}"
-                    if self.vrf
-                    else f"router bgp {asn}",
-                    f"address-family {self.afi} unicast",
-                    f"no network {self.prefix}",
-                )
+                "configure terminal",
+                f"router bgp {asn} vrf {self.vrf}" if self.vrf else f"router bgp {asn}",
+                f"address-family {self.afi} unicast",
+                f"no network {self.prefix}",
             )
         except FRRCommandError as exc:
             if exc.stderr is not None:
@@ -152,22 +145,16 @@ class FRRoutingPrefix:
             RuntimeError: Failed to get the local ASN.
         """
         show_bgp_detail = await self._run_vtysh_commands(
-            (
-                (
-                    f"show bgp vrf {self.vrf} detail json"
-                    if self.vrf
-                    else "show bgp detail json"
-                ),
-            )
+            f"show bgp vrf {self.vrf} detail json"
+            if self.vrf
+            else "show bgp detail json"
         )
         bgp_detail = json.loads(show_bgp_detail)
         if warning := bgp_detail.get("warning"):
             raise RuntimeError(f"Failed to get local ASN: {warning}")
         return int(bgp_detail["localAS"])
 
-    async def _run_vtysh_commands(
-        self, commands: Sequence[str], *, timeout: float = 1.5
-    ) -> str:
+    async def _run_vtysh_commands(self, *commands: str, timeout: float = 1.5) -> str:
         """Run commands in the vtysh.
 
         Raises:
@@ -222,11 +209,11 @@ class FRRoutingPrefix:
         if not self.vtysh.is_file():
             raise FRRInvalidVTYSHError(self.vtysh, "The given VTYSH is not a file.")
         if self.vrf:
-            show_vrf = await self._run_vtysh_commands((f"show bgp vrf {self.vrf}",))
+            show_vrf = await self._run_vtysh_commands(f"show bgp vrf {self.vrf}")
             if "unknown" in show_vrf.lower():
                 raise FRRInvalidVRFError(self.vrf)
         else:
-            show_bgp = await self._run_vtysh_commands(("show bgp",))
+            show_bgp = await self._run_vtysh_commands("show bgp")
             if "not found" in show_bgp.lower():
                 raise FRRNoBGPError(self.vrf)
 
