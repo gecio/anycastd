@@ -67,7 +67,7 @@ class Service:
         logger.info(f"Starting service {self.name}.", service=self.name)
         while True:
             async with asyncio.TaskGroup() as tg:
-                if await self.is_healthy():
+                if await self.all_checks_healthy():
                     for prefix in self.prefixes:
                         tg.create_task(prefix.announce())
                 else:
@@ -76,10 +76,10 @@ class Service:
             if _only_once:
                 break
 
-    async def is_healthy(self) -> bool:
-        """Whether the service is healthy.
+    async def all_checks_healthy(self) -> bool:
+        """Runs all checks and returns their cumulative result.
 
-        True if all health checks are passing, False otherwise.
+        Returns True if all health checks report as healthy, False otherwise.
         If any health check raises an exception, the remaining checks are aborted,
         the exception(s) are logged, and False is returned.
         """
