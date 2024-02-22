@@ -93,13 +93,17 @@ async def test_unhealthy_when_all_checks_unhealthy(example_service_w_mock_checks
 
 async def test_unhealthy_when_check_raises(example_service_w_mock_checks):
     """The service is unhealthy if a healthcheck raises an exception."""
+    # All checks return a healthy status
+    for mock_health_check in example_service_w_mock_checks.health_checks:
+        mock_health_check.is_healthy.return_value = True
+    # Except for one raising an exception
     example_service_w_mock_checks.health_checks[1].is_healthy.side_effect = Exception
     result = await example_service_w_mock_checks.is_healthy()
     assert result is False
 
 
 async def test_exception_raised_by_check_logged(
-    mocker: MockerFixture, example_service, example_service_w_mock_checks
+    example_service, example_service_w_mock_checks
 ):
     """When a healthcheck raises an exception, it is logged."""
     check_exc = Exception("An error occurred while executing the health check.")
