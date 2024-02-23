@@ -51,6 +51,7 @@ class Service:
     health_checks: tuple[Healthcheck, ...]
 
     _healthy: bool = field(default=False, init=False, repr=False, compare=False)
+    _terminate: bool = field(default=False, init=False, repr=False, compare=False)
     _log: structlog.typing.FilteringBoundLogger = field(
         default=logger, init=False, repr=False, compare=False
     )
@@ -92,7 +93,7 @@ class Service:
         passing, and denounce them otherwise.
         """
         self._log.info(f"Starting service {self.name}.", service_healthy=self.healthy)
-        while True:
+        while not self._terminate:
             checks_currently_healthy: bool = await self.all_checks_healthy()
 
             if checks_currently_healthy and not self.healthy:
@@ -144,3 +145,9 @@ class Service:
         async with asyncio.TaskGroup() as tg:
             for prefix in self.prefixes:
                 tg.create_task(prefix.denounce())
+
+    async def terminate(self) -> None:
+        """Terminate the service and denounce its prefixes."""
+        self._terminate = True
+        await self.denounce_all_prefixes()
+        logger.info(f"Service {self.name} terminated.", service=self.name)
