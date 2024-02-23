@@ -35,82 +35,145 @@ def example_service_w_mock_checks(mocker: MockerFixture, example_service) -> Ser
     return example_service
 
 
-async def test_run_awaits_status(mocker: MockerFixture, example_service):
-    """When run, the service awaits the status of the health checks."""
-    mock_is_healthy = mocker.patch.object(example_service, "is_healthy")
+async def test_run_awaits_all_checks(mocker: MockerFixture, example_service):
+    """When run, the service awaits the status of all its health checks."""
+    mock_all_checks_healthy = mocker.patch.object(example_service, "all_checks_healthy")
     await example_service.run(_only_once=True)
-    mock_is_healthy.assert_awaited_once()
+    mock_all_checks_healthy.assert_awaited_once()
 
 
-async def test_run_announces_when_healthy(
+@pytest.mark.parametrize("was_healthy", [True, False])
+async def test_run_announces_all_when_health_state_changes_to_healty(
+    mocker: MockerFixture, example_service_w_mock_prefixes, was_healthy: bool
+):
+    """
+    When run, all prefixes are announced if the all_checks_healthy method returns True
+    and the service's health state was previously unhealthy. If the service's health
+    state was already healthy, no prefixes are announced.
+    """
+    example_service_w_mock_prefixes.healthy = was_healthy
+    mocker.patch.object(
+        example_service_w_mock_prefixes, "all_checks_healthy", return_value=True
+    )
+    mock_announce_all = mocker.patch.object(
+        example_service_w_mock_prefixes, "announce_all_prefixes"
+    )
+
+    await example_service_w_mock_prefixes.run(_only_once=True)
+
+    if not was_healthy:
+        mock_announce_all.assert_awaited_once()
+    else:
+        mock_announce_all.assert_not_awaited()
+
+
+@pytest.mark.parametrize("was_healthy", [True, False])
+async def test_run_denounces_all_when_health_state_changes_to_unhealty(
+    mocker: MockerFixture, example_service_w_mock_prefixes, was_healthy: bool
+):
+    """
+    When run, all prefixes are denounced if the all_checks_healthy method returns False
+    and the service's health state was previously healthy. If the service's health
+    state was already unhealthy, no prefixes are denounced.
+    """
+    example_service_w_mock_prefixes.healthy = was_healthy
+    mocker.patch.object(
+        example_service_w_mock_prefixes, "all_checks_healthy", return_value=False
+    )
+    mock_denounce_all = mocker.patch.object(
+        example_service_w_mock_prefixes, "denounce_all_prefixes"
+    )
+
+    await example_service_w_mock_prefixes.run(_only_once=True)
+
+    if was_healthy:
+        mock_denounce_all.assert_awaited_once()
+    else:
+        mock_denounce_all.assert_not_awaited()
+
+
+async def test_run_updates_health_state_when_changed(
     mocker: MockerFixture, example_service_w_mock_prefixes
 ):
-    """When run, all prefixes are announced when the service is healthy."""
+    """
+    When run, the service's health state is updated when the result of the
+    all_checks_healthy method changes.
+    """
+    example_service_w_mock_prefixes.healthy = False
     mocker.patch.object(
-        example_service_w_mock_prefixes, "is_healthy", return_value=True
+        example_service_w_mock_prefixes, "all_checks_healthy", return_value=True
     )
+
     await example_service_w_mock_prefixes.run(_only_once=True)
-    for mock_prefix in example_service_w_mock_prefixes.prefixes:
-        mock_prefix.announce.assert_awaited_once()
+
+    assert example_service_w_mock_prefixes.healthy is True
 
 
-async def test_run_denounces_when_unhealthy(
-    mocker: MockerFixture, example_service_w_mock_prefixes
+async def test_all_checks_healthy_true_when_all_checks_healthy(
+    example_service_w_mock_checks,
 ):
-    """When run, all prefixes are denounced when the service is unhealthy."""
-    mocker.patch.object(
-        example_service_w_mock_prefixes, "is_healthy", return_value=False
-    )
-    await example_service_w_mock_prefixes.run(_only_once=True)
-    for mock_prefix in example_service_w_mock_prefixes.prefixes:
-        mock_prefix.denounce.assert_awaited_once()
-
-
-async def test_healthy_when_all_checks_healthy(example_service_w_mock_checks):
-    """The service is healthy if all healthchecks are healthy."""
+    """
+    The all_checks_healthy method returns True when all health checks report as healthy.
+    """
     for mock_health_check in example_service_w_mock_checks.health_checks:
         mock_health_check.is_healthy.return_value = True
-    result = await example_service_w_mock_checks.is_healthy()
+    result = await example_service_w_mock_checks.all_checks_healthy()
     assert result is True
 
 
-async def test_unhealthy_when_one_check_unhealthy(example_service_w_mock_checks):
-    """The service is unhealthy if one healthcheck is unhealthy."""
+async def test_all_checks_healthy_false_when_one_check_unhealthy(
+    example_service_w_mock_checks,
+):
+    """
+    The all_checks_healthy method returns False when one health check
+    reports as unhealthy.
+    """
     for mock_health_check in example_service_w_mock_checks.health_checks:
         mock_health_check.is_healthy.return_value = True
     example_service_w_mock_checks.health_checks[1].is_healthy.return_value = False
-    result = await example_service_w_mock_checks.is_healthy()
+    result = await example_service_w_mock_checks.all_checks_healthy()
     assert result is False
 
 
-async def test_unhealthy_when_all_checks_unhealthy(example_service_w_mock_checks):
-    """The service is unhealthy if all healthchecks are unhealthy."""
+async def test_all_checks_healthy_false_when_all_checks_unhealthy(
+    example_service_w_mock_checks,
+):
+    """
+    The all_checks_healthy method returns False when all health checks
+    reports as unhealthy.
+    """
     for mock_health_check in example_service_w_mock_checks.health_checks:
         mock_health_check.is_healthy.return_value = False
-    result = await example_service_w_mock_checks.is_healthy()
+    result = await example_service_w_mock_checks.all_checks_healthy()
     assert result is False
 
 
-async def test_unhealthy_when_check_raises(example_service_w_mock_checks):
-    """The service is unhealthy if a healthcheck raises an exception."""
+async def test_all_checks_healthy_false_when_check_raises(
+    example_service_w_mock_checks,
+):
+    """
+    The all_checks_healthy method returns False when a health check raises an exception.
+    """
     # All checks return a healthy status
     for mock_health_check in example_service_w_mock_checks.health_checks:
         mock_health_check.is_healthy.return_value = True
     # Except for one raising an exception
     example_service_w_mock_checks.health_checks[1].is_healthy.side_effect = Exception
-    result = await example_service_w_mock_checks.is_healthy()
+    result = await example_service_w_mock_checks.all_checks_healthy()
     assert result is False
 
 
-async def test_exception_raised_by_check_logged(
+async def test_all_checks_healthy_logs_exception_raised_by_check(
     example_service, example_service_w_mock_checks
 ):
-    """When a healthcheck raises an exception, it is logged."""
+    """
+    The all_checks_healthy method logs exceptions raised by a health check.
+    """
     check_exc = Exception("An error occurred while executing the health check.")
     example_service_w_mock_checks.health_checks[1].is_healthy.side_effect = check_exc
 
     with capture_logs() as logs:
-        await example_service_w_mock_checks.is_healthy()
+        await example_service_w_mock_checks.all_checks_healthy()
 
     assert (
         logs[0]["event"]
@@ -125,3 +188,67 @@ async def test_exception_raised_by_check_logged(
     )
     assert logs[1]["log_level"] == "error"
     assert logs[1]["service"] == example_service.name
+
+
+@pytest.mark.parametrize("new_health_status", [True, False])
+def test_change_of_service_health_is_logged(example_service, new_health_status: bool):
+    """When the service's health changes, the new health status is logged."""
+    # Start out with the opposite of what will be set
+    example_service.healthy = not new_health_status
+
+    with capture_logs() as logs:
+        example_service.healthy = new_health_status
+
+    assert logs[0]["event"] == "Service health changed to {}.".format(
+        "healthy" if new_health_status is True else "unhealthy"
+    )
+    assert logs[0]["log_level"] == "info"
+    assert logs[0]["service"] == example_service.name
+
+
+@pytest.mark.parametrize("current_health_status", [True, False])
+def test_set_service_health_without_change_does_not_log(
+    example_service, current_health_status: bool
+):
+    """When the service's health is set to the same value, no log is emitted."""
+    # Start out with the same value as what will be set
+    example_service.healthy = current_health_status
+
+    with capture_logs() as logs:
+        example_service.healthy = current_health_status
+
+    assert logs == []
+
+
+def test_service_health_set_correctly(example_service):
+    """The service's health status can be set correctly."""
+    current_health_status = example_service.healthy
+    new_health_status = not current_health_status
+
+    example_service.healthy = new_health_status
+
+    assert example_service.healthy == new_health_status
+
+
+def test_private_health_not_in_repr_or_str(example_service):
+    """The private _healthy attribute is not included in the service's repr or str."""
+    assert "_healthy" not in repr(example_service)
+    assert "_healthy" not in str(example_service)
+
+
+async def test_announce_all_prefixes_awaits_announce_of_all_prefixes(
+    example_service_w_mock_prefixes,
+):
+    """The announce_all_prefixes method awaits the announcement of all prefixes."""
+    await example_service_w_mock_prefixes.announce_all_prefixes()
+    for mock_prefix in example_service_w_mock_prefixes.prefixes:
+        mock_prefix.announce.assert_awaited_once()
+
+
+async def test_denounce_all_prefixes_awaits_denounce_of_all_prefixes(
+    example_service_w_mock_prefixes,
+):
+    """The denounce_all_prefixes method awaits the denouncing of all prefixes."""
+    await example_service_w_mock_prefixes.denounce_all_prefixes()
+    for mock_prefix in example_service_w_mock_prefixes.prefixes:
+        mock_prefix.denounce.assert_awaited_once()
