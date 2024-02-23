@@ -1,5 +1,5 @@
 import asyncio
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import structlog
 
@@ -50,11 +50,28 @@ class Service:
     prefixes: tuple[Prefix, ...]
     health_checks: tuple[Healthcheck, ...]
 
+    _healthy: bool = field(default=False, init=False, repr=False, compare=False)
+
     def __post_init__(self) -> None:
         if not all(isinstance(_, Prefix) for _ in self.prefixes):
             raise TypeError("Prefixes must implement the Prefix protocol")
         if not all(isinstance(_, Healthcheck) for _ in self.health_checks):
             raise TypeError("Health checks must implement the Healthcheck protocol")
+
+    @property
+    def healthy(self) -> bool:
+        """Whether the service is healthy."""
+        return self._healthy
+
+    @healthy.setter
+    def healthy(self, new_value: bool):
+        if new_value != self._healthy:
+            logger.info(
+                "Service health changed to %s.",
+                "healthy" if new_value is True else "unhealthy",
+                service=self.name,
+            )
+            self._healthy = new_value
 
     # The _only_once parameter is only used for testing.
     # TODO: Look into a better way to do this.

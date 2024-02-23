@@ -149,3 +149,49 @@ async def test_all_checks_healthy_logs_exception_raised_by_check(
     )
     assert logs[1]["log_level"] == "error"
     assert logs[1]["service"] == example_service.name
+
+
+@pytest.mark.parametrize("new_health_status", [True, False])
+def test_change_of_service_health_is_logged(example_service, new_health_status: bool):
+    """When the service's health changes, the new health status is logged."""
+    # Start out with the opposite of what will be set
+    example_service.healthy = not new_health_status
+
+    with capture_logs() as logs:
+        example_service.healthy = new_health_status
+
+    assert logs[0]["event"] == "Service health changed to {}.".format(
+        "healthy" if new_health_status is True else "unhealthy"
+    )
+    assert logs[0]["log_level"] == "info"
+    assert logs[0]["service"] == example_service.name
+
+
+@pytest.mark.parametrize("current_health_status", [True, False])
+def test_set_service_health_without_change_does_not_log(
+    example_service, current_health_status: bool
+):
+    """When the service's health is set to the same value, no log is emitted."""
+    # Start out with the same value as what will be set
+    example_service.healthy = current_health_status
+
+    with capture_logs() as logs:
+        example_service.healthy = current_health_status
+
+    assert logs == []
+
+
+def test_service_health_set_correctly(example_service):
+    """The service's health status can be set correctly."""
+    current_health_status = example_service.healthy
+    new_health_status = not current_health_status
+
+    example_service.healthy = new_health_status
+
+    assert example_service.healthy == new_health_status
+
+
+def test_private_health_not_in_repr_or_str(example_service):
+    """The private _healthy attribute is not included in the service's repr or str."""
+    assert "_healthy" not in repr(example_service)
+    assert "_healthy" not in str(example_service)
