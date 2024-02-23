@@ -42,32 +42,71 @@ async def test_run_awaits_all_checks(mocker: MockerFixture, example_service):
     mock_all_checks_healthy.assert_awaited_once()
 
 
-async def test_run_announces_when_all_checks_healthy(
-    mocker: MockerFixture, example_service_w_mock_prefixes
+@pytest.mark.parametrize("was_healthy", [True, False])
+async def test_run_announces_all_when_health_state_changes_to_healty(
+    mocker: MockerFixture, example_service_w_mock_prefixes, was_healthy: bool
 ):
     """
-    When run, all prefixes are announced if the all_checks_healthy method returns True.
+    When run, all prefixes are announced if the all_checks_healthy method returns True
+    and the service's health state was previously unhealthy. If the service's health
+    state was already healthy, no prefixes are announced.
     """
+    example_service_w_mock_prefixes.healthy = was_healthy
     mocker.patch.object(
         example_service_w_mock_prefixes, "all_checks_healthy", return_value=True
     )
+    mock_announce_all = mocker.patch.object(
+        example_service_w_mock_prefixes, "announce_all_prefixes"
+    )
+
     await example_service_w_mock_prefixes.run(_only_once=True)
-    for mock_prefix in example_service_w_mock_prefixes.prefixes:
-        mock_prefix.announce.assert_awaited_once()
+
+    if not was_healthy:
+        mock_announce_all.assert_awaited_once()
+    else:
+        mock_announce_all.assert_not_awaited()
 
 
-async def test_run_denounces_when_all_checks_healthy_returns_false(
-    mocker: MockerFixture, example_service_w_mock_prefixes
+@pytest.mark.parametrize("was_healthy", [True, False])
+async def test_run_denounces_all_when_health_state_changes_to_unhealty(
+    mocker: MockerFixture, example_service_w_mock_prefixes, was_healthy: bool
 ):
     """
-    When run, all prefixes are denounced if the all_checks_healthy method returns False.
+    When run, all prefixes are denounced if the all_checks_healthy method returns False
+    and the service's health state was previously healthy. If the service's health
+    state was already unhealthy, no prefixes are denounced.
     """
+    example_service_w_mock_prefixes.healthy = was_healthy
     mocker.patch.object(
         example_service_w_mock_prefixes, "all_checks_healthy", return_value=False
     )
+    mock_denounce_all = mocker.patch.object(
+        example_service_w_mock_prefixes, "denounce_all_prefixes"
+    )
+
     await example_service_w_mock_prefixes.run(_only_once=True)
-    for mock_prefix in example_service_w_mock_prefixes.prefixes:
-        mock_prefix.denounce.assert_awaited_once()
+
+    if was_healthy:
+        mock_denounce_all.assert_awaited_once()
+    else:
+        mock_denounce_all.assert_not_awaited()
+
+
+async def test_run_updates_health_state_when_changed(
+    mocker: MockerFixture, example_service_w_mock_prefixes
+):
+    """
+    When run, the service's health state is updated when the result of the
+    all_checks_healthy method changes.
+    """
+    example_service_w_mock_prefixes.healthy = False
+    mocker.patch.object(
+        example_service_w_mock_prefixes, "all_checks_healthy", return_value=True
+    )
+
+    await example_service_w_mock_prefixes.run(_only_once=True)
+
+    assert example_service_w_mock_prefixes.healthy is True
 
 
 async def test_all_checks_healthy_true_when_all_checks_healthy(
@@ -195,3 +234,21 @@ def test_private_health_not_in_repr_or_str(example_service):
     """The private _healthy attribute is not included in the service's repr or str."""
     assert "_healthy" not in repr(example_service)
     assert "_healthy" not in str(example_service)
+
+
+async def test_announce_all_prefixes_awaits_announce_of_all_prefixes(
+    example_service_w_mock_prefixes,
+):
+    """The announce_all_prefixes method awaits the announcement of all prefixes."""
+    await example_service_w_mock_prefixes.announce_all_prefixes()
+    for mock_prefix in example_service_w_mock_prefixes.prefixes:
+        mock_prefix.announce.assert_awaited_once()
+
+
+async def test_denounce_all_prefixes_awaits_denounce_of_all_prefixes(
+    example_service_w_mock_prefixes,
+):
+    """The denounce_all_prefixes method awaits the denouncing of all prefixes."""
+    await example_service_w_mock_prefixes.denounce_all_prefixes()
+    for mock_prefix in example_service_w_mock_prefixes.prefixes:
+        mock_prefix.denounce.assert_awaited_once()

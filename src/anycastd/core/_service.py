@@ -64,7 +64,7 @@ class Service:
         return self._healthy
 
     @healthy.setter
-    def healthy(self, new_value: bool):
+    def healthy(self, new_value: bool) -> None:
         if new_value != self._healthy:
             logger.info(
                 "Service health changed to %s.",
@@ -83,13 +83,15 @@ class Service:
         """
         logger.info(f"Starting service {self.name}.", service=self.name)
         while True:
-            async with asyncio.TaskGroup() as tg:
-                if await self.all_checks_healthy():
-                    for prefix in self.prefixes:
-                        tg.create_task(prefix.announce())
-                else:
-                    for prefix in self.prefixes:
-                        tg.create_task(prefix.denounce())
+            checks_currently_healthy: bool = await self.all_checks_healthy()
+
+            if checks_currently_healthy and not self.healthy:
+                self.healthy = True
+                await self.announce_all_prefixes()
+            elif not checks_currently_healthy and self.healthy:
+                self.healthy = False
+                await self.denounce_all_prefixes()
+
             if _only_once:
                 break
 
@@ -120,3 +122,15 @@ class Service:
 
         results = (_.result() for _ in tasks)
         return all(results)
+
+    async def announce_all_prefixes(self) -> None:
+        """Announce all prefixes."""
+        async with asyncio.TaskGroup() as tg:
+            for prefix in self.prefixes:
+                tg.create_task(prefix.announce())
+
+    async def denounce_all_prefixes(self) -> None:
+        """Denounce all prefixes."""
+        async with asyncio.TaskGroup() as tg:
+            for prefix in self.prefixes:
+                tg.create_task(prefix.denounce())
