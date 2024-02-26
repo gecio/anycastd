@@ -180,14 +180,16 @@ async def test_all_checks_healthy_logs_exception_raised_by_check(
         == "An unhandled exception occurred while running a health check."
     )
     assert logs[0]["log_level"] == "error"
-    assert logs[0]["service"] == example_service.name
+    assert logs[0]["service_name"] == example_service.name
+    assert logs[0]["service_healthy"] == example_service.healthy
     assert logs[0]["exc_info"] == check_exc
     assert (
         logs[1]["event"]
         == "Aborting additional checks and treating the service as unhealthy."
     )
     assert logs[1]["log_level"] == "error"
-    assert logs[1]["service"] == example_service.name
+    assert logs[1]["service_name"] == example_service.name
+    assert logs[0]["service_healthy"] == example_service.healthy
 
 
 @pytest.mark.parametrize("new_health_status", [True, False])
@@ -199,11 +201,16 @@ def test_change_of_service_health_is_logged(example_service, new_health_status: 
     with capture_logs() as logs:
         example_service.healthy = new_health_status
 
-    assert logs[0]["event"] == "Service health changed to {}.".format(
-        "healthy" if new_health_status is True else "unhealthy"
+    assert logs[0][
+        "event"
+    ] == 'Service "{}" is now considered {}, {} related prefixes.'.format(
+        example_service.name,
+        "healthy" if new_health_status is True else "unhealthy",
+        "announcing" if new_health_status is True else "denouncing",
     )
     assert logs[0]["log_level"] == "info"
-    assert logs[0]["service"] == example_service.name
+    assert logs[0]["service_name"] == example_service.name
+    assert logs[0]["service_healthy"] == new_health_status
 
 
 @pytest.mark.parametrize("current_health_status", [True, False])

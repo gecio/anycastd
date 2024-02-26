@@ -158,10 +158,13 @@ def _get_main_configuration(config: Path) -> MainConfiguration:
     Try to read the configuration file while exiting with an appropriate exit
     code if an error occurs.
     """
-    logger.info(f"Reading configuration from {config}.")
+    log = logger.bind(config_path=config.as_posix())
+    log.info(f"Reading configuration from {config}.")
     try:
         parsed = MainConfiguration.from_toml_file(config)
-        logger.debug("Successfully read configuration.", path=config, config=parsed)
+        log.debug(
+            f"Successfully read configuration file {config}.", config=dict(parsed)
+        )
         return parsed
     except ConfigurationError as exc:
         match exc.__cause__:

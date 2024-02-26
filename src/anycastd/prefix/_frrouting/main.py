@@ -25,6 +25,8 @@ class FRRoutingPrefix:
     vtysh: Path
     executor: Executor
 
+    _log: structlog.typing.FilteringBoundLogger
+
     def __init__(
         self,
         prefix: IPv4Network | IPv6Network,
@@ -47,6 +49,12 @@ class FRRoutingPrefix:
         self.vrf = vrf
         self.vtysh = vtysh
         self.executor = executor
+        self._log = logger.bind(
+            prefix=str(self.prefix),
+            prefix_type=type(self).__name__,
+            prefix_vrf=self.vrf,
+            vtysh_path=self.vtysh.as_posix(),
+        )
 
     def __repr__(self) -> str:
         return (
@@ -129,10 +137,8 @@ class FRRoutingPrefix:
         except FRRCommandError as exc:
             if exc.stderr is not None:
                 if "Can't find static route specified" in exc.stderr:
-                    logger.warning(
-                        "Attempted to denounce prefix that was not announced.",
-                        prefix=self.prefix,
-                        vrf=self.vrf,
+                    self._log.warning(
+                        "Attempted to denounce prefix that was not announced."
                     )
                     return None
 
@@ -171,16 +177,13 @@ class FRRoutingPrefix:
         except TimeoutError as exc:
             raise FRRCommandTimeoutError(commands) from exc
         finally:
-            logger.debug(
+            self._log.debug(
                 "Ran vtysh commands.",
-                prefix=self.prefix,
-                vrf=self.vrf,
-                vtysh=self.vtysh,
-                commands=commands,
-                pid=proc.pid,
-                returncode=proc.returncode,
-                stdout=stdout.decode("utf-8") if stdout else None,
-                stderr=stderr.decode("utf-8") if stderr else None,
+                vtysh_commands=list(commands),
+                vtysh_pid=proc.pid,
+                vtysh_returncode=proc.returncode,
+                vtysh_stdout=stdout.decode("utf-8") if stdout else None,
+                vtysh_stderr=stderr.decode("utf-8") if stderr else None,
             )
 
         # Command may have failed even if the returncode is 0.
