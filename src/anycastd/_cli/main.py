@@ -75,6 +75,8 @@ def log_format_callback(format: LogFormat) -> LogFormat:
         structlog.processors.add_log_level,
         structlog.processors.TimeStamper(),
     ]
+    logger_factory = structlog.WriteLoggerFactory()
+
     match format:
         case LogFormat.Human:
             processors.append(structlog.dev.ConsoleRenderer())
@@ -82,11 +84,13 @@ def log_format_callback(format: LogFormat) -> LogFormat:
             processors.append(
                 structlog.processors.JSONRenderer(serializer=orjson.dumps)
             )
+            logger_factory = structlog.BytesLoggerFactory()
         case LogFormat.Logfmt:
             processors.append(structlog.processors.LogfmtRenderer())
         case _ as unreachable:
             assert_never(unreachable)
-    structlog.configure(processors=processors)
+
+    structlog.configure(processors=processors, logger_factory=logger_factory)
 
     return format
 
