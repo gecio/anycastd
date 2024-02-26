@@ -2,6 +2,7 @@
 import asyncio
 import logging
 import sys
+from collections.abc import Callable
 from enum import StrEnum, auto
 from pathlib import Path
 from typing import Annotated, Optional, assert_never
@@ -75,7 +76,9 @@ def log_format_callback(format: LogFormat) -> LogFormat:
         structlog.processors.add_log_level,
         structlog.processors.TimeStamper(fmt="iso"),
     ]
-    logger_factory = structlog.WriteLoggerFactory()
+    logger_factory: Callable[
+        ..., structlog.typing.WrappedLogger
+    ] = structlog.WriteLoggerFactory()
 
     match format:
         case LogFormat.Human:
