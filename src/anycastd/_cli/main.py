@@ -73,7 +73,7 @@ def log_format_callback(format: LogFormat) -> LogFormat:
     processors: list[structlog.typing.Processor] = [
         structlog.contextvars.merge_contextvars,
         structlog.processors.add_log_level,
-        structlog.processors.TimeStamper(),
+        structlog.processors.TimeStamper(fmt="iso"),
     ]
     logger_factory = structlog.WriteLoggerFactory()
 
