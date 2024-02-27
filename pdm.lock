@@ -5,7 +5,7 @@
 groups = ["default", "jupyter", "lint", "test", "type_stubs", "typecheck"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:ac3c393ff8d8d0aada7d7ca9305af35abc566b2d95e31e5a047eccf52bc3ddfd"
+content_hash = "sha256:25ea88d0cc6d40560e9301aeb8c541204da259ab3840686b690c5021e67fa85a"
 
 [[package]]
 name = "annotated-types"
@@ -1430,6 +1430,19 @@ dependencies = [
 files = [
     {file = "pytest_pretty-1.2.0-py3-none-any.whl", hash = "sha256:6f79122bf53864ae2951b6c9e94d7a06a87ef753476acd4588aeac018f062036"},
     {file = "pytest_pretty-1.2.0.tar.gz", hash = "sha256:105a355f128e392860ad2c478ae173ff96d2f03044692f9818ff3d49205d3a60"},
+]
+
+[[package]]
+name = "pytest-random-order"
+version = "1.1.1"
+requires_python = ">=3.5.0"
+summary = "Randomise the order in which pytest tests are run with some control over the randomness"
+dependencies = [
+    "pytest>=3.0.0",
+]
+files = [
+    {file = "pytest-random-order-1.1.1.tar.gz", hash = "sha256:4472d7d34f1f1c5f3a359c4ffc5c13ed065232f31eca19c8844c1ab406e79080"},
+    {file = "pytest_random_order-1.1.1-py3-none-any.whl", hash = "sha256:882727a8b597ecd06ede28654ffeb8a6d511a1e4abe1054cca7982f2e42008cd"},
 ]
 
 [[package]]
