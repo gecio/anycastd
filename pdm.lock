@@ -5,7 +5,7 @@
 groups = ["default", "jupyter", "lint", "test", "type_stubs", "typecheck"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:25ea88d0cc6d40560e9301aeb8c541204da259ab3840686b690c5021e67fa85a"
+content_hash = "sha256:baad2e57b0486ae37b197615ba4a2461421f9d64034020fddbe546dde53e4bc4"
 
 [[package]]
 name = "annotated-types"
