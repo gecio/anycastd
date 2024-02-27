@@ -6,7 +6,7 @@ from click.testing import Result
 from typer.testing import CliRunner
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def anycastd_cli() -> Callable[..., Result]:
     """A callable that runs anycastd CLI commands.
 
