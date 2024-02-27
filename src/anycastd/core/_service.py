@@ -51,12 +51,20 @@ class Service:
     health_checks: tuple[Healthcheck, ...]
 
     _healthy: bool = field(default=False, init=False, repr=False, compare=False)
+    _log: structlog.typing.FilteringBoundLogger = field(
+        default=logger, init=False, repr=False, compare=False
+    )
 
     def __post_init__(self) -> None:
         if not all(isinstance(_, Prefix) for _ in self.prefixes):
             raise TypeError("Prefixes must implement the Prefix protocol")
         if not all(isinstance(_, Healthcheck) for _ in self.health_checks):
             raise TypeError("Health checks must implement the Healthcheck protocol")
+        self._log = logger.bind(
+            service_name=self.name,
+            service_prefixes=[str(prefix.prefix) for prefix in self.prefixes],
+            service_health_checks=list(self.health_checks),
+        )
 
     @property
     def healthy(self) -> bool:
@@ -66,12 +74,14 @@ class Service:
     @healthy.setter
     def healthy(self, new_value: bool) -> None:
         if new_value != self._healthy:
-            logger.info(
-                "Service health changed to %s.",
-                "healthy" if new_value is True else "unhealthy",
-                service=self.name,
-            )
             self._healthy = new_value
+            self._log.info(
+                'Service "%s" is now considered %s, %s related prefixes.',
+                self.name,
+                "healthy" if new_value is True else "unhealthy",
+                "announcing" if new_value is True else "denouncing",
+                service_healthy=self.healthy,
+            )
 
     # The _only_once parameter is only used for testing.
     # TODO: Look into a better way to do this.
@@ -81,7 +91,7 @@ class Service:
         This will announce the prefixes when all health checks are
         passing, and denounce them otherwise.
         """
-        logger.info(f"Starting service {self.name}.", service=self.name)
+        self._log.info(f"Starting service {self.name}.", service_healthy=self.healthy)
         while True:
             checks_currently_healthy: bool = await self.all_checks_healthy()
 
@@ -109,14 +119,14 @@ class Service:
                 )
         except ExceptionGroup as exc_group:
             for exc in exc_group.exceptions:
-                logger.error(
+                self._log.error(
                     "An unhandled exception occurred while running a health check.",
-                    service=self.name,
+                    service_healthy=self.healthy,
                     exc_info=exc,
                 )
-            logger.error(
+            self._log.error(
                 "Aborting additional checks and treating the service as unhealthy.",
-                service=self.name,
+                service_healthy=False,
             )
             return False
 

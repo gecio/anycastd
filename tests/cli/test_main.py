@@ -5,6 +5,8 @@ from unittest.mock import MagicMock
 import anycastd
 import pytest
 import structlog
+from anycastd._cli.main import _get_main_configuration
+from structlog.testing import capture_logs
 
 
 def test_version_displayed_correctly(anycastd_cli):
@@ -97,3 +99,24 @@ class TestRunCMD:
         anycastd_cli("run", "--log-format", arg)
         last_processor = structlog.get_config()["processors"][-1]
         assert isinstance(last_processor, processor)
+
+
+@pytest.mark.xfail(
+    reason="Above tests configure a persistent log level filter.", strict=False
+)
+def test_reading_configuration_is_logged(mocker):
+    """Reading the configuration is logged."""
+    path = Path("/path/to/config.toml")
+    mocker.patch("anycastd._cli.main.MainConfiguration", autospec=True)
+
+    with capture_logs() as logs:
+        _get_main_configuration(path)
+
+    assert logs[0]["event"] == f"Reading configuration from {path.as_posix()}."
+    assert logs[0]["log_level"] == "info"
+    assert logs[0]["config_path"] == path.as_posix()
+    assert (
+        logs[1]["event"] == f"Successfully read configuration file {path.as_posix()}."
+    )
+    assert logs[1]["log_level"] == "debug"
+    assert logs[1]["config_path"] == path.as_posix()

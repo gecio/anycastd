@@ -2,6 +2,7 @@
 import asyncio
 import logging
 import sys
+from collections.abc import Callable
 from enum import StrEnum, auto
 from pathlib import Path
 from typing import Annotated, Optional, assert_never
@@ -73,8 +74,12 @@ def log_format_callback(format: LogFormat) -> LogFormat:
     processors: list[structlog.typing.Processor] = [
         structlog.contextvars.merge_contextvars,
         structlog.processors.add_log_level,
-        structlog.processors.TimeStamper(),
+        structlog.processors.TimeStamper(fmt="iso"),
     ]
+    logger_factory: Callable[
+        ..., structlog.typing.WrappedLogger
+    ] = structlog.WriteLoggerFactory()
+
     match format:
         case LogFormat.Human:
             processors.append(structlog.dev.ConsoleRenderer())
@@ -82,11 +87,13 @@ def log_format_callback(format: LogFormat) -> LogFormat:
             processors.append(
                 structlog.processors.JSONRenderer(serializer=orjson.dumps)
             )
+            logger_factory = structlog.BytesLoggerFactory()
         case LogFormat.Logfmt:
             processors.append(structlog.processors.LogfmtRenderer())
         case _ as unreachable:
             assert_never(unreachable)
-    structlog.configure(processors=processors)
+
+    structlog.configure(processors=processors, logger_factory=logger_factory)
 
     return format
 
@@ -154,10 +161,13 @@ def _get_main_configuration(config: Path) -> MainConfiguration:
     Try to read the configuration file while exiting with an appropriate exit
     code if an error occurs.
     """
-    logger.info(f"Reading configuration from {config}.")
+    log = logger.bind(config_path=config.as_posix())
+    log.info(f"Reading configuration from {config}.")
     try:
         parsed = MainConfiguration.from_toml_file(config)
-        logger.debug("Successfully read configuration.", path=config, config=parsed)
+        log.debug(
+            f"Successfully read configuration file {config}.", config=dict(parsed)
+        )
         return parsed
     except ConfigurationError as exc:
         match exc.__cause__:
