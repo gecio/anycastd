@@ -90,21 +90,30 @@ class Service:
         """Run the service.
 
         This will announce the prefixes when all health checks are
-        passing, and denounce them otherwise.
+        passing, and denounce them otherwise. If the returned coroutine is cancelled,
+        the service will be terminated, denouncing all prefixes in the process.
         """
         self._log.info(f"Starting service {self.name}.", service_healthy=self.healthy)
-        while not self._terminate:
-            checks_currently_healthy: bool = await self.all_checks_healthy()
+        try:
+            while not self._terminate:
+                await asyncio.sleep(0.05)
+                checks_currently_healthy: bool = await self.all_checks_healthy()
 
-            if checks_currently_healthy and not self.healthy:
-                self.healthy = True
-                await self.announce_all_prefixes()
-            elif not checks_currently_healthy and self.healthy:
-                self.healthy = False
-                await self.denounce_all_prefixes()
+                if checks_currently_healthy and not self.healthy:
+                    self.healthy = True
+                    await self.announce_all_prefixes()
+                elif not checks_currently_healthy and self.healthy:
+                    self.healthy = False
+                    await self.denounce_all_prefixes()
 
-            if _only_once:
-                break
+                if _only_once:
+                    break
+        except asyncio.CancelledError:
+            self._log.debug(
+                f"Coroutine for service {self.name} was cancelled.",
+                service_healthy=self.healthy,
+            )
+            await self.terminate()
 
     async def all_checks_healthy(self) -> bool:
         """Runs all checks and returns their cumulative result.
