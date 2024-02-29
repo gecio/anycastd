@@ -1,8 +1,9 @@
 import asyncio
 import signal
 import sys
-from collections.abc import Awaitable, Callable, Iterable
-from typing import Any, NoReturn
+from collections.abc import Iterable
+from functools import partial
+from typing import NoReturn
 
 import structlog
 
@@ -27,34 +28,21 @@ async def run_services(services: Iterable[Service]) -> None:
     Args:
         services: The services to run.
     """
-    signal_handler = create_signal_handler(services)
     loop = asyncio.get_event_loop()
     for sig in (signal.SIGTERM, signal.SIGINT):
-        loop.add_signal_handler(sig, signal_handler)
+        loop.add_signal_handler(sig, partial(signal_handler, sig))
 
     async with asyncio.TaskGroup() as tg:
         for service in services:
             tg.create_task(service.run())
 
 
-def create_signal_handler(
-    services: Iterable[Service],
-) -> Callable[[signal.Signals, Any], Awaitable[NoReturn]]:
-    """Create a signal handler to manage termination.
+def signal_handler(signal: signal.Signals) -> NoReturn:
+    """Logs the received signal and terminates all tasks."""
+    msg = f"Received {signal.name}, terminating."
 
-    Create a signal handler that will log the received signal, terminate all tasks,
-    denounce prefixes for all services, and then exit.
-    """
+    logger.info(msg)
+    for task in asyncio.all_tasks():
+        task.cancel(msg)
 
-    async def _handler(signal: signal.Signals, _: Any) -> NoReturn:
-        logger.info("Received %s, terminating.", signal)
-
-        for task in asyncio.all_tasks():
-            task.cancel()
-
-        denounce_coros = (service.denounce_all_prefixes() for service in services)
-        await asyncio.gather(*denounce_coros)
-
-        sys.exit(0)
-
-    return _handler
+    sys.exit(0)
