@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 from anycastd.core import Service
 from pytest_mock import MockerFixture
@@ -259,3 +261,46 @@ async def test_denounce_all_prefixes_awaits_denounce_of_all_prefixes(
     await example_service_w_mock_prefixes.denounce_all_prefixes()
     for mock_prefix in example_service_w_mock_prefixes.prefixes:
         mock_prefix.denounce.assert_awaited_once()
+
+
+async def test_run_coro_cancellation_logs_termination(example_service, mocker):
+    """When the run coroutine is cancelled, the termination is logged."""
+    # Create a task to run the service loop
+    run_task = asyncio.create_task(example_service.run())
+    # Give the event loop some time to poll the task above
+    await asyncio.sleep(0.3)
+
+    with capture_logs() as logs:
+        # Cancel the task
+        run_task.cancel()
+        # Give the event loop some time to cancel
+        await asyncio.sleep(0.2)
+
+    assert (
+        logs[0]["event"]
+        == f"Coroutine for service {example_service.name} was cancelled."
+    )
+    assert logs[0]["log_level"] == "debug"
+    assert logs[0]["service_name"] == example_service.name
+    assert logs[0]["service_healthy"] == example_service.healthy
+
+
+async def test_run_coro_cancellation_awaits_termination(example_service, mocker):
+    """When the run coroutine is cancelled, service termination is awaited."""
+    mock_terminate = mocker.patch.object(example_service, "terminate")
+    mock_all_checks_healthy = mocker.patch.object(example_service, "all_checks_healthy")
+    mock_all_checks_healthy.return_value = True
+
+    # Create a task to run the service loop
+    run_task = asyncio.create_task(example_service.run())
+    # Give the event loop some time to poll the task above
+    await asyncio.sleep(0.3)
+    # Sanity check to make sure the coro actually ran
+    mock_all_checks_healthy.assert_awaited()
+
+    # Cancel the task
+    run_task.cancel()
+    # Give the event loop some time to cancel
+    await asyncio.sleep(0.2)
+
+    mock_terminate.assert_awaited_once()
