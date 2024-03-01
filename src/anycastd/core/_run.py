@@ -8,6 +8,7 @@ from typing import NoReturn
 import structlog
 
 from anycastd._configuration import MainConfiguration, config_to_service
+from anycastd.core._exit import ExitCode
 from anycastd.core._service import Service
 
 logger = structlog.get_logger()
@@ -45,4 +46,4 @@ def signal_handler(signal: signal.Signals) -> NoReturn:
     for task in asyncio.all_tasks():
         task.cancel(msg)
 
-    sys.exit(0)
+    sys.exit(ExitCode.OK)

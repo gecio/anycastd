@@ -13,9 +13,9 @@ import typer
 from pydantic import ValidationError
 
 from anycastd import __version__
-from anycastd._cli.output import ExitCode, print_error
+from anycastd._cli.output import print_error
 from anycastd._configuration import ConfigurationError, MainConfiguration
-from anycastd.core import run_from_configuration
+from anycastd.core import ExitCode, run_from_configuration
 
 CONFIG_PATH = Path("/etc/anycastd/config.toml")
 IS_TTY = sys.stdout.isatty()
