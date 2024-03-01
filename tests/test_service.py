@@ -37,16 +37,37 @@ def example_service_w_mock_checks(mocker: MockerFixture, example_service) -> Ser
     return example_service
 
 
-async def test_run_awaits_all_checks(mocker: MockerFixture, example_service):
+@pytest.fixture
+def patch_asyncio_sleep_to_raise(mocker: MockerFixture) -> None:
+    """Patch the asyncio.sleep function to raise an exception.
+
+    This is useful to terminate the services run loop at the end of the first execution
+    in tests, instead of running it indefinitely.
+    """
+    mocker.patch(
+        "anycastd.core._service.asyncio.sleep",
+        side_effect=RuntimeError("Exit loop"),
+    )
+
+
+async def test_run_awaits_all_checks(
+    mocker: MockerFixture, patch_asyncio_sleep_to_raise, example_service
+):
     """When run, the service awaits the status of all its health checks."""
     mock_all_checks_healthy = mocker.patch.object(example_service, "all_checks_healthy")
-    await example_service.run(_only_once=True)
+
+    with pytest.raises(RuntimeError, match="Exit loop"):
+        await example_service.run()
+
     mock_all_checks_healthy.assert_awaited_once()
 
 
 @pytest.mark.parametrize("was_healthy", [True, False])
 async def test_run_announces_all_when_health_state_changes_to_healty(
-    mocker: MockerFixture, example_service_w_mock_prefixes, was_healthy: bool
+    mocker: MockerFixture,
+    patch_asyncio_sleep_to_raise,
+    example_service_w_mock_prefixes,
+    was_healthy: bool,
 ):
     """
     When run, all prefixes are announced if the all_checks_healthy method returns True
@@ -61,7 +82,8 @@ async def test_run_announces_all_when_health_state_changes_to_healty(
         example_service_w_mock_prefixes, "announce_all_prefixes"
     )
 
-    await example_service_w_mock_prefixes.run(_only_once=True)
+    with pytest.raises(RuntimeError, match="Exit loop"):
+        await example_service_w_mock_prefixes.run()
 
     if not was_healthy:
         mock_announce_all.assert_awaited_once()
@@ -71,7 +93,10 @@ async def test_run_announces_all_when_health_state_changes_to_healty(
 
 @pytest.mark.parametrize("was_healthy", [True, False])
 async def test_run_denounces_all_when_health_state_changes_to_unhealty(
-    mocker: MockerFixture, example_service_w_mock_prefixes, was_healthy: bool
+    mocker: MockerFixture,
+    patch_asyncio_sleep_to_raise,
+    example_service_w_mock_prefixes,
+    was_healthy: bool,
 ):
     """
     When run, all prefixes are denounced if the all_checks_healthy method returns False
@@ -86,7 +111,8 @@ async def test_run_denounces_all_when_health_state_changes_to_unhealty(
         example_service_w_mock_prefixes, "denounce_all_prefixes"
     )
 
-    await example_service_w_mock_prefixes.run(_only_once=True)
+    with pytest.raises(RuntimeError, match="Exit loop"):
+        await example_service_w_mock_prefixes.run()
 
     if was_healthy:
         mock_denounce_all.assert_awaited_once()
@@ -95,7 +121,7 @@ async def test_run_denounces_all_when_health_state_changes_to_unhealty(
 
 
 async def test_run_updates_health_state_when_changed(
-    mocker: MockerFixture, example_service_w_mock_prefixes
+    mocker: MockerFixture, patch_asyncio_sleep_to_raise, example_service_w_mock_prefixes
 ):
     """
     When run, the service's health state is updated when the result of the
@@ -106,7 +132,8 @@ async def test_run_updates_health_state_when_changed(
         example_service_w_mock_prefixes, "all_checks_healthy", return_value=True
     )
 
-    await example_service_w_mock_prefixes.run(_only_once=True)
+    with pytest.raises(RuntimeError, match="Exit loop"):
+        await example_service_w_mock_prefixes.run()
 
     assert example_service_w_mock_prefixes.healthy is True
 

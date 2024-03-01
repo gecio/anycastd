@@ -84,9 +84,7 @@ class Service:
                 service_healthy=self.healthy,
             )
 
-    # The _only_once parameter is only used for testing.
-    # TODO: Look into a better way to do this.
-    async def run(self, *, _only_once: bool = False) -> None:
+    async def run(self) -> None:
         """Run the service.
 
         This will announce the prefixes when all health checks are
@@ -104,9 +102,6 @@ class Service:
                 elif not checks_currently_healthy and self.healthy:
                     self.healthy = False
                     await self.denounce_all_prefixes()
-
-                if _only_once:
-                    break
 
                 await asyncio.sleep(0.05)
 
