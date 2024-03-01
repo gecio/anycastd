@@ -13,6 +13,12 @@ def mock_services(mocker):
     return [mocker.AsyncMock(Service) for _ in range(3)]
 
 
+@pytest.fixture
+def mock_sys(mocker):
+    """A mock sys module."""
+    return mocker.patch("anycastd.core._run.sys")
+
+
 async def test_future_created_for_each_service(mock_services):
     """A future is created for each service."""
     await run_services(mock_services)
@@ -67,3 +73,56 @@ def test_signal_handler_exits_with_zero(mocker):
     signal_handler(signal.SIGTERM)
 
     mock_sys.exit.assert_called_once_with(0)
+
+
+async def test_unexpected_service_error_exits_with_software_rc(mock_sys, mock_services):
+    """An unexpected service error causes an exit with software(70) error code."""
+    for service in mock_services:
+        service.run.side_effect = Exception("An unexpected error.")
+
+    await run_services(mock_services)
+
+    assert int(mock_sys.exit.mock_calls[0].args[0]) == 70  # noqa: PLR2004
+
+
+async def test_unexpected_service_error_logs_error(mocker, mock_sys, mock_services):
+    """Unexpected service errors are logged.
+
+    This test uses three mocked services, where the first and third service
+    raise an "unexpected" error. The expected behavior is that both errors are logged,
+    as well as a message indicating that the daemon panicked as a whole and that
+    prefixes may be left in an unwanted state.
+    """
+    service_one_name = "Example One"
+    service_one_exc = Exception("An unexpected error in the first service.")
+    service_three_name = "Example Three"
+    service_three_exc = Exception("An unexpected error in the third service.")
+    mock_services[0].name = service_one_name
+    mock_services[0].run.side_effect = service_one_exc
+    mock_services[2].name = service_three_name
+    mock_services[2].run.side_effect = service_three_exc
+
+    with capture_logs() as logs:
+        await run_services(mock_services)
+
+    assert (
+        logs[0]["event"] == f'Service "{service_one_name}" encountered an unexpected '
+        "and unrecoverable error."
+    )
+    assert logs[0]["log_level"] == "error"
+    assert logs[0]["service_name"] == service_one_name
+    assert logs[0]["exc_info"] == service_one_exc
+
+    assert (
+        logs[1]["event"] == f'Service "{service_three_name}" encountered an unexpected '
+        "and unrecoverable error."
+    )
+    assert logs[1]["log_level"] == "error"
+    assert logs[1]["service_name"] == service_three_name
+    assert logs[1]["exc_info"] == service_three_exc
+
+    assert logs[2]["event"] == (
+        "Panicked without correctly shutting down services due to unexpected error(s), "
+        "possibly leaving prefixes in an unwanted state. Please remediate manually."
+    )
+    assert logs[2]["log_level"] == "error"
