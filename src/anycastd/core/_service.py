@@ -96,7 +96,6 @@ class Service:
         self._log.info(f"Starting service {self.name}.", service_healthy=self.healthy)
         try:
             while not self._terminate:
-                await asyncio.sleep(0.05)
                 checks_currently_healthy: bool = await self.all_checks_healthy()
 
                 if checks_currently_healthy and not self.healthy:
@@ -108,6 +107,9 @@ class Service:
 
                 if _only_once:
                     break
+
+                await asyncio.sleep(0.05)
+
         except asyncio.CancelledError:
             self._log.debug(
                 f"Coroutine for service {self.name} was cancelled.",
