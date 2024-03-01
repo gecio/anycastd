@@ -51,6 +51,7 @@ class Service:
     health_checks: tuple[Healthcheck, ...]
 
     _healthy: bool = field(default=False, init=False, repr=False, compare=False)
+    _terminate: bool = field(default=False, init=False, repr=False, compare=False)
     _log: structlog.typing.FilteringBoundLogger = field(
         default=logger, init=False, repr=False, compare=False
     )
@@ -83,27 +84,33 @@ class Service:
                 service_healthy=self.healthy,
             )
 
-    # The _only_once parameter is only used for testing.
-    # TODO: Look into a better way to do this.
-    async def run(self, *, _only_once: bool = False) -> None:
+    async def run(self) -> None:
         """Run the service.
 
         This will announce the prefixes when all health checks are
-        passing, and denounce them otherwise.
+        passing, and denounce them otherwise. If the returned coroutine is cancelled,
+        the service will be terminated, denouncing all prefixes in the process.
         """
         self._log.info(f"Starting service {self.name}.", service_healthy=self.healthy)
-        while True:
-            checks_currently_healthy: bool = await self.all_checks_healthy()
+        try:
+            while not self._terminate:
+                checks_currently_healthy: bool = await self.all_checks_healthy()
 
-            if checks_currently_healthy and not self.healthy:
-                self.healthy = True
-                await self.announce_all_prefixes()
-            elif not checks_currently_healthy and self.healthy:
-                self.healthy = False
-                await self.denounce_all_prefixes()
+                if checks_currently_healthy and not self.healthy:
+                    self.healthy = True
+                    await self.announce_all_prefixes()
+                elif not checks_currently_healthy and self.healthy:
+                    self.healthy = False
+                    await self.denounce_all_prefixes()
 
-            if _only_once:
-                break
+                await asyncio.sleep(0.05)
+
+        except asyncio.CancelledError:
+            self._log.debug(
+                f"Coroutine for service {self.name} was cancelled.",
+                service_healthy=self.healthy,
+            )
+            await self.terminate()
 
     async def all_checks_healthy(self) -> bool:
         """Runs all checks and returns their cumulative result.
@@ -144,3 +151,9 @@ class Service:
         async with asyncio.TaskGroup() as tg:
             for prefix in self.prefixes:
                 tg.create_task(prefix.denounce())
+
+    async def terminate(self) -> None:
+        """Terminate the service and denounce its prefixes."""
+        self._terminate = True
+        await self.denounce_all_prefixes()
+        logger.info(f"Service {self.name} terminated.", service=self.name)

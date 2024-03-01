@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 from anycastd.core import Service
 from pytest_mock import MockerFixture
@@ -35,16 +37,37 @@ def example_service_w_mock_checks(mocker: MockerFixture, example_service) -> Ser
     return example_service
 
 
-async def test_run_awaits_all_checks(mocker: MockerFixture, example_service):
+@pytest.fixture
+def patch_asyncio_sleep_to_raise(mocker: MockerFixture) -> None:
+    """Patch the asyncio.sleep function to raise an exception.
+
+    This is useful to terminate the services run loop at the end of the first execution
+    in tests, instead of running it indefinitely.
+    """
+    mocker.patch(
+        "anycastd.core._service.asyncio.sleep",
+        side_effect=RuntimeError("Exit loop"),
+    )
+
+
+async def test_run_awaits_all_checks(
+    mocker: MockerFixture, patch_asyncio_sleep_to_raise, example_service
+):
     """When run, the service awaits the status of all its health checks."""
     mock_all_checks_healthy = mocker.patch.object(example_service, "all_checks_healthy")
-    await example_service.run(_only_once=True)
+
+    with pytest.raises(RuntimeError, match="Exit loop"):
+        await example_service.run()
+
     mock_all_checks_healthy.assert_awaited_once()
 
 
 @pytest.mark.parametrize("was_healthy", [True, False])
 async def test_run_announces_all_when_health_state_changes_to_healty(
-    mocker: MockerFixture, example_service_w_mock_prefixes, was_healthy: bool
+    mocker: MockerFixture,
+    patch_asyncio_sleep_to_raise,
+    example_service_w_mock_prefixes,
+    was_healthy: bool,
 ):
     """
     When run, all prefixes are announced if the all_checks_healthy method returns True
@@ -59,7 +82,8 @@ async def test_run_announces_all_when_health_state_changes_to_healty(
         example_service_w_mock_prefixes, "announce_all_prefixes"
     )
 
-    await example_service_w_mock_prefixes.run(_only_once=True)
+    with pytest.raises(RuntimeError, match="Exit loop"):
+        await example_service_w_mock_prefixes.run()
 
     if not was_healthy:
         mock_announce_all.assert_awaited_once()
@@ -69,7 +93,10 @@ async def test_run_announces_all_when_health_state_changes_to_healty(
 
 @pytest.mark.parametrize("was_healthy", [True, False])
 async def test_run_denounces_all_when_health_state_changes_to_unhealty(
-    mocker: MockerFixture, example_service_w_mock_prefixes, was_healthy: bool
+    mocker: MockerFixture,
+    patch_asyncio_sleep_to_raise,
+    example_service_w_mock_prefixes,
+    was_healthy: bool,
 ):
     """
     When run, all prefixes are denounced if the all_checks_healthy method returns False
@@ -84,7 +111,8 @@ async def test_run_denounces_all_when_health_state_changes_to_unhealty(
         example_service_w_mock_prefixes, "denounce_all_prefixes"
     )
 
-    await example_service_w_mock_prefixes.run(_only_once=True)
+    with pytest.raises(RuntimeError, match="Exit loop"):
+        await example_service_w_mock_prefixes.run()
 
     if was_healthy:
         mock_denounce_all.assert_awaited_once()
@@ -93,7 +121,7 @@ async def test_run_denounces_all_when_health_state_changes_to_unhealty(
 
 
 async def test_run_updates_health_state_when_changed(
-    mocker: MockerFixture, example_service_w_mock_prefixes
+    mocker: MockerFixture, patch_asyncio_sleep_to_raise, example_service_w_mock_prefixes
 ):
     """
     When run, the service's health state is updated when the result of the
@@ -104,7 +132,8 @@ async def test_run_updates_health_state_when_changed(
         example_service_w_mock_prefixes, "all_checks_healthy", return_value=True
     )
 
-    await example_service_w_mock_prefixes.run(_only_once=True)
+    with pytest.raises(RuntimeError, match="Exit loop"):
+        await example_service_w_mock_prefixes.run()
 
     assert example_service_w_mock_prefixes.healthy is True
 
@@ -259,3 +288,46 @@ async def test_denounce_all_prefixes_awaits_denounce_of_all_prefixes(
     await example_service_w_mock_prefixes.denounce_all_prefixes()
     for mock_prefix in example_service_w_mock_prefixes.prefixes:
         mock_prefix.denounce.assert_awaited_once()
+
+
+async def test_run_coro_cancellation_logs_termination(example_service, mocker):
+    """When the run coroutine is cancelled, the termination is logged."""
+    # Create a task to run the service loop
+    run_task = asyncio.create_task(example_service.run())
+    # Give the event loop some time to poll the task above
+    await asyncio.sleep(0.3)
+
+    with capture_logs() as logs:
+        # Cancel the task
+        run_task.cancel()
+        # Give the event loop some time to cancel
+        await asyncio.sleep(0.2)
+
+    assert (
+        logs[0]["event"]
+        == f"Coroutine for service {example_service.name} was cancelled."
+    )
+    assert logs[0]["log_level"] == "debug"
+    assert logs[0]["service_name"] == example_service.name
+    assert logs[0]["service_healthy"] == example_service.healthy
+
+
+async def test_run_coro_cancellation_awaits_termination(example_service, mocker):
+    """When the run coroutine is cancelled, service termination is awaited."""
+    mock_terminate = mocker.patch.object(example_service, "terminate")
+    mock_all_checks_healthy = mocker.patch.object(example_service, "all_checks_healthy")
+    mock_all_checks_healthy.return_value = True
+
+    # Create a task to run the service loop
+    run_task = asyncio.create_task(example_service.run())
+    # Give the event loop some time to poll the task above
+    await asyncio.sleep(0.3)
+    # Sanity check to make sure the coro actually ran
+    mock_all_checks_healthy.assert_awaited()
+
+    # Cancel the task
+    run_task.cancel()
+    # Give the event loop some time to cancel
+    await asyncio.sleep(0.2)
+
+    mock_terminate.assert_awaited_once()
