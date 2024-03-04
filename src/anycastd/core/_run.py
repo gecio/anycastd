@@ -33,9 +33,28 @@ async def run_services(services: Iterable[Service]) -> None:
     for sig in (signal.SIGTERM, signal.SIGINT):
         loop.add_signal_handler(sig, partial(signal_handler, sig))
 
-    async with asyncio.TaskGroup() as tg:
-        for service in services:
-            tg.create_task(service.run())
+    tasks = []
+    try:
+        async with asyncio.TaskGroup() as tg:
+            for service in services:
+                tasks.append(tg.create_task(service.run(), name=service.name))
+    except ExceptionGroup:
+        for task in tasks:
+            if exc := task.exception():
+                service_name = task.get_name()
+                logger.error(
+                    f'Service "{service_name}" encountered an unexpected '
+                    "and unrecoverable error.",
+                    exc_info=exc,
+                    service_name=service_name,
+                )
+
+        logger.error(
+            "Panicked without correctly shutting down services due to "
+            "unexpected error(s), possibly leaving prefixes in an unwanted state. "
+            "Please remediate manually."
+        )
+        sys.exit(ExitCode.SOFTWARE)
 
 
 def signal_handler(signal: signal.Signals) -> NoReturn:
