@@ -10,7 +10,13 @@ from structlog.testing import capture_logs
 @pytest.fixture
 def mock_services(mocker):
     """A set of mock services."""
-    return [mocker.AsyncMock(Service) for _ in range(3)]
+    mock_services = []
+    for num in range(3):
+        mock_service = mocker.create_autospec(Service)
+        mock_service.name = f"Mock Service {num + 1}"
+        mock_services.append(mock_service)
+
+    return mock_services
 
 
 @pytest.fixture
