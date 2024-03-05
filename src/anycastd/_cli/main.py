@@ -1,4 +1,4 @@
-# ruff: noqa: FBT001
+# ruff: noqa: FBT001, FBT002
 import asyncio
 import logging
 import sys
@@ -146,6 +146,10 @@ def run(
             callback=log_format_callback,
         ),
     ] = LogFormat.Human if IS_TTY else LogFormat.Json,
+    no_color: Annotated[
+        bool,
+        typer.Option("--no-color", help="Disable color output.", envvar="NO_COLOR"),
+    ] = False,
 ) -> None:
     """Run anycastd."""
     main_configuration = _get_main_configuration(config)
