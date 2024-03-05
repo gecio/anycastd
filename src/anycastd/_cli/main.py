@@ -71,7 +71,8 @@ def configure_logging(level: LogLevel, format: LogFormat, no_color: bool) -> Non
 
     match format:
         case LogFormat.Human:
-            processors.append(structlog.dev.ConsoleRenderer())
+            colors: bool = IS_TTY and not no_color
+            processors.append(structlog.dev.ConsoleRenderer(colors=colors))
         case LogFormat.Json:
             processors.append(
                 structlog.processors.JSONRenderer(serializer=orjson.dumps)
