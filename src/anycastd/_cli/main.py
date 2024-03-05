@@ -2,7 +2,6 @@
 import asyncio
 import logging
 import sys
-from collections.abc import Callable
 from enum import StrEnum, auto
 from pathlib import Path
 from typing import Annotated, Optional, assert_never
@@ -55,15 +54,15 @@ def configure_logging(level: LogLevel, format: LogFormat, no_color: bool) -> Non
             std_level = logging.WARNING
         case LogLevel.Error:
             std_level = logging.ERROR
-        case _ as unreachable:
-            assert_never(unreachable)
+        case _ as unknown_level:
+            assert_never(unknown_level)
 
     processors: list[structlog.typing.Processor] = [
         structlog.contextvars.merge_contextvars,
         structlog.processors.add_log_level,
         structlog.processors.TimeStamper(fmt="iso"),
     ]
-    logger_factory: Callable[..., structlog.typing.WrappedLogger] = (
+    logger_factory: structlog.typing.WrappedLogger = (
         structlog.BytesLoggerFactory()
         if format == LogFormat.Json
         else structlog.WriteLoggerFactory()
@@ -79,8 +78,8 @@ def configure_logging(level: LogLevel, format: LogFormat, no_color: bool) -> Non
             )
         case LogFormat.Logfmt:
             processors.append(structlog.processors.LogfmtRenderer())
-        case _ as unreachable:
-            assert_never(unreachable)
+        case _ as unknown_format:
+            assert_never(unknown_format)
 
     structlog.configure(
         wrapper_class=structlog.make_filtering_bound_logger(std_level),
