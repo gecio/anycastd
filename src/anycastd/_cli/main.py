@@ -1,8 +1,7 @@
-# ruff: noqa: FBT001
+# ruff: noqa: FBT001, FBT002
 import asyncio
 import logging
 import sys
-from collections.abc import Callable
 from enum import StrEnum, auto
 from pathlib import Path
 from typing import Annotated, Optional, assert_never
@@ -39,18 +38,11 @@ class LogFormat(StrEnum):
     Logfmt = auto()
 
 
-def version_callback(value: bool) -> None:
-    """Show the current version and exit."""
-    if value:
-        typer.echo("anycastd {}".format(__version__))
-        raise typer.Exit()
+def configure_logging(level: LogLevel, format: LogFormat, no_color: bool) -> None:
+    """Configure logging using structlog.
 
-
-def log_level_callback(level: LogLevel) -> LogLevel:
-    """Configure structlog and typer based on the given log level.
-
-    Configures structlog to filter logs and typer to show locals in
-    tracebacks based on the given log level.
+    Configures structlogs log level filtering and output processing / formatting
+    as well as typer to show locals in tracebacks when using the debug log level.
     """
     match level:
         case LogLevel.Debug:
@@ -62,40 +54,45 @@ def log_level_callback(level: LogLevel) -> LogLevel:
             std_level = logging.WARNING
         case LogLevel.Error:
             std_level = logging.ERROR
-        case _ as unreachable:
-            assert_never(unreachable)
-    structlog.configure(wrapper_class=structlog.make_filtering_bound_logger(std_level))
+        case _ as unknown_level:
+            assert_never(unknown_level)
 
-    return level
-
-
-def log_format_callback(format: LogFormat) -> LogFormat:
-    """Configure structlog rendering based on the given format."""
     processors: list[structlog.typing.Processor] = [
         structlog.contextvars.merge_contextvars,
         structlog.processors.add_log_level,
         structlog.processors.TimeStamper(fmt="iso"),
     ]
-    logger_factory: Callable[
-        ..., structlog.typing.WrappedLogger
-    ] = structlog.WriteLoggerFactory()
+    logger_factory: structlog.typing.WrappedLogger = (
+        structlog.BytesLoggerFactory()
+        if format == LogFormat.Json
+        else structlog.WriteLoggerFactory()
+    )
 
     match format:
         case LogFormat.Human:
-            processors.append(structlog.dev.ConsoleRenderer())
+            colors: bool = IS_TTY and not no_color
+            processors.append(structlog.dev.ConsoleRenderer(colors=colors))
         case LogFormat.Json:
             processors.append(
                 structlog.processors.JSONRenderer(serializer=orjson.dumps)
             )
-            logger_factory = structlog.BytesLoggerFactory()
         case LogFormat.Logfmt:
             processors.append(structlog.processors.LogfmtRenderer())
-        case _ as unreachable:
-            assert_never(unreachable)
+        case _ as unknown_format:
+            assert_never(unknown_format)
 
-    structlog.configure(processors=processors, logger_factory=logger_factory)
+    structlog.configure(
+        wrapper_class=structlog.make_filtering_bound_logger(std_level),
+        processors=processors,
+        logger_factory=logger_factory,
+    )
 
-    return format
+
+def version_callback(value: bool) -> None:
+    """Show the current version and exit."""
+    if value:
+        typer.echo("anycastd {}".format(__version__))
+        raise typer.Exit()
 
 
 @app.callback()
@@ -133,7 +130,6 @@ def run(
             help="Log level.",
             envvar="LOG_LEVEL",
             case_sensitive=False,
-            callback=log_level_callback,
         ),
     ] = LogLevel.Info,
     log_format: Annotated[
@@ -143,11 +139,15 @@ def run(
             help="Log format.",
             envvar="LOG_FORMAT",
             case_sensitive=False,
-            callback=log_format_callback,
         ),
     ] = LogFormat.Human if IS_TTY else LogFormat.Json,
+    no_color: Annotated[
+        bool,
+        typer.Option("--no-color", help="Disable color output.", envvar="NO_COLOR"),
+    ] = False,
 ) -> None:
     """Run anycastd."""
+    configure_logging(log_level, log_format, no_color)
     main_configuration = _get_main_configuration(config)
     asyncio.run(
         run_from_configuration(main_configuration),

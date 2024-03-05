@@ -1,4 +1,5 @@
 import logging
+import re
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -7,6 +8,11 @@ import pytest
 import structlog
 from anycastd._cli.main import _get_main_configuration
 from structlog.testing import capture_logs
+
+RE_ISO_TIMESTAMP = (
+    r"(\d{4})-(\d{2})-(\d{2})"  # date
+    r"T(\d{2}):(\d{2}):(\d{2}(?:\.\d*)?)((-(\d{2}):(\d{2})|Z)?)"  # time
+)
 
 
 def test_version_displayed_correctly(anycastd_cli):
@@ -99,6 +105,101 @@ class TestRunCMD:
         anycastd_cli("run", "--log-format", arg)
         last_processor = structlog.get_config()["processors"][-1]
         assert isinstance(last_processor, processor)
+
+    @pytest.mark.parametrize("is_tty", [True, False])
+    def test_no_tty_configures_structlog_console_without_colors(
+        self, mocker, anycastd_cli, is_tty: bool
+    ):
+        """
+        When not running in a TTY, the structlog console renderer is configured
+        to not use color codes.
+        """
+        mocker.patch("anycastd._cli.main.IS_TTY", new=is_tty)
+        mock_console_renderer = mocker.patch(
+            "anycastd._cli.main.structlog.dev.ConsoleRenderer", autospec=True
+        )
+        # needs to be patched since structlog does not like the mocked renderer above
+        mocker.patch("anycastd._cli.main.structlog.configure")
+
+        anycastd_cli("run", "--log-format", "human")
+
+        mock_console_renderer.assert_called_once_with(colors=is_tty)
+
+    @pytest.mark.parametrize("no_color", [True, False])
+    def test_no_color_configures_structlog_console_without_colors(
+        self, mocker, anycastd_cli, no_color: bool
+    ):
+        """
+        When passing the --no-color argument, the structlog console renderer
+        is configured to not use color codes.
+        """
+        # If this is false, no colors are used regardless of the --no-color argument
+        mocker.patch("anycastd._cli.main.IS_TTY", new=True)
+        mock_console_renderer = mocker.patch(
+            "anycastd._cli.main.structlog.dev.ConsoleRenderer", autospec=True
+        )
+        # needs to be patched since structlog does not like the mocked renderer above
+        mocker.patch("anycastd._cli.main.structlog.configure")
+        args = ["run", "--log-format", "human"]
+        if no_color:
+            args.append("--no-color")
+
+        anycastd_cli(*args)
+
+        mock_console_renderer.assert_called_once_with(colors=not no_color)
+
+    @pytest.mark.parametrize(
+        "log_format, expected_first_line, env_overrides",
+        [
+            (
+                "human",
+                re.compile(
+                    r"^"
+                    rf"{RE_ISO_TIMESTAMP}"
+                    r"\s\[info\s*\]"  # log level
+                    r"\sReading configuration from /etc/anycastd/config.toml."  # event
+                    r"\sconfig_path=/etc/anycastd/config.toml"  # config path
+                    r"$"
+                ),
+                {"NO_COLOR": "TRUE"},
+            ),
+            (
+                "json",
+                re.compile(
+                    r"^{"
+                    r'"config_path":"/etc/anycastd/config.toml",'
+                    r'"event":"Reading configuration from /etc/anycastd/config.toml.",'
+                    r'"level":"info",'
+                    rf'"timestamp":"{RE_ISO_TIMESTAMP}"'
+                    r"}$"
+                ),
+                None,
+            ),
+            (
+                "logfmt",
+                re.compile(
+                    r"^"
+                    r"config_path=/etc/anycastd/config.toml"
+                    r'\sevent="Reading configuration from /etc/anycastd/config.toml."'
+                    r"\slevel=info"
+                    rf"\stimestamp={RE_ISO_TIMESTAMP}"
+                    r"$"
+                ),
+                None,
+            ),
+        ],
+    )
+    def test_log_output_renders_correcly(
+        self,
+        anycastd_cli,
+        log_format: str,
+        expected_first_line: re.Pattern,
+        env_overrides: dict[str, str] | None,
+    ):
+        """The first log line is rendered correctly."""
+        result = anycastd_cli("run", "--log-format", log_format, env=env_overrides)
+        output_lines = result.stdout.splitlines()
+        assert re.fullmatch(expected_first_line, output_lines[0])
 
 
 def test_reading_configuration_is_logged(mocker):

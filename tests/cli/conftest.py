@@ -35,11 +35,14 @@ def anycastd_cli(reset_structlog_config) -> Callable[..., Result]:
     runner = CliRunner(mix_stderr=False)
 
     def run_cli_command(
-        *args: str, input: bytes | str | None = None, catch_exceptions: bool = False
+        *args: str,
+        input: bytes | str | None = None,
+        catch_exceptions: bool = False,
+        env: dict[str, str] | None = None,
     ) -> Result:
         command = [*args]
         return runner.invoke(
-            app, command, input=input, catch_exceptions=catch_exceptions
+            app, command, input=input, catch_exceptions=catch_exceptions, env=env
         )
 
     return run_cli_command
