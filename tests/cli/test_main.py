@@ -106,6 +106,48 @@ class TestRunCMD:
         last_processor = structlog.get_config()["processors"][-1]
         assert isinstance(last_processor, processor)
 
+    @pytest.mark.parametrize("is_tty", [True, False])
+    def test_no_tty_configures_structlog_console_without_colors(
+        self, mocker, anycastd_cli, is_tty: bool
+    ):
+        """
+        When not running in a TTY, the structlog console renderer is configured
+        to not use color codes.
+        """
+        mocker.patch("anycastd._cli.main.IS_TTY", new=is_tty)
+        mock_console_renderer = mocker.patch(
+            "anycastd._cli.main.structlog.dev.ConsoleRenderer", autospec=True
+        )
+        # needs to be patched since structlog does not like the mocked renderer above
+        mocker.patch("anycastd._cli.main.structlog.configure")
+
+        anycastd_cli("run", "--log-format", "human")
+
+        mock_console_renderer.assert_called_once_with(colors=is_tty)
+
+    @pytest.mark.parametrize("no_color", [True, False])
+    def test_no_color_configures_structlog_console_without_colors(
+        self, mocker, anycastd_cli, no_color: bool
+    ):
+        """
+        When passing the --no-color argument, the structlog console renderer
+        is configured to not use color codes.
+        """
+        # If this is false, no colors are used regardless of the --no-color argument
+        mocker.patch("anycastd._cli.main.IS_TTY", new=True)
+        mock_console_renderer = mocker.patch(
+            "anycastd._cli.main.structlog.dev.ConsoleRenderer", autospec=True
+        )
+        # needs to be patched since structlog does not like the mocked renderer above
+        mocker.patch("anycastd._cli.main.structlog.configure")
+        args = ["run", "--log-format", "human"]
+        if no_color:
+            args.append("--no-color")
+
+        anycastd_cli(*args)
+
+        mock_console_renderer.assert_called_once_with(colors=not no_color)
+
     @pytest.mark.parametrize(
         "log_format, expected_first_line, env_overrides",
         [
