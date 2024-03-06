@@ -3,7 +3,7 @@ import json
 from contextlib import suppress
 from ipaddress import IPv4Network, IPv6Network
 from pathlib import Path
-from typing import Self, assert_never, cast
+from typing import Self, assert_never
 
 import structlog
 
@@ -176,23 +176,21 @@ class FRRoutingPrefix:
                 stdout, stderr = await proc.communicate()
         except TimeoutError as exc:
             raise FRRCommandTimeoutError(commands) from exc
-        finally:
-            self._log.debug(
-                "Ran vtysh commands.",
-                vtysh_commands=list(commands),
-                vtysh_pid=proc.pid,
-                vtysh_returncode=proc.returncode,
-                vtysh_stdout=stdout.decode("utf-8") if stdout else None,
-                vtysh_stderr=stderr.decode("utf-8") if stderr else None,
-            )
+
+        self._log.debug(
+            "Ran vtysh commands.",
+            vtysh_commands=list(commands),
+            vtysh_pid=proc.pid,
+            vtysh_returncode=proc.returncode,
+            vtysh_stdout=stdout.decode("utf-8") if stdout else None,
+            vtysh_stderr=stderr.decode("utf-8") if stderr else None,
+        )
 
         # Command may have failed even if the returncode is 0.
         if proc.returncode != 0 or stderr:
             raise FRRCommandError(
                 commands,
-                cast(
-                    int, proc.returncode
-                ),  # Since we await the process above, this should never be None.
+                proc.returncode,
                 stdout.decode("utf-8") if stdout else None,
                 stderr.decode("utf-8") if stderr else None,
             )
