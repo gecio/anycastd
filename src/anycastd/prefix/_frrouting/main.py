@@ -191,8 +191,8 @@ class FRRoutingPrefix:
             raise FRRCommandError(
                 commands,
                 proc.returncode,
-                stdout.decode("utf-8") if stdout else None,
-                stderr.decode("utf-8") if stderr else None,
+                stdout=stdout.decode("utf-8") if stdout else None,
+                stderr=stderr.decode("utf-8") if stderr else None,
             )
 
         return stdout.decode("utf-8")
