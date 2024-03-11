@@ -163,7 +163,7 @@ def add_bgp_prefix() -> (
     """A callable that can be used to add a BGP prefix."""
 
     def _(
-        prefix: _IP_Prefix, asn: int, vtysh: Vtysh, vrf: VRF = None
+        prefix: _IP_Prefix, asn: int, vtysh: Vtysh, vrf: VRF = None, **kwargs
     ) -> subprocess.CompletedProcess:
         """Add a network to the BGP configuration using vtysh."""
         family = get_afi(prefix)
@@ -174,6 +174,7 @@ def add_bgp_prefix() -> (
                 f"router bgp {asn} vrf {vrf}" if vrf else f"router bgp {asn}",
                 f"address-family {family} unicast",
             ],
+            **kwargs,
         )
 
     return _
@@ -186,7 +187,7 @@ def remove_bgp_prefix() -> (
     """A callable that can be used to remove a BGP prefix."""
 
     def _(
-        prefix: _IP_Prefix, asn: int, vtysh: Vtysh, vrf: VRF = None
+        prefix: _IP_Prefix, asn: int, vtysh: Vtysh, vrf: VRF = None, **kwargs
     ) -> subprocess.CompletedProcess:
         """Remove a network from the BGP configuration using vtysh."""
         family = get_afi(prefix)
@@ -197,6 +198,7 @@ def remove_bgp_prefix() -> (
                 f"router bgp {asn} vrf {vrf}" if vrf else f"router bgp {asn}",
                 f"address-family {family} unicast",
             ],
+            **kwargs,
         )
 
     return _
