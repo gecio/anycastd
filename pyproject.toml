@@ -161,7 +161,9 @@ testpaths = "tests"
 addopts = [
     "--strict-markers",
     "--strict-config",
-    "--random-order"
+    "--random-order",
+    "--container-scope",
+    "function"
 ]
 xfail_strict = true
 markers = [

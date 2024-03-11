@@ -25,7 +25,6 @@ async def test_announce_adds_bgp_network(  # noqa: PLR0913
     example_networks,
     example_vrfs,
     bgp_prefix_configured,
-    remove_bgp_prefix,
     example_asn,
 ):
     """Announcing adds the corresponding BGP prefix to the configuration."""
@@ -38,13 +37,6 @@ async def test_announce_adds_bgp_network(  # noqa: PLR0913
     await prefix.announce()
 
     assert bgp_prefix_configured(prefix.prefix, vtysh=vtysh, vrf=example_vrfs)
-
-    # Clean up
-    remove_bgp_prefix(prefix.prefix, asn=example_asn, vtysh=vtysh, vrf=example_vrfs)
-    if example_vrfs:
-        vtysh(
-            f"no router bgp {example_asn} vrf {example_vrfs}", configure_terminal=True
-        )
 
 
 @skip_without_docker
@@ -98,7 +90,6 @@ async def test_announcement_state_reported_correctly(  # noqa: PLR0913
     example_vrfs,
     example_asn,
     add_bgp_prefix,
-    remove_bgp_prefix,
     announced: bool,
 ):
     """The announcement state is reported correctly."""
@@ -109,7 +100,3 @@ async def test_announcement_state_reported_correctly(  # noqa: PLR0913
         add_bgp_prefix(prefix.prefix, asn=example_asn, vtysh=vtysh, vrf=example_vrfs)
 
     assert await prefix.is_announced() == announced
-
-    # Clean up
-    if announced:
-        remove_bgp_prefix(prefix.prefix, asn=example_asn, vtysh=vtysh, vrf=example_vrfs)
