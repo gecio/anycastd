@@ -39,6 +39,7 @@ class Vtysh:
         *,
         configure_terminal: bool | None = None,
         context: list[str] | None = None,
+        check: bool = True,
     ) -> str:
         """Run a command and return the output.
 
@@ -46,6 +47,7 @@ class Vtysh:
             command: The command to run.
             configure_terminal: Run the command in a configure terminal.
             context: Run the command in a specific context.
+            check: Raise an exception if the command exits with a nonzero return code.
 
         Returns:
             The output of the command.
@@ -68,13 +70,16 @@ class Vtysh:
             text=True,
         )
 
-        if result.returncode != 0:
-            msg = f"Failed to run command in {self}:\n"
-            if result.stdout:
-                msg += f"stdout: {result.stdout}\n"
-            if result.stderr:
-                msg += f"stderr: {result.stderr}\n"
-            raise RuntimeError(msg)
+        if check:
+            try:
+                result.check_returncode()
+            except subprocess.CalledProcessError as exc:
+                msg = f"Failed to run command in {self}:\n"
+                if result.stdout:
+                    msg += f"stdout: {result.stdout}\n"
+                if result.stderr:
+                    msg += f"stderr: {result.stderr}\n"
+                raise RuntimeError(msg) from exc
 
         return result.stdout
 
