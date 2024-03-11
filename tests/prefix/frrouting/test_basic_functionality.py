@@ -69,6 +69,20 @@ async def test_denounce_removes_bgp_network(  # noqa: PLR0913
 
 
 @skip_without_docker
+async def test_denounce_without_being_announced_does_not_raise(
+    docker_executor,
+    example_networks,
+    example_vrfs,
+):
+    """Denouncing prefixes that are not announced does nothing."""
+    prefix = FRRoutingPrefix(
+        example_networks, vrf=example_vrfs, executor=docker_executor
+    )
+
+    await prefix.denounce()
+
+
+@skip_without_docker
 @pytest.mark.parametrize("announced", [True, False])
 async def test_announcement_state_reported_correctly(  # noqa: PLR0913
     vtysh,
