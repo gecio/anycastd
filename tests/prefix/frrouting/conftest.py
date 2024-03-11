@@ -157,13 +157,17 @@ def bgp_prefix_configured() -> Callable[[_IP_Prefix, Vtysh, VRF], bool]:
 
 
 @pytest.fixture
-def add_bgp_prefix() -> Callable[[_IP_Prefix, int, Vtysh, VRF], None]:
+def add_bgp_prefix() -> (
+    Callable[[_IP_Prefix, int, Vtysh, VRF], subprocess.CompletedProcess]
+):
     """A callable that can be used to add a BGP prefix."""
 
-    def _(prefix: _IP_Prefix, asn: int, vtysh: Vtysh, vrf: VRF = None) -> None:
+    def _(
+        prefix: _IP_Prefix, asn: int, vtysh: Vtysh, vrf: VRF = None
+    ) -> subprocess.CompletedProcess:
         """Add a network to the BGP configuration using vtysh."""
         family = get_afi(prefix)
-        vtysh(
+        return vtysh(
             f"network {prefix}",
             configure_terminal=True,
             context=[
@@ -176,13 +180,17 @@ def add_bgp_prefix() -> Callable[[_IP_Prefix, int, Vtysh, VRF], None]:
 
 
 @pytest.fixture
-def remove_bgp_prefix() -> Callable[[_IP_Prefix, int, Vtysh, VRF], None]:
+def remove_bgp_prefix() -> (
+    Callable[[_IP_Prefix, int, Vtysh, VRF], subprocess.CompletedProcess]
+):
     """A callable that can be used to remove a BGP prefix."""
 
-    def _(prefix: _IP_Prefix, asn: int, vtysh: Vtysh, vrf: VRF = None) -> None:
+    def _(
+        prefix: _IP_Prefix, asn: int, vtysh: Vtysh, vrf: VRF = None
+    ) -> subprocess.CompletedProcess:
         """Remove a network from the BGP configuration using vtysh."""
         family = get_afi(prefix)
-        vtysh(
+        return vtysh(
             f"no network {prefix}",
             configure_terminal=True,
             context=[
