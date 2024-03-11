@@ -39,16 +39,18 @@ class Vtysh:
         *,
         configure_terminal: bool | None = None,
         context: list[str] | None = None,
-    ) -> str:
+        check: bool = True,
+    ) -> subprocess.CompletedProcess:
         """Run a command and return the output.
 
         Arguments:
             command: The command to run.
             configure_terminal: Run the command in a configure terminal.
             context: Run the command in a specific context.
+            check: Raise an exception if the command exits with a nonzero return code.
 
         Returns:
-            The output of the command.
+            The completed command.
         """
         configure_terminal = configure_terminal or self.configure_terminal
 
@@ -68,15 +70,18 @@ class Vtysh:
             text=True,
         )
 
-        if result.returncode != 0:
-            msg = f"Failed to run command in {self}:\n"
-            if result.stdout:
-                msg += f"stdout: {result.stdout}\n"
-            if result.stderr:
-                msg += f"stderr: {result.stderr}\n"
-            raise RuntimeError(msg)
+        if check:
+            try:
+                result.check_returncode()
+            except subprocess.CalledProcessError as exc:
+                msg = f"Failed to run command in {self}:\n"
+                if result.stdout:
+                    msg += f"stdout: {result.stdout}\n"
+                if result.stderr:
+                    msg += f"stderr: {result.stderr}\n"
+                raise RuntimeError(msg) from exc
 
-        return result.stdout
+        return result
 
     def exit(self, *, all: bool = False) -> None:
         """Exit the current context.
@@ -92,7 +97,7 @@ class Vtysh:
 
 def watchfrr_all_daemons_up(vtysh: Vtysh) -> bool:
     """Return whether all FRR daemons are up."""
-    watchfrr_status = vtysh("show watchfrr")
+    watchfrr_status = vtysh("show watchfrr").stdout
     return all("Up" in _ for _ in watchfrr_status.splitlines()[1:])
 
 
@@ -136,7 +141,7 @@ def bgp_prefix_configured() -> Callable[[_IP_Prefix, Vtysh, VRF], bool]:
             if vrf
             else f"show ip bgp {family} unicast {prefix} json"
         )
-        show_prefix = vtysh(cmd, configure_terminal=False, context=[])
+        show_prefix = vtysh(cmd, configure_terminal=False, context=[]).stdout
         prefix_info = json.loads(show_prefix)
 
         with suppress(KeyError):
@@ -152,38 +157,48 @@ def bgp_prefix_configured() -> Callable[[_IP_Prefix, Vtysh, VRF], bool]:
 
 
 @pytest.fixture
-def add_bgp_prefix() -> Callable[[_IP_Prefix, int, Vtysh, VRF], None]:
+def add_bgp_prefix() -> (
+    Callable[[_IP_Prefix, int, Vtysh, VRF], subprocess.CompletedProcess]
+):
     """A callable that can be used to add a BGP prefix."""
 
-    def _(prefix: _IP_Prefix, asn: int, vtysh: Vtysh, vrf: VRF = None) -> None:
+    def _(
+        prefix: _IP_Prefix, asn: int, vtysh: Vtysh, vrf: VRF = None, **kwargs
+    ) -> subprocess.CompletedProcess:
         """Add a network to the BGP configuration using vtysh."""
         family = get_afi(prefix)
-        vtysh(
+        return vtysh(
             f"network {prefix}",
             configure_terminal=True,
             context=[
                 f"router bgp {asn} vrf {vrf}" if vrf else f"router bgp {asn}",
                 f"address-family {family} unicast",
             ],
+            **kwargs,
         )
 
     return _
 
 
 @pytest.fixture
-def remove_bgp_prefix() -> Callable[[_IP_Prefix, int, Vtysh, VRF], None]:
+def remove_bgp_prefix() -> (
+    Callable[[_IP_Prefix, int, Vtysh, VRF], subprocess.CompletedProcess]
+):
     """A callable that can be used to remove a BGP prefix."""
 
-    def _(prefix: _IP_Prefix, asn: int, vtysh: Vtysh, vrf: VRF = None) -> None:
+    def _(
+        prefix: _IP_Prefix, asn: int, vtysh: Vtysh, vrf: VRF = None, **kwargs
+    ) -> subprocess.CompletedProcess:
         """Remove a network from the BGP configuration using vtysh."""
         family = get_afi(prefix)
-        vtysh(
+        return vtysh(
             f"no network {prefix}",
             configure_terminal=True,
             context=[
                 f"router bgp {asn} vrf {vrf}" if vrf else f"router bgp {asn}",
                 f"address-family {family} unicast",
             ],
+            **kwargs,
         )
 
     return _

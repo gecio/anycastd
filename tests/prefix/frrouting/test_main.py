@@ -51,8 +51,9 @@ async def test_denouncing_non_announced_logs_warning(mocker):
     prefix = FRRoutingPrefix(
         prefix=IPv6Network("2001:db8::/32"), vrf="42", executor=LocalExecutor()
     )
+    # Using stdout for the error is intentional, it is how the vtysh does it.
     exc = FRRCommandError(
-        ["test command"], 1, stdout=None, stderr="Can't find static route specified"
+        ["test command"], 1, stdout="Can't find static route specified", stderr=""
     )
     mocker.patch.object(prefix, "_get_local_asn")
     mocker.patch.object(prefix, "_run_vtysh_commands", side_effect=exc)
