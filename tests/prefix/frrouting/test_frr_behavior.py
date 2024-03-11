@@ -29,9 +29,6 @@ def test_announcing_prefix_that_is_announced_is_successful(  # noqa: PLR0913
     assert result.stdout == ""
     assert result.stderr == ""
 
-    # Clean up
-    remove_bgp_prefix(example_networks, asn=example_asn, vtysh=vtysh, vrf=example_vrfs)
-
 
 @skip_without_docker
 async def test_denouncing_prefix_that_is_not_announced_returns_expected_rc_and_stdout(  # noqa: PLR0913
