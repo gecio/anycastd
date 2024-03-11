@@ -135,8 +135,8 @@ class FRRoutingPrefix:
                 f"no network {self.prefix}",
             )
         except FRRCommandError as exc:
-            if exc.stderr is not None:
-                if "Can't find static route specified" in exc.stderr:
+            if exc.stdout is not None:
+                if "Can't find static route specified" in exc.stdout:
                     self._log.warning(
                         "Attempted to denounce prefix that was not announced."
                     )
