@@ -40,7 +40,7 @@ class Vtysh:
         configure_terminal: bool | None = None,
         context: list[str] | None = None,
         check: bool = True,
-    ) -> str:
+    ) -> subprocess.CompletedProcess:
         """Run a command and return the output.
 
         Arguments:
@@ -50,7 +50,7 @@ class Vtysh:
             check: Raise an exception if the command exits with a nonzero return code.
 
         Returns:
-            The output of the command.
+            The completed command.
         """
         configure_terminal = configure_terminal or self.configure_terminal
 
@@ -81,7 +81,7 @@ class Vtysh:
                     msg += f"stderr: {result.stderr}\n"
                 raise RuntimeError(msg) from exc
 
-        return result.stdout
+        return result
 
     def exit(self, *, all: bool = False) -> None:
         """Exit the current context.
@@ -97,7 +97,7 @@ class Vtysh:
 
 def watchfrr_all_daemons_up(vtysh: Vtysh) -> bool:
     """Return whether all FRR daemons are up."""
-    watchfrr_status = vtysh("show watchfrr")
+    watchfrr_status = vtysh("show watchfrr").stdout
     return all("Up" in _ for _ in watchfrr_status.splitlines()[1:])
 
 
@@ -141,7 +141,7 @@ def bgp_prefix_configured() -> Callable[[_IP_Prefix, Vtysh, VRF], bool]:
             if vrf
             else f"show ip bgp {family} unicast {prefix} json"
         )
-        show_prefix = vtysh(cmd, configure_terminal=False, context=[])
+        show_prefix = vtysh(cmd, configure_terminal=False, context=[]).stdout
         prefix_info = json.loads(show_prefix)
 
         with suppress(KeyError):
