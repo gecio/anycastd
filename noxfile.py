@@ -169,6 +169,8 @@ def pytest_frrouting_daemon_required(session: nox.Session, frrouting: str) -> No
         "tests",
         "-m",
         "frrouting_daemon_required",
+        "--cov",
+        "--cov-append",
         *session.posargs,
     )
 
