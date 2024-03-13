@@ -2,9 +2,11 @@ import datetime
 
 import httpx
 import pytest
+from anycastd.healthcheck._cabourotte.exceptions import CabourotteCheckNotFoundError
 from anycastd.healthcheck._cabourotte.main import CabourotteHealthcheck
 from anycastd.healthcheck._cabourotte.result import Result
 from pytest_mock import MockerFixture
+from structlog.testing import capture_logs
 
 
 def test__init__():
@@ -104,3 +106,39 @@ async def test_get_status_returns_result(success: bool, mocker: MockerFixture):
     )
 
     assert await healthcheck._get_status() == success
+
+
+async def test_get_status_logs_error_if_check_does_not_exist(mocker: MockerFixture):
+    """The get status method logs an error if the check does not exist."""
+    healthcheck = CabourotteHealthcheck(
+        "test", url="https://example.com", interval=datetime.timedelta(seconds=10)
+    )
+    exc = CabourotteCheckNotFoundError("test", "https://example.com")
+    mocker.patch(
+        "anycastd.healthcheck._cabourotte.main.get_result",
+        side_effect=exc,
+    )
+
+    with capture_logs() as logs:
+        await healthcheck._get_status()
+
+    assert (
+        logs[1]["event"]
+        == "Cabourotte health check test does not exist, returning an unhealthy status."
+    )
+    assert logs[1]["log_level"] == "error"
+    assert logs[1]["exc_info"] == exc
+
+
+async def test_get_status_returns_false_if_check_does_not_exist(mocker: MockerFixture):
+    """The get status method logs an error if the check does not exist."""
+    healthcheck = CabourotteHealthcheck(
+        "test", url="https://example.com", interval=datetime.timedelta(seconds=10)
+    )
+    mocker.patch("anycastd.healthcheck._cabourotte.main.get_result", return_value=True)
+    mocker.patch(
+        "anycastd.healthcheck._cabourotte.main.get_result",
+        side_effect=CabourotteCheckNotFoundError("test", "https://example.com"),
+    )
+
+    assert await healthcheck._get_status() is False

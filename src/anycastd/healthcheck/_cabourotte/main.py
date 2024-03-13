@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 
 import structlog
 
+from anycastd.healthcheck._cabourotte.exceptions import CabourotteCheckNotFoundError
 from anycastd.healthcheck._cabourotte.result import get_result
 from anycastd.healthcheck._common import CheckCoroutine, interval_check
 
@@ -31,7 +32,16 @@ class CabourotteHealthcheck:
         log = logger.bind(name=self.name, url=self.url, interval=self.interval)
 
         log.debug(f"Cabourotte health check {self.name} awaiting check result.")
-        result = await get_result(self.name, url=self.url)
+        try:
+            result = await get_result(self.name, url=self.url)
+        except CabourotteCheckNotFoundError as exc:
+            log.error(
+                "Cabourotte health check %s does not exist, "
+                "returning an unhealthy status.",
+                self.name,
+                exc_info=exc,
+            )
+            return False
         log.debug(
             f"Cabourotte health check {self.name} received check result.", result=result
         )

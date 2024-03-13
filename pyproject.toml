@@ -86,6 +86,7 @@ test = [
     "pytest-docker>=2.0.1",
     "pyfakefs>=5.3.1",
     "tomli-w>=1.0.0",
+    "hypothesis>=6.99.5",
 ]
 jupyter = [
     "jupyter",

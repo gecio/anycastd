@@ -4,6 +4,11 @@ from typing import Self
 import httpx
 from pydantic import BaseModel, Field
 
+from anycastd.healthcheck._cabourotte.exceptions import (
+    CabourotteCheckError,
+    CabourotteCheckNotFoundError,
+)
+
 
 class Result(BaseModel):
     """The result of a healthcheck."""
@@ -32,8 +37,18 @@ async def get_result(name: str, *, url: str) -> Result:
     Returns:
         The result of the healthcheck.
     """
-    async with httpx.AsyncClient() as client:
-        response = await client.get(f"{url}/result/{name}")
-        response.raise_for_status()
+    result_url = f"{url}/result/{name}"
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(result_url)
+            response.raise_for_status()
+    except httpx.HTTPError as exc:
+        if (
+            isinstance(exc, httpx.HTTPStatusError)
+            and exc.response.status_code == httpx.codes.NOT_FOUND
+        ):
+            raise CabourotteCheckNotFoundError(name, result_url) from None
+
+        raise CabourotteCheckError(name, result_url, str(exc)) from exc
 
     return Result.from_json(response.content)
