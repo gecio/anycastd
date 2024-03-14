@@ -31,7 +31,7 @@ class CabourotteHealthcheck:
         """Get the current status of the check as reported by cabourotte."""
         log = logger.bind(name=self.name, url=self.url, interval=self.interval)
 
-        log.debug(f"Cabourotte health check {self.name} awaiting check result.")
+        log.debug("Cabourotte health check %s awaiting check result.", self.name)
         try:
             result = await get_result(self.name, url=self.url)
         except CabourotteCheckNotFoundError as exc:
@@ -43,7 +43,9 @@ class CabourotteHealthcheck:
             )
             return False
         log.debug(
-            f"Cabourotte health check {self.name} received check result.", result=result
+            "Cabourotte health check %s received check result.",
+            self.name,
+            result=result,
         )
 
         return result.success

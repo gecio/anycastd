@@ -91,7 +91,7 @@ class Service:
         passing, and denounce them otherwise. If the returned coroutine is cancelled,
         the service will be terminated, denouncing all prefixes in the process.
         """
-        self._log.info(f"Starting service {self.name}.", service_healthy=self.healthy)
+        self._log.info("Starting service %s.", self.name, service_healthy=self.healthy)
         try:
             while not self._terminate:
                 checks_currently_healthy: bool = await self.all_checks_healthy()
@@ -107,7 +107,8 @@ class Service:
 
         except asyncio.CancelledError:
             self._log.debug(
-                f"Coroutine for service {self.name} was cancelled.",
+                "Coroutine for service %s was cancelled.",
+                self.name,
                 service_healthy=self.healthy,
             )
             await self.terminate()
@@ -156,4 +157,4 @@ class Service:
         """Terminate the service and denounce its prefixes."""
         self._terminate = True
         await self.denounce_all_prefixes()
-        logger.info(f"Service {self.name} terminated.", service=self.name)
+        logger.info("Service %s terminated.", self.name, service=self.name)
