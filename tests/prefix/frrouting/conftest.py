@@ -1,4 +1,5 @@
 import json
+import re
 import subprocess
 from collections.abc import Callable
 from contextlib import suppress
@@ -96,9 +97,31 @@ class Vtysh:
 
 
 def watchfrr_all_daemons_up(vtysh: Vtysh) -> bool:
-    """Return whether all FRR daemons are up."""
+    """Return whether all FRR daemons are up.
+
+    Parses the output of `show watchfrr` and returns whether all daemons are up.
+
+    Starting with FRR 8.3, the output looks somewhat like this:
+    ```
+    watchfrr global phase: Idle
+    Restart Command: "/usr/lib/frr/watchfrr.sh restart %s"
+    Start Command: "/usr/lib/frr/watchfrr.sh start %s"
+    Stop Command: "/usr/lib/frr/watchfrr.sh stop %s"
+    Min Restart Interval: 60
+    Max Restart Interval: 600
+    Restart Timeout: 20
+     zebra                Up
+     bgpd                 Up
+     staticd              Up
+    ```
+    """
+    re_daemon_status = re.compile(
+        r"^\s{2}(?P<daemon>\w+)\s+(?P<status>\w+)$", re.MULTILINE
+    )
     watchfrr_status = vtysh("show watchfrr").stdout
-    return all("Up" in _ for _ in watchfrr_status.splitlines()[1:])
+    return all(
+        "Up" in daemon[1] for daemon in re_daemon_status.findall(watchfrr_status)
+    )
 
 
 @pytest.fixture
