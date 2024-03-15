@@ -9,6 +9,8 @@ PYTHON = ["3.11", "3.12"] if not CI else None
 SESSIONS = ["ruff", "mypy", "lockfile", "pytest"]
 EXTERNAL_DEPENDENCY_MARKERS = ["frrouting_daemon_required"]
 
+FRR_LATEST_MAJOR_VERSION = "9.0.2"
+
 nox.options.sessions = SESSIONS
 os.environ.update({"PDM_IGNORE_SAVED_PYTHON": "1"})
 
@@ -140,30 +142,19 @@ def pytest_full(session: nox.Session) -> None:
 
 
 @nox.session(python=PYTHON)
-@nox.parametrize(
-    "frrouting",
-    [
-        "7.3.1",
-        "7.4.0",
-        "7.5.1",
-        "8.1.0",
-        "8.2.2",
-        "8.3.1",
-        "8.4.2",
-        "8.5.3",
-        "9.0.1",
-    ],
-)
-def pytest_frrouting_daemon_required(session: nox.Session, frrouting: str) -> None:
+def pytest_frrouting_daemon_required(session: nox.Session) -> None:
     """Run pytest FRRouting integration tests against a FRRouting daemon.
 
     This session runs the integration tests that run against a local FRRouting instance
-    for all supported FRRouting versions using the FRRouting docker image.
+    using the FRRouting docker image.
     """
     pdm_sync(session, self=True, default=True, groups=["test"])
     if shutil.which("docker") is None:
         session.error("This session requires Docker to be installed")
-    session.env["FRR_VERSION"] = frrouting
+    # If the FRR container version is not set in the environment, use the latest version
+    # defined at the top of this file.
+    if not session.env.get("FRR_VERSION"):
+        session.env["FRR_VERSION"] = FRR_LATEST_MAJOR_VERSION
     session.run(
         "pytest",
         "tests",
