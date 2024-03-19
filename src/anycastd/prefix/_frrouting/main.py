@@ -1,10 +1,10 @@
 import asyncio
-import json
 from contextlib import suppress
 from ipaddress import IPv4Network, IPv6Network
 from pathlib import Path
 from typing import Self, assert_never
 
+import orjson
 import structlog
 
 from anycastd._executor import Executor
@@ -94,7 +94,7 @@ class FRRoutingPrefix:
             else f"show bgp {self.afi} unicast {self.prefix} json"
         )
         show_prefix = await self._run_vtysh_commands(cmd)
-        prefix_info = json.loads(show_prefix)
+        prefix_info = orjson.loads(show_prefix)
 
         with suppress(KeyError):
             paths = prefix_info["paths"]
@@ -155,7 +155,7 @@ class FRRoutingPrefix:
             if self.vrf
             else "show bgp detail json"
         )
-        bgp_detail = json.loads(show_bgp_detail)
+        bgp_detail = orjson.loads(show_bgp_detail)
         if warning := bgp_detail.get("warning"):
             raise RuntimeError(f"Failed to get local ASN: {warning}")
         return int(bgp_detail["localAS"])
