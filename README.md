@@ -151,12 +151,42 @@ $ systemctl start dns.service ntp.service cabourotte.service
 After which we can start `anycastd` itself.
 
 ```sh
-$ anycastd
-[2024-01-09T16:20:00Z INFO anycastd] Reading configuration from /etc/anycastd/config.toml.
-...
+$ anycastd run
+2024-03-25T15:17:23.783539Z [info     ] Reading configuration from /etc/anycastd/config.toml. config_path=/etc/anycastd/config.toml
+2024-03-25T15:17:23.785613Z [info     ] Starting service "dns".      service_health_checks=['dns'] service_healthy=False service_name=dns service_prefixes=['2001:db8::b19:bad:53', '203.0.113.53']
+2024-03-25T15:17:23.785613Z [info     ] Starting service "ntp".      service_health_checks=['ntp_v4', 'ntp_v6'] service_healthy=False service_name=ntp service_prefixes=['2001:db8::123:7e11:713e', '203.0.113.123']
+2024-03-25T15:17:23.797760Z [info     ] Service "dns" is now considered healthy, announcing related prefixes. service_health_checks=['dns'] service_healthy=True service_name=dns service_prefixes=['2001:db8::b19:bad:53', '203.0.113.53']
+2024-03-25T15:17:23.812260Z [info     ] Service "ntp" is now considered healthy, announcing related prefixes. service_health_checks=['ntp_v4', 'ntp_v6'] service_healthy=True service_name=ntp service_prefixes=['2001:db8::123:7e11:713e', '203.0.113.123']
 ```
 
-...
+`anycastd` will execute the health checks and, since all of them pass, announce the configured service IPs, which we can verify by looking at the new [FRRouting] running configuration.
+
+```diff
+@@ -7,9 +7,11 @@
+  neighbor eth0 interface peer-group unnumbered
+  !
+  address-family ipv4 unicast
++  network 203.0.113.53/32
+   redistribute static
+  !
+  address-family ipv6 unicast
++  network 2001:db8::b19:bad:53/128
+   redistribute static
+   neighbor fabric activate
+   neighbor fabric nexthop-local unchanged
+@@ -22,9 +24,11 @@
+  neighbor eth1 interface peer-group unnumbered
+  !
+  address-family ipv4 unicast
++  network 203.0.113.123/32
+   redistribute static
+  !
+  address-family ipv6 unicast
++  network 2001:db8::123:7e11:713e/128
+   redistribute static
+   neighbor fabric activate
+   neighbor fabric nexthop-local unchanged
+```
 
 ## Services
 
