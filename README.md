@@ -84,9 +84,25 @@ router bgp 65536
   neighbor fabric activate
   neighbor fabric nexthop-local unchanged
 !
+router bgp 65537 vrf 123
+ bgp router-id 203.0.113.181
+ neighbor unnumbered peer-group
+ neighbor unnumbered remote-as external
+ neighbor unnumbered capability extended-nexthop
+ neighbor eth1 interface peer-group unnumbered
+ !
+ address-family ipv4 unicast
+  redistribute static
+ !
+ address-family ipv6 unicast
+  redistribute static
+  neighbor fabric activate
+  neighbor fabric nexthop-local unchanged
+!
 ```
 
-This creates a single unnumbered BGP session over which we can route the service prefixes.
+This creates two BGP instances, `AS65537` in the default [VRF] and `AS65537` in [VRF] `123`.
+Both of them have a single unnumbered session that will be used to advertise the service prefixes.
 The most important statement here is `redistribute static` for both IPv4 and IPv6, instructing [FRRouting] to redistribute the static routes containing the service prefixes that will later be created by `anycastd`.
 
 ### Cabourotte configuration
