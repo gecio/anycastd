@@ -101,7 +101,7 @@ router bgp 65537 vrf 123
 !
 ```
 
-This creates two BGP instances, `AS65537` in the default [VRF] and `AS65537` in [VRF] `123`.
+This creates two BGP instances, `AS65536` in the default [VRF] and `AS65537` in [VRF] `123`.
 Both of them have a single unnumbered session that will be used to advertise the service prefixes.
 The most important statement here is `redistribute static` for both IPv4 and IPv6, instructing [FRRouting] to redistribute the static routes containing the service prefixes that will later be created by `anycastd`.
 
