@@ -84,9 +84,25 @@ router bgp 65536
   neighbor fabric activate
   neighbor fabric nexthop-local unchanged
 !
+router bgp 65537 vrf 123
+ bgp router-id 203.0.113.181
+ neighbor unnumbered peer-group
+ neighbor unnumbered remote-as external
+ neighbor unnumbered capability extended-nexthop
+ neighbor eth1 interface peer-group unnumbered
+ !
+ address-family ipv4 unicast
+  redistribute static
+ !
+ address-family ipv6 unicast
+  redistribute static
+  neighbor fabric activate
+  neighbor fabric nexthop-local unchanged
+!
 ```
 
-This creates a single unnumbered BGP session over which we can route the service prefixes.
+This creates two BGP instances, `AS65536` in the default [VRF] and `AS65537` in [VRF] `123`.
+Both of them have a single unnumbered session that will be used to advertise the service prefixes.
 The most important statement here is `redistribute static` for both IPv4 and IPv6, instructing [FRRouting] to redistribute the static routes containing the service prefixes that will later be created by `anycastd`.
 
 ### Cabourotte configuration
@@ -122,7 +138,7 @@ command-checks:
 
 This sets up two fairly rudimentary health checks. The first renders healthy if a request to the DNS service for the `check.local` name returns the IPv6 address `2001:db8::15:600d` in the form of an `AAAA` record. The other two checks, `ntp_v6` and `ntp_v4` use the `ntpdate` CLI utility to determine if a date is returned by the NTP service.
 
-### Starting the service
+### Starting services
 
 To finish up, we need to start our services. For this example we assume that both services as well as [Cabourotte] are run using [systemd] while `anycastd` is run directly for the purposes of this example.
 
@@ -135,12 +151,55 @@ $ systemctl start dns.service ntp.service cabourotte.service
 After which we can start `anycastd` itself.
 
 ```sh
-$ anycastd
-[2024-01-09T16:20:00Z INFO anycastd] Reading configuration from /etc/anycastd/config.toml.
-...
+$ anycastd run
+2024-03-25T15:17:23.783539Z [info     ] Reading configuration from /etc/anycastd/config.toml. config_path=/etc/anycastd/config.toml
+2024-03-25T15:17:23.785613Z [info     ] Starting service "dns".      service_health_checks=['dns'] service_healthy=False service_name=dns service_prefixes=['2001:db8::b19:bad:53', '203.0.113.53']
+2024-03-25T15:17:23.785613Z [info     ] Starting service "ntp".      service_health_checks=['ntp_v4', 'ntp_v6'] service_healthy=False service_name=ntp service_prefixes=['2001:db8::123:7e11:713e', '203.0.113.123']
+2024-03-25T15:17:23.797760Z [info     ] Service "dns" is now considered healthy, announcing related prefixes. service_health_checks=['dns'] service_healthy=True service_name=dns service_prefixes=['2001:db8::b19:bad:53', '203.0.113.53']
+2024-03-25T15:17:23.812260Z [info     ] Service "ntp" is now considered healthy, announcing related prefixes. service_health_checks=['ntp_v4', 'ntp_v6'] service_healthy=True service_name=ntp service_prefixes=['2001:db8::123:7e11:713e', '203.0.113.123']
 ```
 
-...
+`anycastd` will execute the health checks and, since all of them pass, announce the configured service IPs, which we can verify by looking at the new [FRRouting] running configuration.
+
+```diff
+@@ -7,9 +7,11 @@
+  neighbor eth0 interface peer-group unnumbered
+  !
+  address-family ipv4 unicast
++  network 203.0.113.53/32
+   redistribute static
+  !
+  address-family ipv6 unicast
++  network 2001:db8::b19:bad:53/128
+   redistribute static
+   neighbor fabric activate
+   neighbor fabric nexthop-local unchanged
+@@ -22,9 +24,11 @@
+  neighbor eth1 interface peer-group unnumbered
+  !
+  address-family ipv4 unicast
++  network 203.0.113.123/32
+   redistribute static
+  !
+  address-family ipv6 unicast
++  network 2001:db8::123:7e11:713e/128
+   redistribute static
+   neighbor fabric activate
+   neighbor fabric nexthop-local unchanged
+```
+
+### Stopping services
+
+`anycastd` will keep prefixes announced as long as health checks pass.
+To stop announcing prefixes, even though the underlying services are healthy, for example to perform maintenance,
+simply stop `anycastd`, causing all service prefixes to be denounced.
+
+```sh
+^C
+2024-03-25T15:20:29.738135Z [info     ] Received SIGINT, terminating.
+2024-03-25T15:20:29.817023Z [info     ] Service "dns" terminated.    service=dns
+2024-03-25T15:20:29.819003Z [info     ] Service "ntp" terminated.    service=ntp
+```
 
 ## Services
 
