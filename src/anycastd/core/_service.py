@@ -64,7 +64,7 @@ class Service:
         self._log = logger.bind(
             service_name=self.name,
             service_prefixes=[str(prefix.prefix) for prefix in self.prefixes],
-            service_health_checks=list(self.health_checks),
+            service_health_checks=[check.name for check in self.health_checks],
         )
 
     @property
