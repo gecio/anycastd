@@ -138,7 +138,7 @@ command-checks:
 
 This sets up two fairly rudimentary health checks. The first renders healthy if a request to the DNS service for the `check.local` name returns the IPv6 address `2001:db8::15:600d` in the form of an `AAAA` record. The other two checks, `ntp_v6` and `ntp_v4` use the `ntpdate` CLI utility to determine if a date is returned by the NTP service.
 
-### Starting the service
+### Starting services
 
 To finish up, we need to start our services. For this example we assume that both services as well as [Cabourotte] are run using [systemd] while `anycastd` is run directly for the purposes of this example.
 
@@ -186,6 +186,19 @@ $ anycastd run
    redistribute static
    neighbor fabric activate
    neighbor fabric nexthop-local unchanged
+```
+
+### Stopping services
+
+`anycastd` will keep prefixes announced as long as health checks pass.
+To stop announcing prefixes, even though the underlying services are healthy, for example to perform maintenance,
+simply stop `anycastd`, causing all service prefixes to be denounced.
+
+```sh
+^C
+2024-03-25T15:20:29.738135Z [info     ] Received SIGINT, terminating.
+2024-03-25T15:20:29.817023Z [info     ] Service "dns" terminated.    service=dns
+2024-03-25T15:20:29.819003Z [info     ] Service "ntp" terminated.    service=ntp
 ```
 
 ## Services
