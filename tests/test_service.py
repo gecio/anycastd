@@ -305,7 +305,7 @@ async def test_run_coro_cancellation_logs_termination(example_service, mocker):
 
     assert (
         logs[0]["event"]
-        == f"Coroutine for service {example_service.name} was cancelled."
+        == f'Coroutine for service "{example_service.name}" was cancelled.'
     )
     assert logs[0]["log_level"] == "debug"
     assert logs[0]["service_name"] == example_service.name
