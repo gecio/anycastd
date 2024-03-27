@@ -13,7 +13,7 @@ def example_service(ipv4_example_network, ipv6_example_network):
     return Service(
         name="Example Service",
         prefixes=(DummyPrefix(ipv4_example_network), DummyPrefix(ipv6_example_network)),
-        health_checks=(DummyHealthcheck(), DummyHealthcheck()),
+        health_checks=(DummyHealthcheck(name="dummy1"), DummyHealthcheck("dummy2")),
     )
 
 
@@ -138,6 +138,25 @@ async def test_run_updates_health_state_when_changed(
     assert example_service_w_mock_prefixes.healthy is True
 
 
+async def test_run_logs_info_event(example_service):
+    """When run, an info event is logged."""
+    example_service._terminate = True
+
+    with capture_logs() as logs:
+        await example_service.run()
+
+    assert logs[0]["event"] == f'Starting service "{example_service.name}".'
+    assert logs[0]["log_level"] == "info"
+    assert logs[0]["service_name"] == example_service.name
+    assert logs[0]["service_healthy"] == example_service.healthy
+    assert logs[0]["service_health_checks"] == [
+        check.name for check in example_service.health_checks
+    ]
+    assert logs[0]["service_prefixes"] == [
+        str(prefix.prefix) for prefix in example_service.prefixes
+    ]
+
+
 async def test_all_checks_healthy_true_when_all_checks_healthy(
     example_service_w_mock_checks,
 ):
@@ -240,6 +259,12 @@ def test_change_of_service_health_is_logged(example_service, new_health_status: 
     assert logs[0]["log_level"] == "info"
     assert logs[0]["service_name"] == example_service.name
     assert logs[0]["service_healthy"] == new_health_status
+    assert logs[0]["service_health_checks"] == [
+        check.name for check in example_service.health_checks
+    ]
+    assert logs[0]["service_prefixes"] == [
+        str(prefix.prefix) for prefix in example_service.prefixes
+    ]
 
 
 @pytest.mark.parametrize("current_health_status", [True, False])
@@ -305,7 +330,7 @@ async def test_run_coro_cancellation_logs_termination(example_service, mocker):
 
     assert (
         logs[0]["event"]
-        == f"Coroutine for service {example_service.name} was cancelled."
+        == f'Coroutine for service "{example_service.name}" was cancelled.'
     )
     assert logs[0]["log_level"] == "debug"
     assert logs[0]["service_name"] == example_service.name

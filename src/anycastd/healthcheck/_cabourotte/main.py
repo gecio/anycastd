@@ -29,21 +29,21 @@ class CabourotteHealthcheck:
 
     async def _get_status(self) -> bool:
         """Get the current status of the check as reported by cabourotte."""
-        log = logger.bind(name=self.name, url=self.url, interval=self.interval)
+        log = logger.bind(name=self.name, url=self.url, interval=str(self.interval))
 
-        log.debug("Cabourotte health check %s awaiting check result.", self.name)
+        log.debug('Cabourotte health check "%s" awaiting check result.', self.name)
         try:
             result = await get_result(self.name, url=self.url)
         except CabourotteCheckNotFoundError as exc:
             log.error(
-                "Cabourotte health check %s does not exist, "
+                'Cabourotte health check "%s" does not exist, '
                 "returning an unhealthy status.",
                 self.name,
                 exc_info=exc,
             )
             return False
         log.debug(
-            "Cabourotte health check %s received check result.",
+            'Cabourotte health check "%s" received check result.',
             self.name,
             result=result,
         )

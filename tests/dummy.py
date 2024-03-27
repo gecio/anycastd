@@ -1,10 +1,14 @@
+from dataclasses import dataclass
 from ipaddress import IPv4Network, IPv6Network
 
 from anycastd.prefix import Prefix
 
 
+@dataclass
 class DummyHealthcheck:
     """A dummy healthcheck to test the abstract base class."""
+
+    name: str
 
     async def is_healthy(self) -> bool:
         """Always healthy."""

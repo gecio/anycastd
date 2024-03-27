@@ -123,8 +123,8 @@ async def test_get_status_logs_error_if_check_does_not_exist(mocker: MockerFixtu
         await healthcheck._get_status()
 
     assert (
-        logs[1]["event"]
-        == "Cabourotte health check test does not exist, returning an unhealthy status."
+        logs[1]["event"] == 'Cabourotte health check "test" does not exist, '
+        "returning an unhealthy status."
     )
     assert logs[1]["log_level"] == "error"
     assert logs[1]["exc_info"] == exc
