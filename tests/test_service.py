@@ -13,7 +13,7 @@ def example_service(ipv4_example_network, ipv6_example_network):
     return Service(
         name="Example Service",
         prefixes=(DummyPrefix(ipv4_example_network), DummyPrefix(ipv6_example_network)),
-        health_checks=(DummyHealthcheck(), DummyHealthcheck()),
+        health_checks=(DummyHealthcheck(name="dummy1"), DummyHealthcheck("dummy2")),
     )
 
 
