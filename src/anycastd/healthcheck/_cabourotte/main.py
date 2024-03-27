@@ -29,7 +29,7 @@ class CabourotteHealthcheck:
 
     async def _get_status(self) -> bool:
         """Get the current status of the check as reported by cabourotte."""
-        log = logger.bind(name=self.name, url=self.url, interval=self.interval)
+        log = logger.bind(name=self.name, url=self.url, interval=str(self.interval))
 
         log.debug('Cabourotte health check "%s" awaiting check result.', self.name)
         try:
