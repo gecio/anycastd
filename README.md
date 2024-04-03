@@ -252,6 +252,10 @@ Amongst others, it provides a BGP implementation that can be used to announce BG
 | _vrf_                      | A VRF to create the prefix in. If omitted, the default VRF is used. | `None`           | `EDGE`                                                                   |
 | _vtysh_                    | The path to the vtysh binary used to configure FRRouting.           | `/usr/bin/vtysh` | `/usr/local/bin/vtysh`                                                   |
 
+##### Supported Versions
+
+While CI integration tests only target the latest version of FRRouting, we aim to support releases made within the last 6 months at minimum. `anycastd` is known to work with versions starting from `7.3.1`, although older versions are likely to work as well.
+
 ### Health Checks
 
 Assessments on individual components constituting the service to ascertain the overall operational status of the service.
