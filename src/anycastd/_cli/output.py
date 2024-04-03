@@ -18,9 +18,7 @@ def print_error(msg: str | Exception, *, exit_code: ExitCode) -> NoReturn:
     ...
 
 
-def print_error(
-    msg: str | Exception, *, exit_code: ExitCode | None = None
-) -> None | NoReturn:  # noqa: RUF020
+def print_error(msg: str | Exception, *, exit_code: ExitCode | None = None) -> None:
     """Print an error message to stderr and optionally exit.
 
     Args:
@@ -42,7 +40,6 @@ def print_error(
 
     if exit_code is not None:
         raise typer.Exit(exit_code)
-    return None
 
 
 def _get_rich_console(*, stderr: bool = False) -> Console:
