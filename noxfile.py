@@ -9,7 +9,7 @@ PYTHON = ["3.11", "3.12"] if not CI else None
 SESSIONS = ["ruff", "mypy", "lockfile", "pytest"]
 EXTERNAL_DEPENDENCY_MARKERS = ["frrouting_daemon_required"]
 
-FRR_LATEST_MAJOR_VERSION = "9.0.2"
+FRR_LATEST_MAJOR_VERSION = "9.1.0"
 
 nox.options.sessions = SESSIONS
 os.environ.update({"PDM_IGNORE_SAVED_PYTHON": "1"})
