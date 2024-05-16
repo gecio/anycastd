@@ -145,7 +145,7 @@ def frr_container_vtysh(frr_container_name):
     """Create a FRRouting container and return a Vtysh instance to it.
 
     Spins up a FRRouting container with basic configuration, waits for all FRR daemons
-    to be up and returns a Vtysh intance configured to run commands in the container.
+    to be up and returns a Vtysh instance configured to run commands in the container.
     """
     container = DockerContainer(FRR_DOCKER_IMAGE)
     container.with_name(frr_container_name)
