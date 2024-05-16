@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import subprocess
 from collections.abc import Callable
@@ -8,9 +9,15 @@ from ipaddress import IPv4Network
 from pathlib import Path
 
 import pytest
+import stamina
 from anycastd.prefix import VRF
+from testcontainers.core.container import DockerContainer
 
 from tests.conftest import _IP_Prefix
+
+FRR_DOCKER_IMAGE = "quay.io/frrouting/frr:{}".format(
+    os.environ.get("FRR_VERSION", "latest")
+)
 
 
 def get_afi(prefix: _IP_Prefix) -> str:
@@ -122,6 +129,63 @@ def watchfrr_all_daemons_up(vtysh: Vtysh) -> bool:
     return all(
         "Up" in daemon[1] for daemon in re_daemon_status.findall(watchfrr_status)
     )
+
+
+def wait_for_frr_daemons(vtysh) -> None:
+    """Wait for all FRR daemons to be up.
+
+    Parses the output of `show watchfrr` and returns once all daemons are up.
+    If the daemons are not up after 60 seconds, an AssertionError is raised.
+
+    Starting with FRR 8.3, the output looks somewhat like this:
+    ```
+    watchfrr global phase: Idle
+    Restart Command: "/usr/lib/frr/watchfrr.sh restart %s"
+    Start Command: "/usr/lib/frr/watchfrr.sh start %s"
+    Stop Command: "/usr/lib/frr/watchfrr.sh stop %s"
+    Min Restart Interval: 60
+    Max Restart Interval: 600
+    Restart Timeout: 20
+     zebra                Up
+     bgpd                 Up
+     staticd              Up
+    ```
+    """
+    re_daemon_status = re.compile(
+        r"^\s{2}(?P<daemon>\w+)\s+(?P<status>\w+)$", re.MULTILINE
+    )
+    for attempt in stamina.retry_context(on=AssertionError, wait_max=0.1, timeout=60):
+        with attempt:
+            watchfrr_status = vtysh("show watchfrr").stdout
+            assert all(
+                "Up" in daemon[1]
+                for daemon in re_daemon_status.findall(watchfrr_status)
+            )
+
+
+@pytest.fixture(scope="module")
+def frr_container_name() -> str:
+    return "frrouting-integration-tests"
+
+
+@pytest.fixture(scope="module")
+def frr_container_vtysh(frr_container_name):
+    """Create a FRRouting container and return a Vtysh instance to it.
+
+    Spins up a FRRouting container with basic configuration, waits for all FRR daemons
+    to be up and returns a Vtysh intance configured to run commands in the container.
+    """
+    container = DockerContainer(FRR_DOCKER_IMAGE)
+    container.with_name(frr_container_name)
+    container.with_exposed_ports(2616, 2616)
+    container.with_volume_mapping("./files/daemons", "/etc/frr/daemons", "ro")
+    container.with_volume_mapping("./files/vtysh.conf", "/etc/frr/vtysh.conf", "ro")
+    container.with_volume_mapping("./files/frr.conf", "/etc/frr/frr.conf", "ro")
+
+    with container:
+        vtysh = Vtysh(container=frr_container_name)
+        wait_for_frr_daemons(vtysh)
+        yield vtysh
 
 
 @pytest.fixture
