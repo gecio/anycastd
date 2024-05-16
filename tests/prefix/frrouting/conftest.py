@@ -189,6 +189,12 @@ def frr_container_vtysh(frr_container_name):
 
 
 @pytest.fixture
+def frr_container_default_config(frr_container_vtysh):
+    """Load the default FRR configuration."""
+    frr_container_vtysh("copy /etc/frr/frr.conf running-config")
+
+
+@pytest.fixture
 def frr_container(docker_services, docker_compose_project_name) -> str:
     """Create the FRR container and return its name.
 

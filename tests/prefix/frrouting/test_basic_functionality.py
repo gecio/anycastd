@@ -10,17 +10,15 @@ pytestmark = [pytest.mark.integration, pytest.mark.frrouting_daemon_required]
 
 
 @pytest.fixture
-def docker_executor(frr_container) -> DockerExecutor:
-    """A docker executor for the FRR container.
-
-    The FRR container is implicitly started by requesting the frr_container fixture.
-    """
-    return DockerExecutor(docker=Path("/usr/bin/docker"), container=frr_container)
+def docker_executor(frr_container_name) -> DockerExecutor:
+    """A docker executor for the FRR container."""
+    return DockerExecutor(docker=Path("/usr/bin/docker"), container=frr_container_name)
 
 
 @skip_without_docker
 async def test_announce_adds_bgp_network(  # noqa: PLR0913
-    vtysh,
+    frr_container_vtysh,
+    frr_container_default_config,
     docker_executor,
     example_networks,
     example_vrfs,
@@ -32,16 +30,21 @@ async def test_announce_adds_bgp_network(  # noqa: PLR0913
         example_networks, vrf=example_vrfs, executor=docker_executor
     )
     if example_vrfs:
-        vtysh(f"router bgp {example_asn} vrf {example_vrfs}", configure_terminal=True)
+        frr_container_vtysh(
+            f"router bgp {example_asn} vrf {example_vrfs}", configure_terminal=True
+        )
 
     await prefix.announce()
 
-    assert bgp_prefix_configured(prefix.prefix, vtysh=vtysh, vrf=example_vrfs)
+    assert bgp_prefix_configured(
+        prefix.prefix, vtysh=frr_container_vtysh, vrf=example_vrfs
+    )
 
 
 @skip_without_docker
 async def test_denounce_removes_bgp_network(  # noqa: PLR0913
-    vtysh,
+    frr_container_vtysh,
+    frr_container_default_config,
     docker_executor,
     example_networks,
     example_vrfs,
@@ -53,11 +56,15 @@ async def test_denounce_removes_bgp_network(  # noqa: PLR0913
     prefix = FRRoutingPrefix(
         example_networks, vrf=example_vrfs, executor=docker_executor
     )
-    add_bgp_prefix(prefix.prefix, asn=example_asn, vtysh=vtysh, vrf=example_vrfs)
+    add_bgp_prefix(
+        prefix.prefix, asn=example_asn, vtysh=frr_container_vtysh, vrf=example_vrfs
+    )
 
     await prefix.denounce()
 
-    assert not bgp_prefix_configured(prefix.prefix, vtysh=vtysh, vrf=example_vrfs)
+    assert not bgp_prefix_configured(
+        prefix.prefix, vtysh=frr_container_vtysh, vrf=example_vrfs
+    )
 
 
 @skip_without_docker
@@ -68,15 +75,20 @@ async def test_denounce_without_being_announced_does_not_raise(  # noqa: PLR0913
     example_asn,
     add_bgp_prefix,
     remove_bgp_prefix,
-    vtysh,
+    frr_container_vtysh,
+    frr_container_default_config,
 ):
     """Denouncing prefixes that are not announced does nothing."""
     prefix = FRRoutingPrefix(
         example_networks, vrf=example_vrfs, executor=docker_executor
     )
     # These two calls are there to ensure that a top level BGP configuration is present.
-    add_bgp_prefix(prefix.prefix, asn=example_asn, vtysh=vtysh, vrf=example_vrfs)
-    remove_bgp_prefix(prefix.prefix, asn=example_asn, vtysh=vtysh, vrf=example_vrfs)
+    add_bgp_prefix(
+        prefix.prefix, asn=example_asn, vtysh=frr_container_vtysh, vrf=example_vrfs
+    )
+    remove_bgp_prefix(
+        prefix.prefix, asn=example_asn, vtysh=frr_container_vtysh, vrf=example_vrfs
+    )
 
     await prefix.denounce()
 
@@ -84,7 +96,8 @@ async def test_denounce_without_being_announced_does_not_raise(  # noqa: PLR0913
 @skip_without_docker
 @pytest.mark.parametrize("announced", [True, False])
 async def test_announcement_state_reported_correctly(  # noqa: PLR0913
-    vtysh,
+    frr_container_vtysh,
+    frr_container_default_config,
     docker_executor,
     example_networks,
     example_vrfs,
@@ -97,6 +110,8 @@ async def test_announcement_state_reported_correctly(  # noqa: PLR0913
         example_networks, vrf=example_vrfs, executor=docker_executor
     )
     if announced:
-        add_bgp_prefix(prefix.prefix, asn=example_asn, vtysh=vtysh, vrf=example_vrfs)
+        add_bgp_prefix(
+            prefix.prefix, asn=example_asn, vtysh=frr_container_vtysh, vrf=example_vrfs
+        )
 
     assert await prefix.is_announced() == announced
