@@ -5,7 +5,7 @@
 groups = ["default", "jupyter", "lint", "test", "type_stubs", "typecheck"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:33769de41b66e41db5cac7ae59a0213378172f16d05a7f47255030f192999b72"
+content_hash = "sha256:eed6133ffcadbb1544a5ee2f6c6ab92f0b601df162eddf441216218c747d1fb0"
 
 [[package]]
 name = "annotated-types"
@@ -1895,6 +1895,19 @@ files = [
 ]
 
 [[package]]
+name = "stamina"
+version = "24.2.0"
+requires_python = ">=3.8"
+summary = "Production-grade retries made easy."
+dependencies = [
+    "tenacity",
+]
+files = [
+    {file = "stamina-24.2.0-py3-none-any.whl", hash = "sha256:4dbd8076d2cb4e228046833e4507af3406cc31b9b6046e8a6729ffde934b2526"},
+    {file = "stamina-24.2.0.tar.gz", hash = "sha256:8db72126f2342e428b153cbcf837f8a90f89b783aa55e19d4a17193116ee35ee"},
+]
+
+[[package]]
 name = "structlog"
 version = "24.1.0"
 requires_python = ">=3.8"
@@ -1902,6 +1915,16 @@ summary = "Structured Logging for Python"
 files = [
     {file = "structlog-24.1.0-py3-none-any.whl", hash = "sha256:3f6efe7d25fab6e86f277713c218044669906537bb717c1807a09d46bca0714d"},
     {file = "structlog-24.1.0.tar.gz", hash = "sha256:41a09886e4d55df25bdcb9b5c9674bccfab723ff43e0a86a1b7b236be8e57b16"},
+]
+
+[[package]]
+name = "tenacity"
+version = "8.3.0"
+requires_python = ">=3.8"
+summary = "Retry code until it succeeds"
+files = [
+    {file = "tenacity-8.3.0-py3-none-any.whl", hash = "sha256:3649f6443dbc0d9b01b9d8020a9c4ec7a1ff5f6f3c6c8a036ef371f573fe9185"},
+    {file = "tenacity-8.3.0.tar.gz", hash = "sha256:953d4e6ad24357bceffbc9707bc74349aca9d245f68eb65419cf0c249a1949a2"},
 ]
 
 [[package]]

@@ -88,6 +88,7 @@ test = [
     "tomli-w>=1.0.0",
     "hypothesis>=6.99.5",
     "testcontainers>=4.4.1",
+    "stamina>=24.2.0",
 ]
 jupyter = [
     "jupyter",
