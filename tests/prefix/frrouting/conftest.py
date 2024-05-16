@@ -147,12 +147,19 @@ def frr_container_vtysh(frr_container_name):
     Spins up a FRRouting container with basic configuration, waits for all FRR daemons
     to be up and returns a Vtysh instance configured to run commands in the container.
     """
+    files_dir = Path(__file__).parent / "files"
     container = DockerContainer(FRR_DOCKER_IMAGE)
     container.with_name(frr_container_name)
     container.with_exposed_ports(2616, 2616)
-    container.with_volume_mapping("./files/daemons", "/etc/frr/daemons", "ro")
-    container.with_volume_mapping("./files/vtysh.conf", "/etc/frr/vtysh.conf", "ro")
-    container.with_volume_mapping("./files/frr.conf", "/etc/frr/frr.conf", "ro")
+    container.with_volume_mapping(
+        (files_dir / "daemons").as_posix(), "/etc/frr/daemons", "ro"
+    )
+    container.with_volume_mapping(
+        (files_dir / "vtysh.conf").as_posix(), "/etc/frr/vtysh.conf", "ro"
+    )
+    container.with_volume_mapping(
+        (files_dir / "frr.conf").as_posix(), "/etc/frr/frr.conf", "ro"
+    )
 
     with container:
         vtysh = Vtysh(container=frr_container_name)
