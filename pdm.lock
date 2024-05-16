@@ -5,7 +5,7 @@
 groups = ["default", "jupyter", "lint", "test", "type_stubs", "typecheck"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:eed6133ffcadbb1544a5ee2f6c6ab92f0b601df162eddf441216218c747d1fb0"
+content_hash = "sha256:32a5a279677fb4160054e109ddd6db6e584a322fa5de8fcca6bb56a1ae256f21"
 
 [[package]]
 name = "annotated-types"
@@ -1406,20 +1406,6 @@ dependencies = [
 files = [
     {file = "pytest-cov-4.1.0.tar.gz", hash = "sha256:3904b13dfbfec47f003b8e77fd5b589cd11904a21ddf1ab38a64f204d6a10ef6"},
     {file = "pytest_cov-4.1.0-py3-none-any.whl", hash = "sha256:6ba70b9e97e69fcc3fb45bfeab2d0a138fb65c4d0d6a41ef33983ad114be8c3a"},
-]
-
-[[package]]
-name = "pytest-docker"
-version = "3.1.1"
-requires_python = ">=3.8"
-summary = "Simple pytest fixtures for Docker and Docker Compose based tests"
-dependencies = [
-    "attrs>=19.2.0",
-    "pytest<9.0,>=4.0",
-]
-files = [
-    {file = "pytest-docker-3.1.1.tar.gz", hash = "sha256:2371524804a752aaa766c79b9eee8e634534afddb82597f3b573da7c5d6ffb5f"},
-    {file = "pytest_docker-3.1.1-py3-none-any.whl", hash = "sha256:fd0d48d6feac41f62acbc758319215ec9bb805c2309622afb07c27fa5c5ae362"},
 ]
 
 [[package]]

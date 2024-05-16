@@ -103,34 +103,6 @@ class Vtysh:
             self.context.pop()
 
 
-def watchfrr_all_daemons_up(vtysh: Vtysh) -> bool:
-    """Return whether all FRR daemons are up.
-
-    Parses the output of `show watchfrr` and returns whether all daemons are up.
-
-    Starting with FRR 8.3, the output looks somewhat like this:
-    ```
-    watchfrr global phase: Idle
-    Restart Command: "/usr/lib/frr/watchfrr.sh restart %s"
-    Start Command: "/usr/lib/frr/watchfrr.sh start %s"
-    Stop Command: "/usr/lib/frr/watchfrr.sh stop %s"
-    Min Restart Interval: 60
-    Max Restart Interval: 600
-    Restart Timeout: 20
-     zebra                Up
-     bgpd                 Up
-     staticd              Up
-    ```
-    """
-    re_daemon_status = re.compile(
-        r"^\s{2}(?P<daemon>\w+)\s+(?P<status>\w+)$", re.MULTILINE
-    )
-    watchfrr_status = vtysh("show watchfrr").stdout
-    return all(
-        "Up" in daemon[1] for daemon in re_daemon_status.findall(watchfrr_status)
-    )
-
-
 def wait_for_frr_daemons(vtysh) -> None:
     """Wait for all FRR daemons to be up.
 
@@ -192,35 +164,6 @@ def frr_container_vtysh(frr_container_name):
 def frr_container_default_config(frr_container_vtysh):
     """Load the default FRR configuration."""
     frr_container_vtysh("copy /etc/frr/frr.conf running-config")
-
-
-@pytest.fixture
-def frr_container(docker_services, docker_compose_project_name) -> str:
-    """Create the FRR container and return its name.
-
-    Spins up the FRR container using the docker_services fixture from
-    pytest-docker, waits for all FRR services to be ready, and returns the name
-    of the container.
-    """
-    name = f"{docker_compose_project_name}-frrouting-1"
-
-    vtysh = Vtysh(container=name)
-    docker_services.wait_until_responsive(
-        timeout=60,
-        pause=0.1,
-        check=lambda: watchfrr_all_daemons_up(vtysh),
-    )
-
-    return f"{docker_compose_project_name}-frrouting-1"
-
-
-@pytest.fixture
-def vtysh(frr_container) -> Vtysh:
-    """Return a Vtysh instance.
-
-    The FRR container is implicitly started by requesting the frr_container fixture.
-    """
-    return Vtysh(container=frr_container)
 
 
 @pytest.fixture
