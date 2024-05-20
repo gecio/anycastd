@@ -16,7 +16,7 @@ from testcontainers.core.container import DockerContainer
 from tests.conftest import _IP_Prefix
 
 FRR_DOCKER_IMAGE = "quay.io/frrouting/frr:{}".format(
-    os.environ.get("FRR_VERSION", "latest")
+    os.environ.get("FRR_VERSION", "master")
 )
 
 
