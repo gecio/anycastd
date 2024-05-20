@@ -150,7 +150,7 @@ def frr_container_vtysh(frr_container_name):
     to be up and returns a Vtysh instance configured to run commands in the container.
     """
     files_dir = Path(__file__).parent / "files"
-    container = DockerContainer(FRR_DOCKER_IMAGE)
+    container = DockerContainer(FRR_DOCKER_IMAGE, privileged=True)
     container.with_name(frr_container_name)
     container.with_exposed_ports(2616, 2616)
     container.with_volume_mapping(
