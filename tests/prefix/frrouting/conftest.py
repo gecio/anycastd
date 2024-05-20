@@ -126,7 +126,9 @@ def wait_for_frr_daemons(vtysh) -> None:
     re_daemon_status = re.compile(
         r"^\s{2}(?P<daemon>\w+)\s+(?P<status>\w+)$", re.MULTILINE
     )
-    for attempt in stamina.retry_context(on=AssertionError, wait_max=0.1, timeout=60):
+    for attempt in stamina.retry_context(
+        on=AssertionError, wait_max=0.1, attempts=None, timeout=60
+    ):
         with attempt:
             watchfrr_status = vtysh("show watchfrr").stdout
             assert all(
