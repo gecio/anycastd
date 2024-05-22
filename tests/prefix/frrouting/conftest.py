@@ -1,16 +1,21 @@
-import json
+import os
 import re
 import subprocess
 from collections.abc import Callable
-from contextlib import suppress
 from dataclasses import dataclass, field
 from ipaddress import IPv4Network
 from pathlib import Path
 
 import pytest
+import stamina
 from anycastd.prefix import VRF
+from testcontainers.core.container import DockerContainer
 
 from tests.conftest import _IP_Prefix
+
+FRR_DOCKER_IMAGE = "quay.io/frrouting/frr:{}".format(
+    os.environ.get("FRR_VERSION", "master")
+)
 
 
 def get_afi(prefix: _IP_Prefix) -> str:
@@ -96,10 +101,11 @@ class Vtysh:
             self.context.pop()
 
 
-def watchfrr_all_daemons_up(vtysh: Vtysh) -> bool:
-    """Return whether all FRR daemons are up.
+def wait_for_frr_daemons(vtysh) -> None:
+    """Wait for all FRR daemons to be up.
 
-    Parses the output of `show watchfrr` and returns whether all daemons are up.
+    Parses the output of `show watchfrr` and returns once all daemons are up.
+    If the daemons are not up after 60 seconds, an AssertionError is raised.
 
     Starting with FRR 8.3, the output looks somewhat like this:
     ```
@@ -118,39 +124,61 @@ def watchfrr_all_daemons_up(vtysh: Vtysh) -> bool:
     re_daemon_status = re.compile(
         r"^\s{2}(?P<daemon>\w+)\s+(?P<status>\w+)$", re.MULTILINE
     )
-    watchfrr_status = vtysh("show watchfrr").stdout
-    return all(
-        "Up" in daemon[1] for daemon in re_daemon_status.findall(watchfrr_status)
+    for attempt in stamina.retry_context(
+        on=AssertionError, wait_max=0.1, attempts=None, timeout=60
+    ):
+        with attempt:
+            watchfrr_status = vtysh("show watchfrr").stdout
+            assert all(
+                "Up" in daemon[1]
+                for daemon in re_daemon_status.findall(watchfrr_status)
+            )
+
+
+@pytest.fixture(scope="module")
+def frr_container_name() -> str:
+    return "frrouting-integration-tests"
+
+
+@pytest.fixture(scope="module")
+def frr_container_vtysh(frr_container_name):
+    """Create a FRRouting container and return a Vtysh instance to it.
+
+    Spins up a FRRouting container with basic configuration, waits for all FRR daemons
+    to be up and returns a Vtysh instance configured to run commands in the container.
+    """
+    files_dir = Path(__file__).parent / "files"
+    container = DockerContainer(FRR_DOCKER_IMAGE, privileged=True)
+    container.with_name(frr_container_name)
+    container.with_exposed_ports(2616, 2616)
+    container.with_volume_mapping(
+        (files_dir / "daemons").as_posix(), "/etc/frr/daemons", "ro"
     )
+    container.with_volume_mapping(
+        (files_dir / "vtysh.conf").as_posix(), "/etc/frr/vtysh.conf", "ro"
+    )
+    container.with_volume_mapping(
+        (files_dir / "frr.conf").as_posix(), "/etc/frr/frr.conf", "ro"
+    )
+
+    with container:
+        vtysh = Vtysh(container=frr_container_name)
+        wait_for_frr_daemons(vtysh)
+        yield vtysh
 
 
 @pytest.fixture
-def frr_container(docker_services, docker_compose_project_name) -> str:
-    """Create the FRR container and return its name.
+def frr_container_reset_bgp_config(frr_container_vtysh):
+    """Reset the BGP configuration."""
+    asn = 65536
 
-    Spins up the FRR container using the docker_services fixture from
-    pytest-docker, waits for all FRR services to be ready, and returns the name
-    of the container.
-    """
-    name = f"{docker_compose_project_name}-frrouting-1"
+    re_bgp_configs = re.compile(r"^router bgp .*$", re.MULTILINE)
+    for bgp_config in re_bgp_configs.findall(frr_container_vtysh("sh run").stdout):
+        frr_container_vtysh(f"no {bgp_config}", configure_terminal=True)
 
-    vtysh = Vtysh(container=name)
-    docker_services.wait_until_responsive(
-        timeout=60,
-        pause=0.1,
-        check=lambda: watchfrr_all_daemons_up(vtysh),
+    frr_container_vtysh(
+        "bgp router-id 1.3.3.7", configure_terminal=True, context=[f"router bgp {asn}"]
     )
-
-    return f"{docker_compose_project_name}-frrouting-1"
-
-
-@pytest.fixture
-def vtysh(frr_container) -> Vtysh:
-    """Return a Vtysh instance.
-
-    The FRR container is implicitly started by requesting the frr_container fixture.
-    """
-    return Vtysh(container=frr_container)
 
 
 @pytest.fixture
@@ -158,23 +186,11 @@ def bgp_prefix_configured() -> Callable[[_IP_Prefix, Vtysh, VRF], bool]:
     """A callable that can be used to check if a BGP prefix is configured."""
 
     def _(prefix: _IP_Prefix, vtysh: Vtysh, vrf: VRF = None) -> bool:
-        family = get_afi(prefix)
-        cmd = (
-            f"show ip bgp vrf {vrf} {family} unicast {prefix} json"
-            if vrf
-            else f"show ip bgp {family} unicast {prefix} json"
+        running_config = vtysh("show running-config").stdout
+        return (
+            re.search(rf"^  network {prefix}$", running_config, re.MULTILINE)
+            is not None
         )
-        show_prefix = vtysh(cmd, configure_terminal=False, context=[]).stdout
-        prefix_info = json.loads(show_prefix)
-
-        with suppress(KeyError):
-            paths = prefix_info["paths"]
-            origin = paths[0]["origin"]
-            local = paths[0]["local"]
-            if origin == "IGP" and local is True:
-                return True
-
-        return False
 
     return _
 

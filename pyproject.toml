@@ -83,10 +83,11 @@ test = [
     "pytest-asyncio>=0.23.5",
     "pytest-random-order>=1.1.1",
     "respx>=0.20.2",
-    "pytest-docker>=2.0.1",
     "pyfakefs>=5.3.1",
     "tomli-w>=1.0.0",
     "hypothesis>=6.99.5",
+    "testcontainers>=4.4.1",
+    "stamina>=24.2.0",
 ]
 jupyter = [
     "jupyter",
@@ -162,9 +163,7 @@ testpaths = "tests"
 addopts = [
     "--strict-markers",
     "--strict-config",
-    "--random-order",
-    "--container-scope",
-    "function"
+    "--random-order"
 ]
 xfail_strict = true
 markers = [

@@ -9,20 +9,22 @@ pytestmark = [pytest.mark.integration, pytest.mark.frrouting_daemon_required]
 
 @skip_without_docker
 def test_announcing_prefix_that_is_announced_is_successful(  # noqa: PLR0913
-    vtysh,
+    frr_container_vtysh,
+    frr_container_reset_bgp_config,
     example_networks,
     example_vrfs,
     example_asn,
     add_bgp_prefix,
-    remove_bgp_prefix,
 ):
     """
     A prefix can be announced again without error, even if it is already announced.
     """
-    add_bgp_prefix(example_networks, asn=example_asn, vtysh=vtysh, vrf=example_vrfs)
+    add_bgp_prefix(
+        example_networks, asn=example_asn, vtysh=frr_container_vtysh, vrf=example_vrfs
+    )
 
     result = add_bgp_prefix(
-        example_networks, asn=example_asn, vtysh=vtysh, vrf=example_vrfs
+        example_networks, asn=example_asn, vtysh=frr_container_vtysh, vrf=example_vrfs
     )
 
     assert result.returncode == 0
@@ -32,7 +34,8 @@ def test_announcing_prefix_that_is_announced_is_successful(  # noqa: PLR0913
 
 @skip_without_docker
 async def test_denouncing_prefix_that_is_not_announced_returns_expected_rc_and_stdout(  # noqa: PLR0913
-    vtysh,
+    frr_container_vtysh,
+    frr_container_reset_bgp_config,
     example_networks,
     example_vrfs,
     example_asn,
@@ -43,10 +46,16 @@ async def test_denouncing_prefix_that_is_not_announced_returns_expected_rc_and_s
     When denouncing a prefix that is not announced, vtysh exits with a return
     code of 1 and prints an expected error message to stdout.
     """
-    assert not bgp_prefix_configured(example_networks, vtysh=vtysh, vrf=example_vrfs)
+    assert not bgp_prefix_configured(
+        example_networks, vtysh=frr_container_vtysh, vrf=example_vrfs
+    )
 
     result = remove_bgp_prefix(
-        example_networks, asn=example_asn, vtysh=vtysh, vrf=example_vrfs, check=False
+        example_networks,
+        asn=example_asn,
+        vtysh=frr_container_vtysh,
+        vrf=example_vrfs,
+        check=False,
     )
 
     assert result.returncode == 1
