@@ -1,9 +1,7 @@
-import json
 import os
 import re
 import subprocess
 from collections.abc import Callable
-from contextlib import suppress
 from dataclasses import dataclass, field
 from ipaddress import IPv4Network
 from pathlib import Path
@@ -174,9 +172,7 @@ def frr_container_reset_bgp_config(frr_container_vtysh):
     """Reset the BGP configuration."""
     asn = 65536
 
-    re_bgp_configs = re.compile(
-        r"^router bgp .*$", re.MULTILINE
-    )
+    re_bgp_configs = re.compile(r"^router bgp .*$", re.MULTILINE)
     for bgp_config in re_bgp_configs.findall(frr_container_vtysh("sh run").stdout):
         frr_container_vtysh(f"no {bgp_config}", configure_terminal=True)
 
@@ -190,23 +186,11 @@ def bgp_prefix_configured() -> Callable[[_IP_Prefix, Vtysh, VRF], bool]:
     """A callable that can be used to check if a BGP prefix is configured."""
 
     def _(prefix: _IP_Prefix, vtysh: Vtysh, vrf: VRF = None) -> bool:
-        family = get_afi(prefix)
-        cmd = (
-            f"show ip bgp vrf {vrf} {family} unicast {prefix} json"
-            if vrf
-            else f"show ip bgp {family} unicast {prefix} json"
+        running_config = vtysh("show running-config").stdout
+        return (
+            re.search(rf"^  network {prefix}$", running_config, re.MULTILINE)
+            is not None
         )
-        show_prefix = vtysh(cmd, configure_terminal=False, context=[]).stdout
-        prefix_info = json.loads(show_prefix)
-
-        with suppress(KeyError):
-            paths = prefix_info["paths"]
-            origin = paths[0]["origin"]
-            local = paths[0]["local"]
-            if origin == "IGP" and local is True:
-                return True
-
-        return False
 
     return _
 
