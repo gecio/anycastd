@@ -18,7 +18,7 @@ def docker_executor(frr_container_name) -> DockerExecutor:
 @skip_without_docker
 async def test_announce_adds_bgp_network(  # noqa: PLR0913
     frr_container_vtysh,
-    frr_container_default_config,
+    frr_container_reset_bgp_config,
     docker_executor,
     example_networks,
     example_vrfs,
@@ -44,7 +44,7 @@ async def test_announce_adds_bgp_network(  # noqa: PLR0913
 @skip_without_docker
 async def test_denounce_removes_bgp_network(  # noqa: PLR0913
     frr_container_vtysh,
-    frr_container_default_config,
+    frr_container_reset_bgp_config,
     docker_executor,
     example_networks,
     example_vrfs,
@@ -76,7 +76,7 @@ async def test_denounce_without_being_announced_does_not_raise(  # noqa: PLR0913
     add_bgp_prefix,
     remove_bgp_prefix,
     frr_container_vtysh,
-    frr_container_default_config,
+    frr_container_reset_bgp_config,
 ):
     """Denouncing prefixes that are not announced does nothing."""
     prefix = FRRoutingPrefix(
@@ -97,7 +97,7 @@ async def test_denounce_without_being_announced_does_not_raise(  # noqa: PLR0913
 @pytest.mark.parametrize("announced", [True, False])
 async def test_announcement_state_reported_correctly(  # noqa: PLR0913
     frr_container_vtysh,
-    frr_container_default_config,
+    frr_container_reset_bgp_config,
     docker_executor,
     example_networks,
     example_vrfs,

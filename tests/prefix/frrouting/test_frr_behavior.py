@@ -10,7 +10,7 @@ pytestmark = [pytest.mark.integration, pytest.mark.frrouting_daemon_required]
 @skip_without_docker
 def test_announcing_prefix_that_is_announced_is_successful(  # noqa: PLR0913
     frr_container_vtysh,
-    frr_container_default_config,
+    frr_container_reset_bgp_config,
     example_networks,
     example_vrfs,
     example_asn,
@@ -35,7 +35,7 @@ def test_announcing_prefix_that_is_announced_is_successful(  # noqa: PLR0913
 @skip_without_docker
 async def test_denouncing_prefix_that_is_not_announced_returns_expected_rc_and_stdout(  # noqa: PLR0913
     frr_container_vtysh,
-    frr_container_default_config,
+    frr_container_reset_bgp_config,
     example_networks,
     example_vrfs,
     example_asn,

@@ -170,9 +170,13 @@ def frr_container_vtysh(frr_container_name):
 
 
 @pytest.fixture
-def frr_container_default_config(frr_container_vtysh):
-    """Load the default FRR configuration."""
-    frr_container_vtysh("copy /etc/frr/frr.conf running-config")
+def frr_container_reset_bgp_config(frr_container_vtysh):
+    """Reset the BGP configuration."""
+    asn = 65536
+    frr_container_vtysh(f"no router bgp {asn}", configure_terminal=True)
+    frr_container_vtysh(
+        "bgp router-id 1.3.3.7", configure_terminal=True, context=[f"router bgp {asn}"]
+    )
 
 
 @pytest.fixture
