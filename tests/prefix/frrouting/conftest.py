@@ -173,7 +173,13 @@ def frr_container_vtysh(frr_container_name):
 def frr_container_reset_bgp_config(frr_container_vtysh):
     """Reset the BGP configuration."""
     asn = 65536
-    frr_container_vtysh(f"no router bgp {asn}", configure_terminal=True)
+
+    re_bgp_configs = re.compile(
+        r"^router bgp .*$", re.MULTILINE
+    )
+    for bgp_config in re_bgp_configs.findall(frr_container_vtysh("sh run").stdout):
+        frr_container_vtysh(f"no {bgp_config}", configure_terminal=True)
+
     frr_container_vtysh(
         "bgp router-id 1.3.3.7", configure_terminal=True, context=[f"router bgp {asn}"]
     )
