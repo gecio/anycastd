@@ -295,6 +295,11 @@ For a quick primer on TOML, see [A Quick Tour of TOML](https://toml.io).
       # Options related to the specified check type.
 ```
 
+## Contributing
+
+Contributions of all sizes that improve `anycastd` in any way, be it DX/UX, documentation, performance or other are highly appreciated.
+To get started, please read the [contribution guidelines](.github/CONTRIBUTING.md). Before starting work on a new feature you would like to contribute that may impact simplicity, reliability or performance, please open an issue first.
+
 [Anycast]: https://en.wikipedia.org/wiki/Anycast
 [FRRouting]: https://github.com/FRRouting/frr
 [Cabourotte]: https://github.com/appclacks/cabourotte
