@@ -42,17 +42,13 @@ All tests need to pass before a PR can be merged. Using [nox] to lint your code 
 
 ```sh
 $ nox
-nox > Running session ruff-3.11
+nox > Running session lint-3.11
 ...
 nox > Ran multiple sessions:
-nox > * ruff-3.11: success
-nox > * ruff-3.12: skipped
-nox > * mypy-3.11: success
-nox > * mypy-3.12: skipped
-nox > * lockfile-3.11: success
-nox > * lockfile-3.12: skipped
-nox > * pytest-3.11: success
-nox > * pytest-3.12: skipped
+nox > * lint-3.11: success
+nox > * lint-3.12: skipped
+nox > * test-3.11: success
+nox > * test-3.12: skipped
 ```
 
 [pdm]: https://github.com/pdm-project/pdm
