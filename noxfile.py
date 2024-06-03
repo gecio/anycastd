@@ -6,7 +6,7 @@ import nox
 
 CI = bool(os.getenv("CI"))
 PYTHON = ["3.11", "3.12"] if not CI else None
-SESSIONS = ["lint", "pytest"]
+SESSIONS = ["lint", "test"]
 EXTERNAL_DEPENDENCY_MARKERS = ["frrouting_daemon_required"]
 
 FRR_LATEST_MAJOR_VERSION = "9.1.0"
@@ -67,7 +67,7 @@ def lint(session: nox.Session) -> None:
 
 
 @nox.session(python=PYTHON)
-def pytest(session: nox.Session) -> None:
+def test(session: nox.Session) -> None:
     """Run tests without external dependencies if not running in CI.
 
     This session will only run tests that do not require external dependencies
