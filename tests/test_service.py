@@ -63,7 +63,7 @@ async def test_run_awaits_all_checks(
 
 
 @pytest.mark.parametrize("was_healthy", [True, False])
-async def test_run_announces_all_when_health_state_changes_to_healty(
+async def test_run_announces_all_when_health_state_changes_to_healthy(
     mocker: MockerFixture,
     patch_asyncio_sleep_to_raise,
     example_service_w_mock_prefixes,
@@ -92,7 +92,7 @@ async def test_run_announces_all_when_health_state_changes_to_healty(
 
 
 @pytest.mark.parametrize("was_healthy", [True, False])
-async def test_run_denounces_all_when_health_state_changes_to_unhealty(
+async def test_run_denounces_all_when_health_state_changes_to_unhealthy(
     mocker: MockerFixture,
     patch_asyncio_sleep_to_raise,
     example_service_w_mock_prefixes,

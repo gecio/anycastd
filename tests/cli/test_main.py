@@ -189,7 +189,7 @@ class TestRunCMD:
             ),
         ],
     )
-    def test_log_output_renders_correcly(
+    def test_log_output_renders_correctly(
         self,
         anycastd_cli,
         log_format: str,
