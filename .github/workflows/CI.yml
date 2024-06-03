@@ -19,14 +19,18 @@ env:
 jobs:
   lint:
     runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: "3.11"
+      - run: pip3 install nox
+      - run: nox -s lint
+  test:
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         python_version: ["3.11", "3.12"]
-        nox_session:
-          - ruff
-          - mypy
-          - lockfile
-          - pytest
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
@@ -34,7 +38,7 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - run: pip3 install nox
-      - run: nox -s ${{ matrix.nox_session }}
+      - run: nox -s test
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1
         with:
