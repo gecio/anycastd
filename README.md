@@ -4,6 +4,9 @@
   <a href="https://github.com/gecio/anycastd/actions">
     <img src="https://github.com/gecio/anycastd/workflows/CI/badge.svg" alt="CI status">
   </a>
+  <a href="https://codecov.io/gh/gecio/anycastd">
+    <img src="https://codecov.io/gh/sourcegraph/conc/branch/main/graph/badge.svg?token=DPOGLYZ26N)" alt="code coverage">
+  </a>
   <a href="https://github.com/astral-sh/ruff">
     <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="ruff">
   </a>
