@@ -35,6 +35,10 @@ jobs:
           python-version: ${{ matrix.python_version }}
       - run: pip3 install nox
       - run: nox -s ${{ matrix.nox_session }}
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
   spellcheck:
     runs-on: ubuntu-22.04
     steps:
