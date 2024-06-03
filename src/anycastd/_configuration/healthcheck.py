@@ -36,7 +36,7 @@ def get_type_by_name(name: Name) -> type[HealthcheckConfiguration]:
         name: The name of the healtcheck type.
 
     Returns:
-        The confiuration class for the type of healthcheck.
+        The configuration class for the type of healthcheck.
 
     Raises:
         ValueError: There is no healthcheck type with the given name.
