@@ -48,10 +48,5 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - run: pip3 install codespell
-      - uses: codespell-project/codespell-problem-matcher@v1
       - name: check for typos
-        run: codespell src/ tests/ README.md
+        uses: crate-ci/typos@v1.20.8
