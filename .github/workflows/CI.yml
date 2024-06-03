@@ -27,6 +27,7 @@ jobs:
       - run: pip3 install nox
       - run: nox -s lint
   test:
+    name: test with Python ${{ matrix.python_version }}
     runs-on: ubuntu-22.04
     strategy:
       matrix:
