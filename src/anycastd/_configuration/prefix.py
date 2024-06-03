@@ -38,7 +38,7 @@ def get_type_by_name(name: Name) -> type[PrefixConfiguration]:
         name: The name of the prefix type.
 
     Returns:
-        The confiuration class for the type of prefix.
+        The configuration class for the type of prefix.
 
     Raises:
         ValueError: There is no prefix type with the given name.
