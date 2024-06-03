@@ -172,11 +172,3 @@ def safety(session: nox.Session) -> None:
     session.install("safety")
     session.run("pdm", "export", "-o", "requirements.txt", external=True)
     session.run("safety", "check", "--file=requirements.txt", "--full-report")
-
-
-@nox.session(python=PYTHON)
-def codecov(session: nox.Session) -> None:
-    """Upload codecov coverage data."""
-    session.install("coverage", "codecov")
-    session.run("coverage", "xml", "--fail-under=0")
-    session.run("codecov", "-f", "coverage.xml")
