@@ -16,6 +16,10 @@ concurrency:
 env:
   COLUMNS: 120
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   lint:
     runs-on: ubuntu-22.04
@@ -47,7 +51,7 @@ jobs:
         with:
           files: ./coverage.xml,!./nox
           env_vars: PYTHON
-          token: ${{ secrets.CODECOV_TOKEN }}
+          use_oidc: true
           fail_ci_if_error: true
   spellcheck:
     runs-on: ubuntu-22.04
