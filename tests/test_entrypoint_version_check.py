@@ -1,4 +1,5 @@
 """Test the Python version check made by the entrypoint."""
+
 import anycastd.__main__
 import pytest
 

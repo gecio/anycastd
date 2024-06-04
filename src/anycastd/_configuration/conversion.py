@@ -32,13 +32,11 @@ def config_to_service(config: ServiceConfiguration) -> Service:
 
 
 @overload
-def _sub_config_to_instance(config: PrefixConfiguration) -> Prefix:
-    ...
+def _sub_config_to_instance(config: PrefixConfiguration) -> Prefix: ...
 
 
 @overload
-def _sub_config_to_instance(config: HealthcheckConfiguration) -> Healthcheck:
-    ...
+def _sub_config_to_instance(config: HealthcheckConfiguration) -> Healthcheck: ...
 
 
 def _sub_config_to_instance(

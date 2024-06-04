@@ -9,13 +9,11 @@ from anycastd.core import ExitCode
 
 
 @overload
-def print_error(msg: str | Exception, *, exit_code: None) -> None:
-    ...
+def print_error(msg: str | Exception, *, exit_code: None) -> None: ...
 
 
 @overload
-def print_error(msg: str | Exception, *, exit_code: ExitCode) -> NoReturn:
-    ...
+def print_error(msg: str | Exception, *, exit_code: ExitCode) -> NoReturn: ...
 
 
 def print_error(msg: str | Exception, *, exit_code: ExitCode | None = None) -> None:
