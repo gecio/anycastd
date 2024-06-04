@@ -77,6 +77,7 @@ def test(session: nox.Session) -> None:
         pytest_no_external_dependencies(session)
     else:
         pytest_full(session)
+        session.run("coverage", "xml")
 
 
 @nox.session(python=PYTHON)
