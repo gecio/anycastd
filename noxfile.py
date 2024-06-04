@@ -124,9 +124,7 @@ def pytest_full(session: nox.Session) -> None:
         "not frrouting_daemon_required",
         *args,
     )
-    session.notify(
-        "pytest_frrouting_daemon_required"
-    )  # TODO: Fix that only one session is run
+    session.notify("pytest_frrouting_daemon_required")
 
 
 @nox.session(python=PYTHON)
