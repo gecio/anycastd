@@ -33,6 +33,8 @@ jobs:
       matrix:
         python_version: ["3.11", "3.12"]
       fail-fast: false
+    env:
+      PYTHON: ${{ matrix.python_version }}
     steps:
       - uses: actions/checkout@v4
       - uses: pdm-project/setup-pdm@v4
@@ -44,6 +46,7 @@ jobs:
         uses: codecov/codecov-action@v4.4.1
         with:
           file: ./coverage.xml
+          env_vars: PYTHON
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
   spellcheck:
