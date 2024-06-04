@@ -33,6 +33,8 @@ jobs:
       matrix:
         python_version: ["3.11", "3.12"]
       fail-fast: false
+    env:
+      PYTHON: ${{ matrix.python_version }}
     steps:
       - uses: actions/checkout@v4
       - uses: pdm-project/setup-pdm@v4
@@ -43,7 +45,10 @@ jobs:
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.4.1
         with:
+          files: ./coverage.xml,!./nox
+          env_vars: PYTHON
           token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
   spellcheck:
     runs-on: ubuntu-22.04
     steps:

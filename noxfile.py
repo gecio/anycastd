@@ -77,6 +77,7 @@ def test(session: nox.Session) -> None:
         pytest_no_external_dependencies(session)
     else:
         pytest_full(session)
+        session.run("coverage", "xml")
 
 
 @nox.session(python=PYTHON)
@@ -123,9 +124,7 @@ def pytest_full(session: nox.Session) -> None:
         "not frrouting_daemon_required",
         *args,
     )
-    session.notify(
-        "pytest_frrouting_daemon_required"
-    )  # TODO: Fix that only one session is run
+    session.notify("pytest_frrouting_daemon_required")
 
 
 @nox.session(python=PYTHON)
