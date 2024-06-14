@@ -4,11 +4,11 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: daily
+      interval: weekly
   - package-ecosystem: pip
     directory: /
     schedule:
-      interval: daily
+      interval: weekly
     versioning-strategy: lockfile-only
     allow:
       - dependency-type: all
