@@ -1,9 +1,7 @@
 import pytest
 from anycastd._executor import LocalExecutor
 
-# TODO: github.com/pytest-dev/pytest-asyncio/issues/706 - Breaking change in 0.23.*
-# Module scoped event loop required due to above issue.
-pytestmark = [pytest.mark.integration, pytest.mark.asyncio(scope="module")]
+pytestmark = pytest.mark.integration
 
 
 async def test_await_create_subprocess_exec_executes(tmp_path):
