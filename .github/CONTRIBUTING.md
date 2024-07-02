@@ -30,15 +30,8 @@ Ensure you have Python 3.11 or greater with recent versions of [pdm] and [nox] i
 
 ## Coding Standards
 
-`anycastd` uses [ruff] for uniform (black) formatting in addition to basic linting and enforcement of best practices,
-as well as [mypy] for static type checks.
-
-In addition to basic formatting and linting, a high code coverage should be maintained.
-Since some integration tests use real dependencies, docker is required to run them. If
-docker is not available in your environment, those tests will be skipped and only run in CI.
-
 All tests need to pass before a PR can be merged. Using [nox] to lint your code and run tests
-(excluding those that require external dependencies like docker) before creating a PR is advised to avoid being reprimanded by CI.
+before creating a PR is advised to avoid being reprimanded by CI.
 
 ```sh
 $ nox
@@ -50,6 +43,49 @@ nox > * lint-3.12: skipped
 nox > * test-3.11: success
 nox > * test-3.12: skipped
 ```
+
+Since some integration tests use real dependencies, docker is required to run them. If docker is not available in your environment, those tests will be skipped and only run in CI.
+
+### Linting
+
+`anycastd` uses [ruff] for uniform (black) formatting in addition to basic linting and enforcement of best practices,
+as well as [mypy] for static type checks.
+
+### Tests
+
+- A high code coverage should be maintained. New functionality requires new tests.
+
+- Write your asserts as `actual == expected` for convention.
+
+  ```python
+  assert result == expected
+  ```
+
+- Use the _Given When Then_ pattern.
+
+  ```python
+  # Given
+  expected = 42  # setup required state
+  # When
+  result = f_being_tested()  # run the code being tested
+  # Then
+  assert result == expected  # confirm expectations
+  ```
+
+  When writing more complicated tests, use spacing to distinguish the different sections.
+
+  ```python
+  executor = Executor()
+  to_echo = "Hello, World!"
+
+  process = await executor.create_subprocess_exec(
+      "echo", to_echo
+  )
+  stdout, stderr = await process.communicate()
+
+  assert stdout == to_echo.encode() + b"\n"
+  assert stderr == b""
+  ```
 
 [pdm]: https://github.com/pdm-project/pdm
 [nox]: https://github.com/wntrblm/nox
