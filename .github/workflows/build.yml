@@ -31,3 +31,9 @@ jobs:
         uses: actions/attest-build-provenance@v1
         with:
           subject-path: dist/anycastd-*
+      - name: Upload Build Artifacts
+        run: >-
+          gh release upload "${GITHUB_REF_NAME}"
+          dist/anycastd-*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
