@@ -1,0 +1,33 @@
+---
+name: Build
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  id-token: write
+  attestations: write
+  contents: write
+
+env:
+  COLUMNS: 120
+
+jobs:
+  build-wheels:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pdm-project/setup-pdm@v4
+      - name: Build
+        run: pdm build
+      - name: Attest Build Provenance
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: dist/anycastd-*
+      - name: Upload Build Artifacts
+        run: >-
+          gh release upload "${GITHUB_REF_NAME}"
+          dist/anycastd-*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
