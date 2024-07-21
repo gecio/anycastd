@@ -3,7 +3,6 @@ FROM ubuntu:noble
 LABEL org.opencontainers.image.title="anycastd"
 LABEL org.opencontainers.image.vendor="WIIT AG <openstack@wiit.cloud>"
 
-ENV TZ=Europe/Berlin
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install --no-install-recommends -y \
@@ -23,4 +22,3 @@ ENV LOG_LEVEL=info
 ENV LOG_FORMAT=json
 
 ENTRYPOINT ["venv/bin/python3", "-m", "anycastd", "run"]
-
