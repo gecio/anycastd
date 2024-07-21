@@ -57,10 +57,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Download Release Wheel
-        run: >-
-          gh release download ${GITHUB_REF_NAME}
-          --pattern '*.whl'
-          --output anycastd.whl
+        run: gh release download ${GITHUB_REF_NAME} --pattern '*.whl'
         env:
           GITHUB_TOKEN: ${{ github.token }}
 

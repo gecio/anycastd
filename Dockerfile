@@ -15,9 +15,9 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 
 WORKDIR /app
 
-COPY anycastd.whl .
+COPY anycastd-*.whl .
 RUN python3 -m venv venv \
-  && venv/bin/python3 -m pip install anycastd.whl
+  && venv/bin/python3 -m pip install anycastd-*.whl
 
 ENV LOG_LEVEL=info
 ENV LOG_FORMAT=json
