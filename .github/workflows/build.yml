@@ -59,6 +59,8 @@ jobs:
           gh release download ${GITHUB_REF_NAME}
           --pattern '*.whl'
           --output anycastd.whl
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Build & Push Image
         id: push
