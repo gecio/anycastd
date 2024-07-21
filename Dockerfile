@@ -1,14 +1,7 @@
 FROM ubuntu:noble
-ARG VERSION
 
 LABEL org.opencontainers.image.title="anycastd"
-LABEL org.opencontainers.image.description="Manage anycasted services based on health checks."
-LABEL org.opencontainers.image.version=${VERSION}
 LABEL org.opencontainers.image.vendor="WIIT AG <openstack@wiit.cloud>"
-LABEL org.opencontainers.image.licenses="Apache-2.0"
-LABEL org.opencontainers.image.documentation=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}
-LABEL org.opencontainers.image.source=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}
-LABEL org.opencontainers.image.url=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}
 
 ENV TZ=Europe/Berlin
 ENV DEBIAN_FRONTEND=noninteractive
@@ -22,9 +15,9 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 
 WORKDIR /app
 
-COPY anycastd-${VERSION}-py3-none-any.whl .
+COPY anycastd.whl .
 RUN python3 -m venv venv \
-  && venv/bin/python3 -m pip install anycastd-${VERSION}-py3-none-any.whl
+  && venv/bin/python3 -m pip install anycastd.whl
 
 ENV LOG_LEVEL=info
 ENV LOG_FORMAT=json
