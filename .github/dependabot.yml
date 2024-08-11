@@ -12,3 +12,7 @@ updates:
     versioning-strategy: lockfile-only
     allow:
       - dependency-type: all
+  - package-ecosystem: devcontainers
+      directory: /
+      schedule:
+        interval: monthly
