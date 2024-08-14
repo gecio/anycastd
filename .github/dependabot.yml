@@ -13,6 +13,6 @@ updates:
     allow:
       - dependency-type: all
   - package-ecosystem: devcontainers
-      directory: /
-      schedule:
-        interval: monthly
+    directory: /
+    schedule:
+      interval: monthly
