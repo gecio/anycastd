@@ -11,6 +11,7 @@
       "extensions": [
         "ms-python.python",
         "charliermarsh.ruff",
+        "fill-labs.dependi",
         "EditorConfig.EditorConfig"
       ]
     }
