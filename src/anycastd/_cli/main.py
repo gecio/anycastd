@@ -4,7 +4,7 @@ import logging
 import sys
 from enum import StrEnum, auto
 from pathlib import Path
-from typing import Annotated, Optional, assert_never
+from typing import Annotated, assert_never
 
 import orjson
 import structlog
@@ -98,7 +98,7 @@ def version_callback(value: bool) -> None:
 @app.callback()
 def main(
     version: Annotated[
-        Optional[bool],
+        bool | None,
         typer.Option(
             "--version",
             help=version_callback.__doc__,
