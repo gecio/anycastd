@@ -13,9 +13,6 @@ concurrency:
     || github.sha }}
   cancel-in-progress: true
 
-env:
-  COLUMNS: 120
-
 permissions:
   contents: read
   id-token: write

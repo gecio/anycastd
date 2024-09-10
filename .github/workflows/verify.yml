@@ -7,9 +7,6 @@ on:
   pull_request:
   workflow_dispatch:
 
-env:
-  COLUMNS: 120
-
 jobs:
   lint:
     runs-on: ubuntu-22.04
