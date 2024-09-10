@@ -56,8 +56,6 @@ def lockfile(session: nox.Session) -> None:
 @nox.session(python=PYTHON)
 def lint(session: nox.Session) -> None:
     """Ensure lockfile is up to date and run linting tools."""
-    lockfile(session)
-
     pdm_sync(session, groups=["lint"])
     session.run("ruff", "check", "src", "tests")
     # Use ruff to check that formatting conforms to black.
