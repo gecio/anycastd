@@ -63,6 +63,10 @@ def lint(session: nox.Session) -> None:
     # Use ruff to check that formatting conforms to black.
     session.run("ruff", "format", "--check", "src", "tests")
 
+
+@nox.session(python=PYTHON)
+def mypy(session: nox.Session) -> None:
+    """Validate static types using mypy."""
     pdm_sync(session, default=True, groups=["typecheck", "type_stubs"])
     session.run("mypy", "src")
 
