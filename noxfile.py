@@ -6,7 +6,7 @@ import nox
 
 CI = bool(os.getenv("CI"))
 PYTHON = ["3.11", "3.12"] if not CI else None
-SESSIONS = ["lint", "test"]
+SESSIONS = ["lockfile", "lint", "mypy", "test"]
 EXTERNAL_DEPENDENCY_MARKERS = ["frrouting_daemon_required"]
 
 FRR_LATEST_MAJOR_VERSION = "9.1.0"
