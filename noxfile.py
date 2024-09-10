@@ -47,6 +47,7 @@ def pdm_sync(
     session.run(*cmd, external=True)
 
 
+@nox.session(python=PYTHON)
 def lockfile(session: nox.Session) -> None:
     """Check if the lockfile is up-to-date."""
     session.run("pdm", "lock", "--check", external=True)
