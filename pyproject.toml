@@ -40,7 +40,7 @@ keywords = [
 
 requires-python = ">=3.11"
 dependencies = [
-    "pydantic>=2.5.2",
+    "pydantic>=2.5.2, < 2.9",
     "httpx>=0.25.0",
     "typer[all]>=0.12.4",
     "structlog>=24.1.0",

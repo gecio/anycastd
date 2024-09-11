@@ -2,9 +2,10 @@ from collections.abc import Callable, Iterator
 
 import pytest
 import structlog
-from anycastd._cli.main import app
 from click.testing import Result
 from typer.testing import CliRunner
+
+from anycastd._cli.main import app
 
 
 @pytest.fixture

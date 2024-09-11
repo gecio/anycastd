@@ -1,7 +1,8 @@
 """Test the Python version check made by the entrypoint."""
 
-import anycastd.__main__
 import pytest
+
+import anycastd.__main__
 
 MIN_PYTHON_VERSION = (3, 11)
 

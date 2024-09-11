@@ -1,4 +1,5 @@
 import pytest
+
 from anycastd._executor import LocalExecutor
 
 pytestmark = pytest.mark.integration

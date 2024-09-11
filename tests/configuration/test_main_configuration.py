@@ -1,4 +1,5 @@
 import pytest
+
 from anycastd._configuration.exceptions import ConfigurationSyntaxError
 from anycastd._configuration.main import MainConfiguration
 

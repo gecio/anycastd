@@ -2,11 +2,12 @@ import datetime
 
 import httpx
 import pytest
+from pytest_mock import MockerFixture
+from structlog.testing import capture_logs
+
 from anycastd.healthcheck._cabourotte.exceptions import CabourotteCheckNotFoundError
 from anycastd.healthcheck._cabourotte.main import CabourotteHealthcheck
 from anycastd.healthcheck._cabourotte.result import Result
-from pytest_mock import MockerFixture
-from structlog.testing import capture_logs
 
 
 def test__init__():

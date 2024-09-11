@@ -2,9 +2,10 @@ import asyncio
 import signal
 
 import pytest
+from structlog.testing import capture_logs
+
 from anycastd.core._run import run_services, signal_handler
 from anycastd.core._service import Service
-from structlog.testing import capture_logs
 
 
 @pytest.fixture

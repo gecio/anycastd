@@ -3,6 +3,7 @@ from ipaddress import IPv6Network
 from pathlib import Path
 
 import pytest
+
 from anycastd._configuration.conversion import (
     _sub_config_to_instance,
     dict_w_items_named_by_key_to_flat_w_name_value,

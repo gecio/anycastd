@@ -2,10 +2,11 @@ import asyncio
 from ipaddress import IPv6Network
 from pathlib import Path
 
+from structlog.testing import capture_logs
+
 from anycastd._executor import LocalExecutor
 from anycastd.prefix._frrouting.exceptions import FRRCommandError
 from anycastd.prefix._frrouting.main import FRRoutingPrefix
-from structlog.testing import capture_logs
 
 
 def test_repr(example_networks, example_vrfs):
