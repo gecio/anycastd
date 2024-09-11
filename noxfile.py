@@ -1,6 +1,6 @@
 import os
 import shutil
-from typing import List, Optional
+from typing import List, Optional, Sequence
 
 import nox
 
@@ -45,6 +45,26 @@ def pdm_sync(
             cmd.append(group)
 
     session.run(*cmd, external=True)
+
+
+def uvx(
+    session: nox.Session,
+    *,
+    command: str,
+    version: Optional[str] = None,
+    args: Sequence[str],
+) -> None:
+    """Use uv to execute a command provided by a Python package.
+
+    Args:
+        session: The nox session.
+        command: The command to run.
+        version: The version of the package providing the command to use.
+        args: The command arguments.
+    """
+    if version:
+        command = f"{command}@{version}"
+    session.run("uvx", command, *args, external=True)
 
 
 @nox.session(python=PYTHON)
