@@ -89,10 +89,6 @@ test = [
     "testcontainers>=4.4.1",
     "stamina>=24.2.0",
 ]
-jupyter = [
-    "jupyter",
-    "notebook",
-]
 
 [tool.black]
 target-version = ["py311", "py312"]
