@@ -9,6 +9,8 @@ PYTHON = ["3.11", "3.12"] if not CI else None
 SESSIONS = ["lockfile", "lint", "mypy", "test"]
 EXTERNAL_DEPENDENCY_MARKERS = ["frrouting_daemon_required"]
 
+RUFF_VERSION = "0.6.4"
+
 FRR_LATEST_MAJOR_VERSION = "9.1.0"
 
 nox.options.sessions = SESSIONS
@@ -76,10 +78,14 @@ def lockfile(session: nox.Session) -> None:
 @nox.session(python=PYTHON)
 def lint(session: nox.Session) -> None:
     """Lint code and check formatting using ruff."""
-    pdm_sync(session, groups=["lint"])
-    session.run("ruff", "check", "src", "tests")
+    uvx(session, command="ruff", version=RUFF_VERSION, args=["check", "src", "tests"])
     # Use ruff to check that formatting conforms to black.
-    session.run("ruff", "format", "--check", "src", "tests")
+    uvx(
+        session,
+        command="ruff",
+        version=RUFF_VERSION,
+        args=["format", "--check", "src", "tests"],
+    )
 
 
 @nox.session(python=PYTHON)

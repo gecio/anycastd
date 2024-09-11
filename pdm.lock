@@ -5,7 +5,7 @@
 groups = ["default", "jupyter", "lint", "test", "type_stubs", "typecheck"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:c3ff8ace0d19d22093e2a48b7660722bb39684c2cb11e5247e0dc692f2297153"
+content_hash = "sha256:35f32f1ebc6815a03b3f4619fb849efd2b087daeb0eeb4398525f64be5296b0f"
 
 [[metadata.targets]]
 requires_python = ">=3.11"

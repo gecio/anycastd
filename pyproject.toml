@@ -66,9 +66,6 @@ source = "scm"
 anycastd = { call = "anycastd._cli:app" }
 
 [tool.pdm.dev-dependencies]
-lint = [
-    "ruff>=0.1.4",
-]
 typecheck = [
     "mypy",
 ]
