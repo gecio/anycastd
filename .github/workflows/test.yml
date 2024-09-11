@@ -20,7 +20,7 @@ permissions:
 jobs:
   test:
     name: test with Python ${{ matrix.python_version }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         python_version: ["3.11", "3.12"]
