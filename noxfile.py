@@ -10,6 +10,7 @@ SESSIONS = ["lockfile", "lint", "mypy", "test"]
 EXTERNAL_DEPENDENCY_MARKERS = ["frrouting_daemon_required"]
 
 RUFF_VERSION = "0.6.4"
+MYPY_VERSION = "1.11.2"
 
 FRR_LATEST_MAJOR_VERSION = "9.1.0"
 
@@ -93,8 +94,7 @@ def lint(session: nox.Session) -> None:
 @nox.session(python=PYTHON)
 def mypy(session: nox.Session) -> None:
     """Validate static types using mypy."""
-    pdm_sync(session, default=True, groups=["typecheck", "type_stubs"])
-    session.run("mypy", "src")
+    uv_run(session, command="mypy", version=MYPY_VERSION, args=["src"])
 
 
 @nox.session(python=PYTHON)
