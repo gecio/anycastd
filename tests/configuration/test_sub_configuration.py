@@ -4,6 +4,7 @@ from pathlib import Path
 from types import ModuleType
 
 import pytest
+
 from anycastd._configuration import healthcheck, prefix
 from anycastd._configuration.exceptions import ConfigurationSyntaxError
 from anycastd._configuration.healthcheck import CabourotteHealthcheckConfiguration

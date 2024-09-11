@@ -3,6 +3,7 @@ from ipaddress import IPv4Network, IPv6Network
 from typing import TypeAlias
 
 import pytest
+
 from anycastd.prefix import VRF
 
 _IP_Prefix: TypeAlias = IPv4Network | IPv6Network

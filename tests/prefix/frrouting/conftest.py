@@ -8,9 +8,9 @@ from pathlib import Path
 
 import pytest
 import stamina
-from anycastd.prefix import VRF
 from testcontainers.core.container import DockerContainer
 
+from anycastd.prefix import VRF
 from tests.conftest import _IP_Prefix
 
 FRR_DOCKER_IMAGE = "quay.io/frrouting/frr:{}".format(

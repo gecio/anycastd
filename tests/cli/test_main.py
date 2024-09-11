@@ -3,11 +3,12 @@ import re
 from pathlib import Path
 from unittest.mock import MagicMock
 
-import anycastd
 import pytest
 import structlog
-from anycastd._cli.main import _get_main_configuration
 from structlog.testing import capture_logs
+
+import anycastd
+from anycastd._cli.main import _get_main_configuration
 
 RE_ISO_TIMESTAMP = (
     r"(\d{4})-(\d{2})-(\d{2})"  # date

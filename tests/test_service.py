@@ -1,10 +1,10 @@
 import asyncio
 
 import pytest
-from anycastd.core import Service
 from pytest_mock import MockerFixture
 from structlog.testing import capture_logs
 
+from anycastd.core import Service
 from tests.dummy import DummyHealthcheck, DummyPrefix
 
 

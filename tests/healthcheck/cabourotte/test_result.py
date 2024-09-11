@@ -5,13 +5,14 @@ from typing import TypedDict
 import httpx
 import pytest
 import respx
+from hypothesis import assume, given, strategies
+from pytest_mock import MockerFixture
+
 from anycastd.healthcheck._cabourotte.exceptions import (
     CabourotteCheckError,
     CabourotteCheckNotFoundError,
 )
 from anycastd.healthcheck._cabourotte.result import Result, get_result
-from hypothesis import assume, given, strategies
-from pytest_mock import MockerFixture
 
 CABOUROTTE_URL = "http://[::1]:9013"
 

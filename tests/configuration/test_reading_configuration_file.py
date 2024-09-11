@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+
 from anycastd._configuration.exceptions import (
     ConfigurationFileUnreadableError,
     ConfigurationSyntaxError,
