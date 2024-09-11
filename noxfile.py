@@ -49,14 +49,14 @@ def pdm_sync(
     session.run(*cmd, external=True)
 
 
-def uvx(
+def uv_run(
     session: nox.Session,
     *,
     command: str,
     version: Optional[str] = None,
     args: Sequence[str],
 ) -> None:
-    """Use uv to execute a command provided by a Python package.
+    """Use uv to run a command provided by a Python package.
 
     Args:
         session: The nox session.
@@ -66,7 +66,7 @@ def uvx(
     """
     if version:
         command = f"{command}@{version}"
-    session.run("uvx", command, *args, external=True)
+    session.run("uv", "run", command, *args, external=True)
 
 
 @nox.session(python=PYTHON)
@@ -78,9 +78,11 @@ def lockfile(session: nox.Session) -> None:
 @nox.session(python=PYTHON)
 def lint(session: nox.Session) -> None:
     """Lint code and check formatting using ruff."""
-    uvx(session, command="ruff", version=RUFF_VERSION, args=["check", "src", "tests"])
+    uv_run(
+        session, command="ruff", version=RUFF_VERSION, args=["check", "src", "tests"]
+    )
     # Use ruff to check that formatting conforms to black.
-    uvx(
+    uv_run(
         session,
         command="ruff",
         version=RUFF_VERSION,
