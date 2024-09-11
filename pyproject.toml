@@ -65,8 +65,8 @@ source = "scm"
 [tool.pdm.scripts]
 anycastd = { call = "anycastd._cli:app" }
 
-[tool.pdm.dev-dependencies]
-test = [
+[tool.uv]
+dev-dependencies = [
     "pytest",
     "pytest-cov",
     "pytest-xdist",

@@ -73,7 +73,7 @@ def uv_run(
 @nox.session(python=PYTHON)
 def lockfile(session: nox.Session) -> None:
     """Check if the lockfile is up-to-date."""
-    session.run("pdm", "lock", "--check", external=True)
+    session.run("uv", "lock", "--locked", external=True)
 
 
 @nox.session(python=PYTHON)
