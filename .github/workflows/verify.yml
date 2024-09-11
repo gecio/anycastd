@@ -10,7 +10,7 @@ env:
 
 jobs:
   lint:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: pdm-project/setup-pdm@v4
@@ -19,7 +19,7 @@ jobs:
       - run: pip3 install nox
       - run: nox -s lint
   check-lockfile:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: pdm-project/setup-pdm@v4
@@ -28,7 +28,7 @@ jobs:
       - run: pip3 install nox
       - run: nox -s lockfile
   type-check:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: pdm-project/setup-pdm@v4
@@ -37,7 +37,7 @@ jobs:
       - run: pip3 install nox
       - run: nox -s mypy
   spellcheck:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: check for typos
