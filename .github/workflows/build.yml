@@ -17,6 +17,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pdm-project/setup-pdm@v4
+        with:
+          cache: true
       - name: Build
         run: pdm build
       - name: Attest Build Provenance
