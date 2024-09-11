@@ -1,5 +1,5 @@
 ---
-name: CI
+name: Test
 
 on:
   push:
@@ -13,23 +13,11 @@ concurrency:
     || github.sha }}
   cancel-in-progress: true
 
-env:
-  COLUMNS: 120
-
 permissions:
   contents: read
   id-token: write
 
 jobs:
-  lint:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pdm-project/setup-pdm@v4
-        with:
-          python-version: "3.11"
-      - run: pip3 install nox
-      - run: nox -s lint
   test:
     name: test with Python ${{ matrix.python_version }}
     runs-on: ubuntu-22.04
@@ -53,9 +41,3 @@ jobs:
           env_vars: PYTHON
           use_oidc: true
           fail_ci_if_error: true
-  spellcheck:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - name: check for typos
-        uses: crate-ci/typos@v1.24.5

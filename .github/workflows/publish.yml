@@ -6,9 +6,6 @@ on:
     types: [published]
   workflow_dispatch:
 
-env:
-  COLUMNS: 120
-
 permissions:
   contents: read
   id-token: write

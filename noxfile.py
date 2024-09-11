@@ -6,7 +6,7 @@ import nox
 
 CI = bool(os.getenv("CI"))
 PYTHON = ["3.11", "3.12"] if not CI else None
-SESSIONS = ["lint", "test"]
+SESSIONS = ["lockfile", "lint", "mypy", "test"]
 EXTERNAL_DEPENDENCY_MARKERS = ["frrouting_daemon_required"]
 
 FRR_LATEST_MAJOR_VERSION = "9.1.0"
@@ -47,21 +47,24 @@ def pdm_sync(
     session.run(*cmd, external=True)
 
 
-def pdm_check_lockfile(session: nox.Session) -> None:
+@nox.session(python=PYTHON)
+def lockfile(session: nox.Session) -> None:
     """Check if the lockfile is up-to-date."""
     session.run("pdm", "lock", "--check", external=True)
 
 
 @nox.session(python=PYTHON)
 def lint(session: nox.Session) -> None:
-    """Ensure lockfile is up to date and run linting tools."""
-    pdm_check_lockfile(session)
-
+    """Lint code and check formatting using ruff."""
     pdm_sync(session, groups=["lint"])
     session.run("ruff", "check", "src", "tests")
     # Use ruff to check that formatting conforms to black.
     session.run("ruff", "format", "--check", "src", "tests")
 
+
+@nox.session(python=PYTHON)
+def mypy(session: nox.Session) -> None:
+    """Validate static types using mypy."""
     pdm_sync(session, default=True, groups=["typecheck", "type_stubs"])
     session.run("mypy", "src")
 
