@@ -1,6 +1,6 @@
 import os
 import shutil
-from typing import List, Optional, Sequence
+from typing import Sequence
 
 import nox
 
@@ -12,39 +12,6 @@ EXTERNAL_DEPENDENCY_MARKERS = ["frrouting_daemon_required"]
 FRR_LATEST_MAJOR_VERSION = "9.1.0"
 
 nox.options.sessions = SESSIONS
-os.environ.update({"PDM_IGNORE_SAVED_PYTHON": "1"})
-
-
-def pdm_sync(
-    session: nox.Session,
-    *,
-    self: bool = False,
-    default: bool = False,
-    editable: bool = True,
-    groups: Optional[List[str]] = None,
-) -> None:
-    """Install dependencies using PDM.
-
-    Args:
-        session: The nox session.
-        self: Whether to install the package itself.
-        default: Whether to install the default dependencies.
-        editable: Whether to install packages in editable mode.
-        groups: The dependency groups to install.
-    """
-    cmd = ["pdm", "sync"]
-    if not self:
-        cmd.append("--no-self")
-    if not default:
-        cmd.append("--no-default")
-    if not editable:
-        cmd.append("--no-editable")
-    if groups:
-        for group in groups:
-            cmd.append("-G")
-            cmd.append(group)
-
-    session.run(*cmd, external=True)
 
 
 def uv_run(
@@ -109,7 +76,6 @@ def pytest_no_external_dependencies(session: nox.Session) -> None:
     such as real databases, Docker, etc. and thus should be able to run
     on any developer machine.
     """
-    pdm_sync(session, self=True, default=True, groups=["test"])
     session.warn(
         "Skipping the following test marker(s) "
         "since they require external dependencies: {}.\n"
@@ -135,7 +101,6 @@ def pytest_full(session: nox.Session) -> None:
     This session includes all tests and is intended to be
     run in CI or before a commit.
     """
-    pdm_sync(session, self=True, default=True, groups=["test"])
     args = session.posargs if not CI else ["--cov"]
     session.run(
         "pytest",
@@ -155,7 +120,6 @@ def pytest_frrouting_daemon_required(session: nox.Session) -> None:
     This session runs the integration tests that run against a local FRRouting instance
     using the FRRouting docker image.
     """
-    pdm_sync(session, self=True, default=True, groups=["test"])
     if shutil.which("docker") is None:
         session.error("This session requires Docker to be installed")
     # If the FRR container version is not set in the environment, use the latest version
