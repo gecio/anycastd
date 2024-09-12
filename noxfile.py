@@ -135,11 +135,3 @@ def pytest_frrouting_daemon_required(session: nox.Session) -> None:
         "--cov-append",
         *session.posargs,
     )
-
-
-@nox.session(python=PYTHON)
-def safety(session: nox.Session) -> None:
-    """Scan dependencies for known security vulnerabilities using safety."""
-    session.install("safety")
-    session.run("pdm", "export", "-o", "requirements.txt", external=True)
-    session.run("safety", "check", "--file=requirements.txt", "--full-report")
