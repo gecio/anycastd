@@ -9,9 +9,6 @@ PYTHON = ["3.11", "3.12"] if not CI else None
 SESSIONS = ["lockfile", "lint", "mypy", "test"]
 EXTERNAL_DEPENDENCY_MARKERS = ["frrouting_daemon_required"]
 
-RUFF_VERSION = "0.6.4"
-MYPY_VERSION = "1.11.2"
-
 FRR_LATEST_MAJOR_VERSION = "9.1.0"
 
 nox.options.sessions = SESSIONS
@@ -54,7 +51,6 @@ def uv_run(
     session: nox.Session,
     *,
     command: str,
-    version: Optional[str] = None,
     args: Sequence[str],
 ) -> None:
     """Use uv to run a command provided by a Python package.
@@ -62,11 +58,8 @@ def uv_run(
     Args:
         session: The nox session.
         command: The command to run.
-        version: The version of the package providing the command to use.
         args: The command arguments.
     """
-    if version:
-        command = f"{command}@{version}"
     session.run("uv", "run", command, *args, external=True)
 
 
@@ -79,14 +72,11 @@ def lockfile(session: nox.Session) -> None:
 @nox.session(python=PYTHON)
 def lint(session: nox.Session) -> None:
     """Lint code and check formatting using ruff."""
-    uv_run(
-        session, command="ruff", version=RUFF_VERSION, args=["check", "src", "tests"]
-    )
+    uv_run(session, command="ruff", args=["check", "src", "tests"])
     # Use ruff to check that formatting conforms to black.
     uv_run(
         session,
         command="ruff",
-        version=RUFF_VERSION,
         args=["format", "--check", "src", "tests"],
     )
 
@@ -94,7 +84,7 @@ def lint(session: nox.Session) -> None:
 @nox.session(python=PYTHON)
 def mypy(session: nox.Session) -> None:
     """Validate static types using mypy."""
-    uv_run(session, command="mypy", version=MYPY_VERSION, args=["src"])
+    uv_run(session, command="mypy", args=["src"])
 
 
 @nox.session(python=PYTHON)
