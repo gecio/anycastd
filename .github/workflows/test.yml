@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   test:
-    name: test with Python ${{ matrix.python_version }}
+    name: Test with Python ${{ matrix.python_version }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -29,12 +29,11 @@ jobs:
       PYTHON: ${{ matrix.python_version }}
     steps:
       - uses: actions/checkout@v4
-      - uses: pdm-project/setup-pdm@v4
+      - uses: astral-sh/setup-uv@v2
         with:
-          python-version: ${{ matrix.python_version }}
-          cache: true
-      - run: pip3 install nox
-      - run: nox -s test
+          enable-cache: true
+      - run: uv python install ${{ matrix.python_version }}
+      - run: uvx nox -s test
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.5.0
         with:
