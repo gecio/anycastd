@@ -13,32 +13,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pdm-project/setup-pdm@v4
+      - uses: astral-sh/setup-uv@v2
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: true
-      - run: pip3 install nox
-      - run: nox -s lint
+          enable-cache: true
+      - run: uv python install ${{ env.PYTHON_VERSION }}
+      - run: uvx nox -s lint
   check-lockfile:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pdm-project/setup-pdm@v4
+      - uses: astral-sh/setup-uv@v2
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: true
-      - run: pip3 install nox
-      - run: nox -s lockfile
+          enable-cache: true
+      - run: uv python install ${{ env.PYTHON_VERSION }}
+      - run: uvx nox -s lockfile
   type-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pdm-project/setup-pdm@v4
+      - uses: astral-sh/setup-uv@v2
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: true
-      - run: pip3 install nox
-      - run: nox -s mypy
+          enable-cache: true
+      - run: uv python install ${{ env.PYTHON_VERSION }}
+      - run: uvx nox -s mypy
   spellcheck:
     runs-on: ubuntu-latest
     steps:
