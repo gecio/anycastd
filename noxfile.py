@@ -69,7 +69,7 @@ def lockfile(session: nox.Session) -> None:
     session.run("uv", "lock", "--locked", external=True)
 
 
-@nox.session(python=PYTHON)
+@nox.session(python=PYTHON, venv_backend="uv")
 def lint(session: nox.Session) -> None:
     """Lint code and check formatting using ruff."""
     uv_run(session, command="ruff", args=["check", "src", "tests"])
@@ -81,13 +81,13 @@ def lint(session: nox.Session) -> None:
     )
 
 
-@nox.session(python=PYTHON)
+@nox.session(python=PYTHON, venv_backend="uv")
 def mypy(session: nox.Session) -> None:
     """Validate static types using mypy."""
     uv_run(session, command="mypy", args=["src"])
 
 
-@nox.session(python=PYTHON)
+@nox.session(python=PYTHON, venv_backend="uv")
 def test(session: nox.Session) -> None:
     """Run tests without external dependencies if not running in CI.
 
@@ -101,7 +101,7 @@ def test(session: nox.Session) -> None:
         session.run("coverage", "xml")
 
 
-@nox.session(python=PYTHON)
+@nox.session(python=PYTHON, venv_backend="uv")
 def pytest_no_external_dependencies(session: nox.Session) -> None:
     """Run pytest tests that have no external dependencies.
 
@@ -128,7 +128,7 @@ def pytest_no_external_dependencies(session: nox.Session) -> None:
     session.run("pytest", "tests", "-m", markexpr, *session.posargs)
 
 
-@nox.session(python=PYTHON)
+@nox.session(python=PYTHON, venv_backend="uv")
 def pytest_full(session: nox.Session) -> None:
     """Run all pytest tests.
 
@@ -148,7 +148,7 @@ def pytest_full(session: nox.Session) -> None:
     session.notify("pytest_frrouting_daemon_required")
 
 
-@nox.session(python=PYTHON)
+@nox.session(python=PYTHON, venv_backend="uv")
 def pytest_frrouting_daemon_required(session: nox.Session) -> None:
     """Run pytest FRRouting integration tests against a FRRouting daemon.
 

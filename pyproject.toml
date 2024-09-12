@@ -81,6 +81,8 @@ dev-dependencies = [
     "hypothesis>=6.99.5",
     "testcontainers>=4.4.1",
     "stamina>=24.2.0",
+    "ruff>=0.6.4",
+    "mypy>=1.11.2",
 ]
 
 [tool.black]
