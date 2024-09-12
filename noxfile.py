@@ -65,7 +65,7 @@ def test(session: nox.Session) -> None:
         pytest_no_external_dependencies(session)
     else:
         pytest_full(session)
-        session.run("coverage", "xml")
+        uv_run(session, command="coverage", args=["xml"])
 
 
 @nox.session(python=PYTHON, venv_backend="uv")
@@ -91,7 +91,7 @@ def pytest_no_external_dependencies(session: nox.Session) -> None:
         else:
             markexpr += f" and not {marker}"
 
-    session.run("pytest", "tests", "-m", markexpr, *session.posargs)
+    uv_run(session, command="pytest", args=["tests", "-m", markexpr, *session.posargs])
 
 
 @nox.session(python=PYTHON, venv_backend="uv")
@@ -102,13 +102,16 @@ def pytest_full(session: nox.Session) -> None:
     run in CI or before a commit.
     """
     args = session.posargs if not CI else ["--cov"]
-    session.run(
-        "pytest",
-        "tests",
-        "-m",
-        # FRRouting tests that run against a FRRouting daemon have their own session
-        "not frrouting_daemon_required",
-        *args,
+    uv_run(
+        session,
+        command="pytest",
+        args=[
+            "tests",
+            "-m",
+            # FRRouting tests that run against a FRRouting daemon have their own session
+            "not frrouting_daemon_required",
+            *args,
+        ],
     )
     session.notify("pytest_frrouting_daemon_required")
 
@@ -126,12 +129,15 @@ def pytest_frrouting_daemon_required(session: nox.Session) -> None:
     # defined at the top of this file.
     if not session.env.get("FRR_VERSION"):
         session.env["FRR_VERSION"] = FRR_LATEST_MAJOR_VERSION
-    session.run(
-        "pytest",
-        "tests",
-        "-m",
-        "frrouting_daemon_required",
-        "--cov",
-        "--cov-append",
-        *session.posargs,
+    uv_run(
+        session,
+        command="pytest",
+        args=[
+            "tests",
+            "-m",
+            "frrouting_daemon_required",
+            "--cov",
+            "--cov-append",
+            *session.posargs,
+        ],
     )
