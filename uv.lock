@@ -16,7 +16,7 @@ wheels = [
 
 [[package]]
 name = "anycastd"
-version = "0.1.13.dev21+g0083b49.d20240912"
+version = "0.1.12"
 source = { editable = "." }
 dependencies = [
     { name = "httpx" },
@@ -54,7 +54,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.5.2,<2.9" },
     { name = "rich", specifier = ">=13.7.0" },
     { name = "structlog", specifier = ">=24.1.0" },
-    { name = "typer", extras = ["all"], specifier = ">=0.12.4" },
+    { name = "typer", specifier = ">=0.12.4" },
 ]
 
 [package.metadata.requires-dev]
