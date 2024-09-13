@@ -1,6 +1,6 @@
 import os
 import shutil
-from typing import List, Optional
+from typing import Sequence
 
 import nox
 
@@ -12,64 +12,49 @@ EXTERNAL_DEPENDENCY_MARKERS = ["frrouting_daemon_required"]
 FRR_LATEST_MAJOR_VERSION = "9.1.0"
 
 nox.options.sessions = SESSIONS
-os.environ.update({"PDM_IGNORE_SAVED_PYTHON": "1"})
 
 
-def pdm_sync(
+def uv_run(
     session: nox.Session,
     *,
-    self: bool = False,
-    default: bool = False,
-    editable: bool = True,
-    groups: Optional[List[str]] = None,
+    command: str,
+    args: Sequence[str],
 ) -> None:
-    """Install dependencies using PDM.
+    """Use uv to run a command provided by a Python package.
 
     Args:
         session: The nox session.
-        self: Whether to install the package itself.
-        default: Whether to install the default dependencies.
-        editable: Whether to install packages in editable mode.
-        groups: The dependency groups to install.
+        command: The command to run.
+        args: The command arguments.
     """
-    cmd = ["pdm", "sync"]
-    if not self:
-        cmd.append("--no-self")
-    if not default:
-        cmd.append("--no-default")
-    if not editable:
-        cmd.append("--no-editable")
-    if groups:
-        for group in groups:
-            cmd.append("-G")
-            cmd.append(group)
-
-    session.run(*cmd, external=True)
+    session.run("uv", "run", command, *args, external=True)
 
 
 @nox.session(python=PYTHON)
 def lockfile(session: nox.Session) -> None:
     """Check if the lockfile is up-to-date."""
-    session.run("pdm", "lock", "--check", external=True)
+    session.run("uv", "lock", "--locked", external=True)
 
 
-@nox.session(python=PYTHON)
+@nox.session(python=PYTHON, venv_backend="uv")
 def lint(session: nox.Session) -> None:
     """Lint code and check formatting using ruff."""
-    pdm_sync(session, groups=["lint"])
-    session.run("ruff", "check", "src", "tests")
+    uv_run(session, command="ruff", args=["check", "src", "tests"])
     # Use ruff to check that formatting conforms to black.
-    session.run("ruff", "format", "--check", "src", "tests")
+    uv_run(
+        session,
+        command="ruff",
+        args=["format", "--check", "src", "tests"],
+    )
 
 
-@nox.session(python=PYTHON)
+@nox.session(python=PYTHON, venv_backend="uv")
 def mypy(session: nox.Session) -> None:
     """Validate static types using mypy."""
-    pdm_sync(session, default=True, groups=["typecheck", "type_stubs"])
-    session.run("mypy", "src")
+    uv_run(session, command="mypy", args=["src"])
 
 
-@nox.session(python=PYTHON)
+@nox.session(python=PYTHON, venv_backend="uv")
 def test(session: nox.Session) -> None:
     """Run tests without external dependencies if not running in CI.
 
@@ -80,10 +65,10 @@ def test(session: nox.Session) -> None:
         pytest_no_external_dependencies(session)
     else:
         pytest_full(session)
-        session.run("coverage", "xml")
+        uv_run(session, command="coverage", args=["xml"])
 
 
-@nox.session(python=PYTHON)
+@nox.session(python=PYTHON, venv_backend="uv")
 def pytest_no_external_dependencies(session: nox.Session) -> None:
     """Run pytest tests that have no external dependencies.
 
@@ -91,7 +76,6 @@ def pytest_no_external_dependencies(session: nox.Session) -> None:
     such as real databases, Docker, etc. and thus should be able to run
     on any developer machine.
     """
-    pdm_sync(session, self=True, default=True, groups=["test"])
     session.warn(
         "Skipping the following test marker(s) "
         "since they require external dependencies: {}.\n"
@@ -107,57 +91,53 @@ def pytest_no_external_dependencies(session: nox.Session) -> None:
         else:
             markexpr += f" and not {marker}"
 
-    session.run("pytest", "tests", "-m", markexpr, *session.posargs)
+    uv_run(session, command="pytest", args=["tests", "-m", markexpr, *session.posargs])
 
 
-@nox.session(python=PYTHON)
+@nox.session(python=PYTHON, venv_backend="uv")
 def pytest_full(session: nox.Session) -> None:
     """Run all pytest tests.
 
     This session includes all tests and is intended to be
     run in CI or before a commit.
     """
-    pdm_sync(session, self=True, default=True, groups=["test"])
     args = session.posargs if not CI else ["--cov"]
-    session.run(
-        "pytest",
-        "tests",
-        "-m",
-        # FRRouting tests that run against a FRRouting daemon have their own session
-        "not frrouting_daemon_required",
-        *args,
+    uv_run(
+        session,
+        command="pytest",
+        args=[
+            "tests",
+            "-m",
+            # FRRouting tests that run against a FRRouting daemon have their own session
+            "not frrouting_daemon_required",
+            *args,
+        ],
     )
     session.notify("pytest_frrouting_daemon_required")
 
 
-@nox.session(python=PYTHON)
+@nox.session(python=PYTHON, venv_backend="uv")
 def pytest_frrouting_daemon_required(session: nox.Session) -> None:
     """Run pytest FRRouting integration tests against a FRRouting daemon.
 
     This session runs the integration tests that run against a local FRRouting instance
     using the FRRouting docker image.
     """
-    pdm_sync(session, self=True, default=True, groups=["test"])
     if shutil.which("docker") is None:
         session.error("This session requires Docker to be installed")
     # If the FRR container version is not set in the environment, use the latest version
     # defined at the top of this file.
     if not session.env.get("FRR_VERSION"):
         session.env["FRR_VERSION"] = FRR_LATEST_MAJOR_VERSION
-    session.run(
-        "pytest",
-        "tests",
-        "-m",
-        "frrouting_daemon_required",
-        "--cov",
-        "--cov-append",
-        *session.posargs,
+    uv_run(
+        session,
+        command="pytest",
+        args=[
+            "tests",
+            "-m",
+            "frrouting_daemon_required",
+            "--cov",
+            "--cov-append",
+            *session.posargs,
+        ],
     )
-
-
-@nox.session(python=PYTHON)
-def safety(session: nox.Session) -> None:
-    """Scan dependencies for known security vulnerabilities using safety."""
-    session.install("safety")
-    session.run("pdm", "export", "-o", "requirements.txt", external=True)
-    session.run("safety", "check", "--file=requirements.txt", "--full-report")

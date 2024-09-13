@@ -6,7 +6,7 @@ authors = [
 ]
 license = {text = "Apache-2.0"}
 readme = "README.md"
-dynamic = ["version"]
+version = "0.1.12"
 
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -42,7 +42,7 @@ requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2.5.2, < 2.9",
     "httpx>=0.25.0",
-    "typer[all]>=0.12.4",
+    "typer>=0.12.4",
     "structlog>=24.1.0",
     "rich>=13.7.0",
     "orjson>=3.9.13",
@@ -56,24 +56,11 @@ Issues = "https://github.com/gecio/anycastd/issues"
 anycastd = "anycastd.__main__:run"
 
 [build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.pdm.version]
-source = "scm"
-
-[tool.pdm.scripts]
-anycastd = { call = "anycastd._cli:app" }
-
-[tool.pdm.dev-dependencies]
-lint = [
-    "ruff>=0.1.4",
-]
-typecheck = [
-    "mypy",
-]
-type_stubs = []
-test = [
+[tool.uv]
+dev-dependencies = [
     "pytest",
     "pytest-cov",
     "pytest-xdist",
@@ -88,10 +75,8 @@ test = [
     "hypothesis>=6.99.5",
     "testcontainers>=4.4.1",
     "stamina>=24.2.0",
-]
-jupyter = [
-    "jupyter",
-    "notebook",
+    "ruff>=0.6.4",
+    "mypy>=1.11.2",
 ]
 
 [tool.black]

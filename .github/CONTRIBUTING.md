@@ -26,7 +26,7 @@ For users of IDEs with support for devcontainers, it's usage is recommended.
 
 ### Other
 
-Ensure you have Python 3.11 or greater with recent versions of [pdm] and [nox] in your environment.
+Ensure you have Python 3.11 or greater with recent versions of [uv] and [nox] in your environment.
 
 ## Coding Standards
 
@@ -87,7 +87,7 @@ as well as [mypy] for static type checks.
   assert stderr == b""
   ```
 
-[pdm]: https://github.com/pdm-project/pdm
+[uv]: https://github.com/astral-sh/uv
 [nox]: https://github.com/wntrblm/nox
 [ruff]: https://github.com/astral-sh/ruff
 [mypy]: https://github.com/python/mypy
