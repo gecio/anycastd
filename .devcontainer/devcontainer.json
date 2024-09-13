@@ -1,12 +1,16 @@
 {
   "name": "Python 3",
   "image": "ghcr.io/astral-sh/uv:python3.11-bookworm",
+  "features": {
+    "ghcr.io/guiyomh/features/just:0": {}
+  },
   "customizations": {
     "vscode": {
       "extensions": [
         "ms-python.python",
         "charliermarsh.ruff",
         "fill-labs.dependi",
+        "nefrob.vscode-just-syntax",
         "EditorConfig.EditorConfig"
       ]
     }
