@@ -6,7 +6,7 @@ authors = [
 ]
 license = {text = "Apache-2.0"}
 readme = "README.md"
-dynamic = ["version"]
+version = "0.1.12"
 
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -56,11 +56,8 @@ Issues = "https://github.com/gecio/anycastd/issues"
 anycastd = "anycastd.__main__:run"
 
 [build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
-
-[tool.pdm.version]
-source = "scm"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.uv]
 dev-dependencies = [
