@@ -18,8 +18,8 @@ permissions:
   id-token: write
 
 jobs:
-  test:
-    name: Test with Python ${{ matrix.python_version }}
+  pytest:
+    name: pytest (Python ${{ matrix.python_version }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
