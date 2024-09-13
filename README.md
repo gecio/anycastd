@@ -16,8 +16,8 @@
   <a>
     <img src="https://img.shields.io/badge/v3.11+-black?style=flat&color=FFFF00&label=Python" alt="python version">
   </a>
-  <a href="https://pdm.fming.dev">
-    <img src="https://img.shields.io/badge/pdm-managed-blueviolet" alt="pdm">
+  <a href="https://github.com/astral-sh/uv">
+    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json" alt="uv">
   </a>
 </div>
 <br>
