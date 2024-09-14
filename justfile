@@ -25,5 +25,5 @@ test $FRR_VERSION=FRR_LATEST_MAJOR_VERSION $COV=env("CI", "false"):
   uv run pytest tests ${args[@]}
 
   if [ -z ${CI} ]; then
-    uv run coverge xml
+    uv run coverage xml
   fi
