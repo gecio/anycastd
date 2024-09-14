@@ -17,7 +17,9 @@ jobs:
         with:
           enable-cache: true
       - run: uv python install ${{ env.PYTHON_VERSION }}
-      - run: uvx nox -s lint
+      - uses: extractions/setup-just@v2
+
+      - run: just lint
   check-lockfile:
     runs-on: ubuntu-latest
     steps:
@@ -26,7 +28,9 @@ jobs:
         with:
           enable-cache: true
       - run: uv python install ${{ env.PYTHON_VERSION }}
-      - run: uvx nox -s lockfile
+      - uses: extractions/setup-just@v2
+
+      - run: just check-lockfile
   type-check:
     runs-on: ubuntu-latest
     steps:
@@ -35,7 +39,9 @@ jobs:
         with:
           enable-cache: true
       - run: uv python install ${{ env.PYTHON_VERSION }}
-      - run: uvx nox -s mypy
+      - uses: extractions/setup-just@v2
+
+      - run: just type-check
   spellcheck:
     runs-on: ubuntu-latest
     steps:
