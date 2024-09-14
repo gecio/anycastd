@@ -1,3 +1,5 @@
+FRR_LATEST_MAJOR_VERSION := "9.1.0"
+
 default: check-lockfile lint type-check test
 
 # Check if the lockfile is up to date
@@ -14,5 +16,5 @@ type-check:
   uv run mypy src
 
 # Run tests using pytest
-test:
+test $FRR_VERSION=FRR_LATEST_MAJOR_VERSION:
   uv run pytest tests
