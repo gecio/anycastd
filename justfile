@@ -16,5 +16,14 @@ type-check:
   uv run mypy src
 
 # Run tests using pytest
-test $FRR_VERSION=FRR_LATEST_MAJOR_VERSION:
-  uv run pytest tests
+test $FRR_VERSION=FRR_LATEST_MAJOR_VERSION $COV=env("CI", "false"):
+  #!/usr/bin/env bash
+  set -euxo pipefail
+
+  args=()
+  ( $COV == "true" ) && args+=( "--cov" )
+  uv run pytest tests ${args[@]}
+
+  if [ -z ${CI} ]; then
+    uv run coverge xml
+  fi
