@@ -26,22 +26,24 @@ For users of IDEs with support for devcontainers, it's usage is recommended.
 
 ### Other
 
-Ensure you have Python 3.11 or greater with recent versions of [uv] and [nox] in your environment.
+Ensure you have Python 3.11 or greater with recent versions of [uv] and [just] in your environment.
 
 ## Coding Standards
 
-All tests need to pass before a PR can be merged. Using [nox] to lint your code and run tests
+All tests need to pass before a PR can be merged. Using [just] to lint your code and run tests
 before creating a PR is advised to avoid being reprimanded by CI.
 
 ```sh
-$ nox
-nox > Running session lint-3.11
+$ just
+uv lock --locked
+Resolved 54 packages in 3ms
+uv run ruff check src tests
+All checks passed!
+uv run ruff format --check src tests
+57 files already formatted
+uv run mypy src
+Success: no issues found in 30 source files
 ...
-nox > Ran multiple sessions:
-nox > * lint-3.11: success
-nox > * lint-3.12: skipped
-nox > * test-3.11: success
-nox > * test-3.12: skipped
 ```
 
 Since some integration tests use real dependencies, docker is required to run them. If docker is not available in your environment, those tests will be skipped and only run in CI.
@@ -88,6 +90,6 @@ as well as [mypy] for static type checks.
   ```
 
 [uv]: https://github.com/astral-sh/uv
-[nox]: https://github.com/wntrblm/nox
+[just]: https://github.com/casey/just
 [ruff]: https://github.com/astral-sh/ruff
 [mypy]: https://github.com/python/mypy
