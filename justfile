@@ -1,4 +1,4 @@
-FRR_LATEST_MAJOR_VERSION := "9.1.0"
+FRR_LATEST_MAJOR_VERSION := "10.1.0"
 
 default: check-lockfile lint type-check test
 
