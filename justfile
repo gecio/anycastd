@@ -16,7 +16,7 @@ type-check +dirs="src":
   uv run mypy {{ dirs }}
 
 # Run tests using pytest
-test $FRR_VERSION=FRR_LATEST_MAJOR_VERSION $COV=env("CI", "false"):
+test $COV=env("CI", "false") $FRR_VERSION=FRR_LATEST_MAJOR_VERSION:
   #!/usr/bin/env bash
   set -euxo pipefail
 
