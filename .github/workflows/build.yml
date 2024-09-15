@@ -19,12 +19,15 @@ jobs:
       - uses: astral-sh/setup-uv@v2
         with:
           enable-cache: true
-      - name: Build
-        run: uv build
+      - uses: extractions/setup-just@v2
+
+      - run: just build
+
       - name: Attest Build Provenance
         uses: actions/attest-build-provenance@v1
         with:
           subject-path: dist/anycastd-*
+
       - name: Upload Build Artifacts
         run: >-
           gh release upload "${GITHUB_REF_NAME}"

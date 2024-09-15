@@ -28,5 +28,23 @@ test $COV=env("CI", "false") $FRR_VERSION=FRR_LATEST_MAJOR_VERSION:
     uv run pytest tests ${args[@]}
 
     if [ $COV = "true" ]; then
-      uv run coverage xml
+        uv run coverage xml
     fi
+
+# Build sdist and wheel
+build:
+    #!/usr/bin/env bash
+    set -euxo pipefail
+
+    # Validate version in pyproject.toml matches that of the git tag if running in CI
+    if [ ! -z ${CI+x} ]; then
+        PROJECT_VERSION="$(grep -Po '(?<=^version = ").*(?=")' pyproject.toml)"
+        GIT_TAG="$(git describe --exact-match --tags)"
+
+        if [ ! $PROJECT_VERSION == ${GIT_TAG:1} ]; then
+            echo Project version $PROJECT_VERSION does not match git tag $GIT_TAG
+            exit 1
+        fi
+    fi
+
+    uv build
