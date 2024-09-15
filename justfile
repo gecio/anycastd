@@ -62,7 +62,7 @@ bump-version $VERSION: (_validate_semver VERSION)
     git add pyproject.toml *.lock
     git commit -m "Bump version to v{{ VERSION }}"
 
-# Validate a version against SemVer 
+# Validate a version against SemVer
 _validate_semver version:
     #!/usr/bin/env bash
     set -euxo pipefail
