@@ -6,10 +6,13 @@ default: check-lockfile lint type-check test
 check-lockfile:
   uv lock --locked
 
-# Lint code and check formatting using ruff
-lint +dirs="src tests":
+# Lint code and check formatting
+lint +dirs="src tests": lint-justfile
   uv run ruff check {{ dirs }}
   uv run ruff format --check {{ dirs }}
+
+lint-justfile:
+  just --check --fmt --unstable
 
 # Validate static types using mypy
 type-check +dirs="src":
