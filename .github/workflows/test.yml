@@ -29,7 +29,7 @@ jobs:
       PYTHON: ${{ matrix.python_version }}
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v2
+      - uses: astral-sh/setup-uv@v3
         with:
           enable-cache: true
       - run: uv python install ${{ matrix.python_version }}
