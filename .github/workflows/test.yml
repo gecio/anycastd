@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python_version: ["3.11", "3.12"]
+        python_version: ["3.11", "3.12", "3.13"]
       fail-fast: false
     env:
       PYTHON: ${{ matrix.python_version }}
